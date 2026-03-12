@@ -1,6 +1,8 @@
 rootProject.name = "remittance"
 
 pluginManagement {
+    includeBuild("build-logic")
+
     buildscript {
         repositories {
             gradlePluginPortal()

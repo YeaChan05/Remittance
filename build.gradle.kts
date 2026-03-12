@@ -4,6 +4,8 @@ import com.linecorp.support.project.multi.recipe.configureByTypeHaving
 import com.linecorp.support.project.multi.recipe.configureByTypePrefix
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.plugin.SpringBootPlugin
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
@@ -12,9 +14,12 @@ plugins {
     java
     `java-library`
     `jvm-test-suite`
-    application
+    id("remittance.integration-test-environment")
     alias(libs.plugins.spotless)
     alias(libs.plugins.build.recipe)
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.kotlin.spring) apply false
+    alias(libs.plugins.kotlin.jpa) apply false
     alias(libs.plugins.spring.boot) apply false
     jacoco
 }
@@ -34,6 +39,13 @@ configurations {
 
 configureByTypePrefix("java") {
     apply(plugin = "java-library")
+    apply(plugin = "org.jetbrains.kotlin.jvm")
+
+    extensions.configure<JavaPluginExtension> {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(21))
+        }
+    }
 
     testing {
         suites {
@@ -41,7 +53,7 @@ configureByTypePrefix("java") {
             val integrationTest by registering(JvmTestSuite::class) {
                 sources {
                     java {
-                        setSrcDirs(listOf("src/integrationTest/java"))
+                        setSrcDirs(emptyList<String>())
                     }
                     resources {
                         setSrcDirs(listOf("src/integrationTest/resources"))
@@ -89,11 +101,11 @@ configureByTypePrefix("java") {
 
     dependencies {
         implementation(rootProject.libs.jspecify)
+        implementation(rootProject.libs.kotlin.logging)
         compileOnly(rootProject.libs.lombok)
         annotationProcessor(rootProject.libs.lombok)
         testImplementation(enforcedPlatform(SpringBootPlugin.BOM_COORDINATES))
         testImplementation("org.springframework.boot:spring-boot-starter-test")
-        integrationTestImplementation("org.springframework.boot:spring-boot-testcontainers")
     }
 }
 
@@ -107,11 +119,13 @@ configureByTypeHaving("boot") {
     dependencies {
         implementation(enforcedPlatform(SpringBootPlugin.BOM_COORDINATES))
         implementation("org.springframework.boot:spring-boot-starter")
+        implementation(rootProject.libs.kotlin.reflect)
     }
 }
 
 configureByTypeHaving("java", "boot") {
     apply(plugin = "org.springframework.boot")
+    apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 }
 
 configureByTypeHaving("boot", "mvc") {
@@ -125,6 +139,8 @@ configureByTypeHaving("boot", "mvc") {
 }
 
 configureByTypeHaving("boot", "jpa", "repository") {
+    apply(plugin = "org.jetbrains.kotlin.plugin.jpa")
+
     dependencies {
         implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     }
@@ -164,6 +180,14 @@ subprojects {
         jacocoAggregationProjects.add(this@subprojects)
     }
 
+    plugins.withId("org.jetbrains.kotlin.jvm") {
+        tasks.withType<KotlinCompile>().configureEach {
+            compilerOptions {
+                jvmTarget.set(JvmTarget.JVM_21)
+            }
+        }
+    }
+
     // configure package path by project name
     afterEvaluate {
         val projectType = findProperty("type")?.toString().orEmpty()
@@ -177,22 +201,8 @@ subprojects {
 }
 
 spotless {
-    java {
-        googleJavaFormat()
-        removeUnusedImports()
-        importOrder(
-            "java",
-            "javax",
-            "jakarta",
-            "org.springframework",
-            "org",
-            "com",
-            "org.yechan",
-            ""
-        )
-        trimTrailingWhitespace()
-        endWithNewline()
-
+    kotlin {
+        ktfmt()
         targetExclude(
             "**/build/**",
             "**/generated/**",

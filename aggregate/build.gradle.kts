@@ -17,9 +17,6 @@ dependencies {
     implementation(project(":member:schema"))
     implementation("org.springframework.boot:spring-boot-starter-liquibase")
 
-    integrationTestImplementation("org.testcontainers:testcontainers-junit-jupiter")
-    integrationTestImplementation("org.testcontainers:testcontainers-mysql")
-    integrationTestImplementation("org.testcontainers:testcontainers-rabbitmq")
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
     integrationTestImplementation(testFixtures(project(":common:application-api")))
     integrationTestImplementation(project(":account:model"))
@@ -38,7 +35,4 @@ dependencies {
     integrationTestRuntimeOnly("com.mysql:mysql-connector-j") {
         exclude(group = "com.google.protobuf", module = "protobuf-java")
     }
-
-    integrationTestRuntimeOnly("org.testcontainers:testcontainers-jdbc")
-    integrationTestRuntimeOnly("org.testcontainers:testcontainers-rabbitmq")
 }

@@ -83,19 +83,19 @@ fi
 create_module_dirs() {
   local module_dir="$1"
   local include_integration="${2:-false}"
-  mkdir -p "${module_dir}/src/main/java/${artifact_path}" "${module_dir}/src/main/resources"
-  mkdir -p "${module_dir}/src/test/java/${artifact_path}" "${module_dir}/src/test/resources"
+  mkdir -p "${module_dir}/src/main/kotlin/${artifact_path}" "${module_dir}/src/main/resources"
+  mkdir -p "${module_dir}/src/test/kotlin/${artifact_path}" "${module_dir}/src/test/resources"
   if [[ "$include_integration" == "true" ]]; then
-    mkdir -p "${module_dir}/src/integrationTest/java/${artifact_path}" "${module_dir}/src/integrationTest/resources"
+    mkdir -p "${module_dir}/src/integrationTest/kotlin/${artifact_path}" "${module_dir}/src/integrationTest/resources"
   fi
 }
 
 create_application_dirs() {
   local module_dir="$1"
   local include_integration="${2:-false}"
-  mkdir -p "${module_dir}/src/main/java/${artifact_path}" "${module_dir}/src/main/resources"
+  mkdir -p "${module_dir}/src/main/kotlin/${artifact_path}" "${module_dir}/src/main/resources"
   if [[ "$include_integration" == "true" ]]; then
-    mkdir -p "${module_dir}/src/integrationTest/java/${artifact_path}" "${module_dir}/src/integrationTest/resources"
+    mkdir -p "${module_dir}/src/integrationTest/kotlin/${artifact_path}" "${module_dir}/src/integrationTest/resources"
   fi
 }
 

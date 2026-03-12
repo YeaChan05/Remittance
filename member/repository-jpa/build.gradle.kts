@@ -4,7 +4,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-liquibase")
 
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-liquibase")
-    integrationTestImplementation("org.testcontainers:testcontainers-mysql")
     integrationTestImplementation(project(":member:schema"))
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
     integrationTestRuntimeOnly("com.mysql:mysql-connector-j") {

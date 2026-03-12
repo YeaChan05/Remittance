@@ -1,10 +1,6 @@
 spring:
   autoconfigure:
     exclude: org.springframework.boot.security.autoconfigure.actuate.web.servlet.ManagementWebSecurityAutoConfiguration
-  datasource:
-    url: jdbc:tc:mysql:8.0.36:///aggregate?useInformationSchema=true&user=root&password=test&TC_INITSCRIPT=db/init/01-init.sql
-    username: root
-    password: test
   jpa:
     properties:
       hibernate:
@@ -32,8 +28,3 @@ auth:
 transfer:
   idempotency-key:
     expires-in: 24h
-
-logging:
-  level:
-    org.testcontainers: DEBUG
-    org.testcontainers.jdbc: DEBUG

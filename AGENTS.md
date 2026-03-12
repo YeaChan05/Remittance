@@ -9,7 +9,7 @@
 - `common` 하위 모듈은 `api`, `exception`, `repository-jpa`, `security`, `application-api`(testFixtures
   전용)입니다.
 - 실행/조립은 `aggregate` 모듈에서 담당합니다.
-- 각 모듈은 보통 `src/main/java`, `src/test/java`를 사용하며 통합 테스트는 `src/integrationTest/java`에 둡니다.
+- 각 모듈은 보통 `src/main/kotlin`, `src/test/kotlin`를 사용하며 통합 테스트는 `src/integrationTest/kotlin`에 둡니다.
 - 모듈 목록은 `settings.gradle.kts`에서 관리됩니다.
 
 ## Build, Test, and Development Commands
@@ -82,7 +82,7 @@
 ## Testing Guidelines
 
 - 단위 테스트는 `*Test` 클래스 네이밍을 권장합니다.
-- 통합 테스트는 `src/integrationTest/java`에 두고 `integrationTest` 태스크로 실행합니다.
+- 통합 테스트는 `src/integrationTest/kotlin`에 두고 `integrationTest` 태스크로 실행합니다.
 - 기본 테스트 프레임워크는 JUnit Jupiter, 통합 테스트는 Testcontainers를 사용합니다.
 
 ## Commit & Pull Request Guidelines

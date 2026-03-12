@@ -37,7 +37,7 @@ description: 리미턴스 레포에서 새로운 도메인 모듈 또는 하위 
 - 빌드/테스트 실행은 요청 시에만 진행한다.
 
 ## 체크리스트
-- 모듈 디렉터리 구조가 표준( src/main/java, src/test/java 등 )을 따른다.
+- 모듈 디렉터리 구조가 표준( src/main/kotlin, src/test/java 등 )을 따른다.
 - `settings.gradle.kts`에 신규 모듈이 모두 포함된다.
 - 각 모듈의 `build.gradle.kts`가 생성/연결되어 있다.
 - 선택 모듈만 생성되었고 불필요한 모듈은 없다.

@@ -4,7 +4,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-liquibase")
 
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-liquibase")
-    integrationTestImplementation("org.testcontainers:testcontainers-mysql")
     integrationTestImplementation(project(":transfer:schema"))
     integrationTestImplementation(testFixtures(project(":common:application-api")))
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
