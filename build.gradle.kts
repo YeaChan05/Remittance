@@ -53,7 +53,7 @@ configureByTypePrefix("java") {
             val integrationTest by registering(JvmTestSuite::class) {
                 sources {
                     java {
-                        setSrcDirs(emptyList<String>())
+                        setSrcDirs(listOf("src/integrationTest/kotlin"))
                     }
                     resources {
                         setSrcDirs(listOf("src/integrationTest/resources"))
