@@ -14,7 +14,7 @@ plugins {
     java
     `java-library`
     `jvm-test-suite`
-    id("remittance.integration-test-environment")
+    id("buildlogic.testcontainers-support")
     alias(libs.plugins.spotless)
     alias(libs.plugins.build.recipe)
     alias(libs.plugins.kotlin.jvm) apply false

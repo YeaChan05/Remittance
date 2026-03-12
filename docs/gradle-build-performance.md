@@ -33,14 +33,15 @@ This design keeps startup cost near one container boot per build while avoiding 
 ### 3.1 Root Build
 
 - `build.gradle.kts`
-  - Applies the root `remittance.integration-test-environment` plugin.
+  - Applies the root `buildlogic.testcontainers-support` plugin.
 - `gradle.properties`
   - Enables `org.gradle.parallel=true`.
 
 ### 3.2 Shared Environment Services
 
 - `IntegrationTestEnvironmentPlugin`
-  - Hooks only the major integration test tasks listed above.
+  - Exposes a `testcontainers` DSL to each project.
+  - Hooks the `integrationTest` task only when the project declares the required environments.
   - Registers one shared Docker availability service.
   - Registers one shared MySQL environment service.
   - Registers one shared RabbitMQ environment service.
@@ -64,6 +65,21 @@ This design keeps startup cost near one container boot per build while avoiding 
 ## 4. Test Wiring
 
 Tests do not create containers directly. They bind only to Spring properties.
+
+- Each module opts in from its own `build.gradle.kts`, for example:
+
+```kotlin
+testcontainers {
+    mysql()
+}
+```
+
+```kotlin
+testcontainers {
+    mysql()
+    rabbitMq()
+}
+```
 
 - Repository integration tests rely on their existing Liquibase changelogs.
 - Aggregate integration tests keep using `IntegrationTestEnvironmentSetup` with `@DynamicPropertySource`.

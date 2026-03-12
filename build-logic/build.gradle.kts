@@ -15,20 +15,31 @@ repositories {
 }
 
 dependencies {
-    implementation("org.testcontainers:testcontainers:1.21.3")
-    implementation("org.testcontainers:mysql:1.21.3")
-    implementation("org.testcontainers:rabbitmq:1.21.3")
-    implementation("com.mysql:mysql-connector-j:9.3.0")
 }
 
 gradlePlugin {
     plugins {
-        register("integrationTestEnvironment") {
+        register("testcontainersAddon") {
+            id = "buildlogic.testcontainers-support"
+            implementationClass = "org.yechan.remittance.buildlogic.IntegrationTestEnvironmentPlugin"
+        }
+
+        register("testcontainersAddonLegacy") {
+            id = "buildlogic.testcontainers-addon"
+            implementationClass = "org.yechan.remittance.buildlogic.IntegrationTestEnvironmentPlugin"
+        }
+
+        register("sharedTestcontainersLegacy") {
+            id = "buildlogic.shared-testcontainers"
+            implementationClass = "org.yechan.remittance.buildlogic.IntegrationTestEnvironmentPlugin"
+        }
+
+        register("integrationTestEnvironmentLegacy") {
             id = "remittance.integration-test-environment"
             implementationClass = "org.yechan.remittance.buildlogic.IntegrationTestEnvironmentPlugin"
         }
 
-        register("sharedTestcontainers") {
+        register("remittanceSharedTestcontainersLegacy") {
             id = "remittance.shared-testcontainers"
             implementationClass = "org.yechan.remittance.buildlogic.IntegrationTestEnvironmentPlugin"
         }

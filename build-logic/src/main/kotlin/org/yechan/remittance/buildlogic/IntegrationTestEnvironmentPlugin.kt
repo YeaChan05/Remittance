@@ -8,7 +8,7 @@ import org.gradle.api.tasks.testing.Test
 class IntegrationTestEnvironmentPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         require(project == project.rootProject) {
-            "remittance.integration-test-environment must be applied to the root project."
+            "buildlogic.testcontainers-support must be applied to the root project."
         }
 
         val dockerEnvironment = project.gradle.sharedServices.registerIfAbsent(
@@ -25,54 +25,64 @@ class IntegrationTestEnvironmentPlugin : Plugin<Project> {
         ) {}
 
         project.allprojects {
-            tasks.withType(Test::class.java).configureEach {
-                when (path) {
-                    ":account:repository-jpa:integrationTest",
-                    ":member:repository-jpa:integrationTest",
-                    ":transfer:repository-jpa:integrationTest" -> {
-                        configureMySqlIntegrationTest(
-                            dockerEnvironment,
-                            mySqlEnvironment
-                        )
-                    }
+            val extension = extensions.create("testcontainers", TestcontainersExtension::class.java)
+            extensions.add("integrationTestEnvironment", extension)
 
-                    ":aggregate:integrationTest" -> {
-                        configureMySqlIntegrationTest(
-                            dockerEnvironment,
-                            mySqlEnvironment,
-                            rabbitMqEnvironment
-                        )
-                    }
-                }
+            tasks.withType(Test::class.java).matching { it.name == "integrationTest" }.configureEach {
+                configureIntegrationTestEnvironment(
+                    dockerEnvironment,
+                    mySqlEnvironment,
+                    rabbitMqEnvironment,
+                    extension
+                )
             }
         }
     }
 
-    private fun Test.configureMySqlIntegrationTest(
+    private fun Test.configureIntegrationTestEnvironment(
         dockerEnvironmentProvider: Provider<DockerEnvironmentBuildService>,
         mySqlEnvironmentProvider: Provider<MySqlIntegrationTestEnvironmentBuildService>,
-        rabbitMqEnvironmentProvider: Provider<RabbitMqIntegrationTestEnvironmentBuildService>? = null
+        rabbitMqEnvironmentProvider: Provider<RabbitMqIntegrationTestEnvironmentBuildService>,
+        extension: TestcontainersExtension
     ) {
-        usesService(dockerEnvironmentProvider)
-        usesService(mySqlEnvironmentProvider)
-        rabbitMqEnvironmentProvider?.let(::usesService)
+        if (extension.resources.isNotEmpty()) {
+            usesService(dockerEnvironmentProvider)
+        }
+
+        if (TestContainerResource.MYSQL in extension.resources) {
+            usesService(mySqlEnvironmentProvider)
+        }
+
+        if (TestContainerResource.RABBITMQ in extension.resources) {
+            usesService(rabbitMqEnvironmentProvider)
+        }
 
         doFirst {
+            if (extension.resources.isEmpty()) {
+                return@doFirst
+            }
+
+            val coordinates = TestcontainersRuntimeCoordinatesResolver.resolve(project, extension)
+            TestcontainersDependencyValidator.validate(project, name, extension, coordinates)
+
             dockerEnvironmentProvider.get().ensureReady()
 
-            val mySqlEnvironment = mySqlEnvironmentProvider.get()
-            mySqlEnvironment.prepareDatabase(path)
+            if (TestContainerResource.MYSQL in extension.resources) {
+                val mySqlEnvironment = mySqlEnvironmentProvider.get()
+                mySqlEnvironment.prepareDatabase(project, path, coordinates)
 
-            systemProperty(SPRING_DATASOURCE_URL, mySqlEnvironment.datasourceUrl(path))
-            systemProperty(SPRING_DATASOURCE_USERNAME, mySqlEnvironment.username())
-            systemProperty(SPRING_DATASOURCE_PASSWORD, mySqlEnvironment.password())
+                systemProperty(SPRING_DATASOURCE_URL, mySqlEnvironment.datasourceUrl(project, path, coordinates))
+                systemProperty(SPRING_DATASOURCE_USERNAME, mySqlEnvironment.username(project, coordinates))
+                systemProperty(SPRING_DATASOURCE_PASSWORD, mySqlEnvironment.password(project, coordinates))
+            }
 
-            rabbitMqEnvironmentProvider?.get()?.let { rabbitMqEnvironment ->
-                rabbitMqEnvironment.ensureReady()
-                systemProperty(SPRING_RABBITMQ_HOST, rabbitMqEnvironment.host())
-                systemProperty(SPRING_RABBITMQ_PORT, rabbitMqEnvironment.port())
-                systemProperty(SPRING_RABBITMQ_USERNAME, rabbitMqEnvironment.username())
-                systemProperty(SPRING_RABBITMQ_PASSWORD, rabbitMqEnvironment.password())
+            if (TestContainerResource.RABBITMQ in extension.resources) {
+                val rabbitMqEnvironment = rabbitMqEnvironmentProvider.get()
+                rabbitMqEnvironment.ensureReady(project, coordinates)
+                systemProperty(SPRING_RABBITMQ_HOST, rabbitMqEnvironment.host(project, coordinates))
+                systemProperty(SPRING_RABBITMQ_PORT, rabbitMqEnvironment.port(project, coordinates))
+                systemProperty(SPRING_RABBITMQ_USERNAME, rabbitMqEnvironment.username(project, coordinates))
+                systemProperty(SPRING_RABBITMQ_PASSWORD, rabbitMqEnvironment.password(project, coordinates))
             }
         }
     }

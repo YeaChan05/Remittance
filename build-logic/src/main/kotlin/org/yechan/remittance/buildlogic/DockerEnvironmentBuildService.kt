@@ -2,7 +2,6 @@ package org.yechan.remittance.buildlogic
 
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
-import org.testcontainers.DockerClientFactory
 
 abstract class DockerEnvironmentBuildService : BuildService<BuildServiceParameters.None> {
     @Volatile
@@ -18,7 +17,11 @@ abstract class DockerEnvironmentBuildService : BuildService<BuildServiceParamete
         }
 
         available = runCatching {
-            DockerClientFactory.instance().isDockerAvailable
+            val process = ProcessBuilder("docker", "info")
+                .redirectErrorStream(true)
+                .start()
+            process.inputStream.bufferedReader().use { it.readText() }
+            process.waitFor() == 0
         }.getOrDefault(false)
         initialized = true
         return available

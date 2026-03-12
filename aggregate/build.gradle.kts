@@ -1,3 +1,9 @@
+testcontainers {
+    bom("org.testcontainers:testcontainers-bom:${libs.versions.testcontainers.get()}")
+    mysql()
+    rabbitMq()
+}
+
 dependencies {
     implementation(project(":common:security"))
 

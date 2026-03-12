@@ -3,6 +3,8 @@ jspecify = "1.0.0"
 jjwt = "0.13.0"
 kotlin = "2.2.0"
 kotlin-logging = "7.0.3"
+mysql-connector = "9.5.0"
+testcontainers = "2.0.3"
 
 [plugins]
 build-recipe = { id = "com.linecorp.build-recipe-plugin", version = "1.1.1" }
@@ -20,3 +22,8 @@ jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 lombok = { module = "org.projectlombok:lombok", version = "1.18.42" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
+mysql-connector-j = { module = "com.mysql:mysql-connector-j", version.ref = "mysql-connector" }
+testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
+testcontainers-core = { module = "org.testcontainers:testcontainers" }
+testcontainers-mysql = { module = "org.testcontainers:testcontainers-mysql" }
+testcontainers-rabbitmq = { module = "org.testcontainers:testcontainers-rabbitmq" }

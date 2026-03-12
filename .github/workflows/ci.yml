@@ -23,7 +23,10 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
 
       - name: Build
-        run: ./gradlew build jacocoRootReport
+        run: ./gradlew build
+
+      - name: Jacoco report
+        run: ./gradlew jacocoRootReport
 
       - name: Upload coverage
         uses: madrapps/jacoco-report@v1.2
