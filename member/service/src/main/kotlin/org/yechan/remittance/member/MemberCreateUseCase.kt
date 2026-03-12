@@ -7,12 +7,12 @@ interface MemberCreateUseCase {
     fun register(props: MemberProps): MemberModel
 }
 
+private val log = KotlinLogging.logger {}
+
 class MemberService(
     private val memberRepository: MemberRepository,
     private val passwordHashEncoder: PasswordHashEncoder
 ) : MemberCreateUseCase {
-    private val log = KotlinLogging.logger {}
-
     override fun register(props: MemberProps): MemberModel {
         log.info { "member.register.start" }
         memberRepository.findByEmail(props.email)?.let {

@@ -15,13 +15,13 @@ interface IdempotencyKeyCreateProps {
     val scope: IdempotencyKeyProps.IdempotencyScopeValue
 }
 
+private val log = KotlinLogging.logger {}
+
 class IdempotencyKeyService(
     private val repository: IdempotencyKeyRepository,
     private val clock: Clock,
     private val expiresIn: Duration
 ) : IdempotencyKeyCreateUseCase {
-    private val log = KotlinLogging.logger {}
-
     override fun create(props: IdempotencyKeyCreateProps): IdempotencyKeyModel {
         log.info { "idempotency.create.start memberId=${props.memberId} scope=${props.scope}" }
         val now = LocalDateTime.now(clock)

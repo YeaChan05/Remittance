@@ -3,13 +3,13 @@ package org.yechan.remittance.account
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDateTime
 
+private val log = KotlinLogging.logger {}
+
 class TransferNotificationService(
     private val accountRepository: AccountRepository,
     private val processedEventRepository: ProcessedEventRepository,
     private val notificationPushPort: NotificationPushPort
 ) : TransferNotificationUseCase {
-    private val log = KotlinLogging.logger {}
-
     override fun notify(props: TransferNotificationProps) {
         log.info {
             "transfer.notification.start eventId=${props.eventId} transferId=${props.transferId}"

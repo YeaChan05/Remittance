@@ -9,13 +9,13 @@ interface MemberQueryUseCase {
     fun login(props: MemberLoginProps): MemberTokenValue
 }
 
+private val log = KotlinLogging.logger {}
+
 class MemberQueryService(
     private val memberRepository: MemberRepository,
     private val passwordHashEncoder: PasswordHashEncoder,
     private val tokenGenerator: TokenGenerator
 ) : MemberQueryUseCase {
-    private val log = KotlinLogging.logger {}
-
     override fun login(props: MemberLoginProps): MemberTokenValue {
         log.info { "member.login.start" }
         val member =

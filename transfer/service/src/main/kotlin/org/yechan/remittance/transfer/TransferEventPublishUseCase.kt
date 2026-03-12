@@ -6,12 +6,12 @@ fun interface TransferEventPublishUseCase {
     fun publish(limit: Int?): Int
 }
 
+private val log = KotlinLogging.logger {}
+
 class TransferEventPublishService(
     private val outboxEventRepository: OutboxEventRepository,
     private val transferEventPublisher: TransferEventPublisher
 ) : TransferEventPublishUseCase {
-    private val log = KotlinLogging.logger {}
-
     override fun publish(limit: Int?): Int {
         log.info { "transfer.event.publish.start limit=$limit" }
         val events = outboxEventRepository.findNewForPublish(limit)

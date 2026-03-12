@@ -6,10 +6,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 
+private val log = KotlinLogging.logger {}
+
 @RestControllerAdvice
 class GlobalExceptionHandler {
-    private val log = KotlinLogging.logger {}
-
     @ExceptionHandler(BusinessException::class)
     fun handleBusinessException(e: BusinessException): ResponseEntity<Any> {
         log.error(e) { e.stackTraceToString() }

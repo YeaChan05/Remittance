@@ -7,12 +7,12 @@ fun interface MemberAuthQueryUseCase {
     fun verify(props: MemberLoginProps): MemberAuthValue
 }
 
+private val log = KotlinLogging.logger {}
+
 class MemberAuthQueryService(
     private val memberRepository: MemberRepository,
     private val passwordHashEncoder: PasswordHashEncoder
 ) : MemberAuthQueryUseCase {
-    private val log = KotlinLogging.logger {}
-
     override fun verify(props: MemberLoginProps): MemberAuthValue {
         log.info { "member.auth.verify.start" }
         val member = memberRepository.findByEmail(props.email)

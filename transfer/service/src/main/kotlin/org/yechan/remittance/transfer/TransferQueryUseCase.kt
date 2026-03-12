@@ -12,12 +12,12 @@ fun interface TransferQueryUseCase {
     ): List<TransferModel>
 }
 
+private val log = KotlinLogging.logger {}
+
 class TransferQueryService(
     private val accountRepository: AccountRepository,
     private val transferRepository: TransferRepository
 ) : TransferQueryUseCase {
-    private val log = KotlinLogging.logger {}
-
     override fun query(
         memberId: Long,
         accountId: Long,

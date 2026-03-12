@@ -5,12 +5,12 @@ import java.time.LocalDateTime
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
+private val log = KotlinLogging.logger {}
+
 open class TransferIdempotencyHandler(
     private val repository: IdempotencyKeyRepository,
     private val transferSnapshotUtil: TransferSnapshotUtil
 ) {
-    private val log = KotlinLogging.logger {}
-
     open fun loadKey(
         memberId: Long,
         idempotencyKey: String,

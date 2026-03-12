@@ -8,12 +8,12 @@ fun interface AuthLoginUseCase {
     fun login(props: AuthLoginProps): AuthTokenValue
 }
 
+private val log = KotlinLogging.logger {}
+
 class AuthService(
     private val memberAuthClient: MemberAuthClient,
     private val tokenGenerator: TokenGenerator
 ) : AuthLoginUseCase {
-    private val log = KotlinLogging.logger {}
-
     override fun login(props: AuthLoginProps): AuthTokenValue {
         log.info { "auth.login.start" }
         val result = memberAuthClient.verify(props.email, props.password)

@@ -6,11 +6,11 @@ import java.time.LocalDateTime
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
+private val log = KotlinLogging.logger {}
+
 open class LedgerWriter(
     private val ledgerRepository: LedgerRepository
 ) {
-    private val log = KotlinLogging.logger {}
-
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     open fun record(
         props: TransferRequestProps,

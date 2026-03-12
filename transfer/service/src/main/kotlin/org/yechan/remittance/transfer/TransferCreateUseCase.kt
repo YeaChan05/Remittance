@@ -12,6 +12,8 @@ fun interface TransferCreateUseCase {
     ): TransferResult
 }
 
+private val log = KotlinLogging.logger {}
+
 class TransferService(
     private val idempotencyHandler: TransferIdempotencyHandler,
     private val transferProcessService: TransferProcessService,
@@ -19,8 +21,6 @@ class TransferService(
     private val transferSnapshotUtil: TransferSnapshotUtil,
     private val clock: Clock
 ) : TransferCreateUseCase {
-    private val log = KotlinLogging.logger {}
-
     override fun transfer(
         memberId: Long,
         idempotencyKey: String,

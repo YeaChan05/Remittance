@@ -10,6 +10,8 @@ import org.yechan.remittance.account.AccountRepository
 import org.yechan.remittance.member.MemberIdentifier
 import org.yechan.remittance.member.MemberRepository
 
+private val log = KotlinLogging.logger {}
+
 open class TransferProcessService(
     private val accountRepository: AccountRepository,
     private val transferRepository: TransferRepository,
@@ -19,8 +21,6 @@ open class TransferProcessService(
     private val memberRepository: MemberRepository,
     private val transferSnapshotUtil: TransferSnapshotUtil
 ) {
-    private val log = KotlinLogging.logger {}
-
     @Transactional
     open fun process(
         memberId: Long,

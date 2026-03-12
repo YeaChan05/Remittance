@@ -6,11 +6,11 @@ fun interface AccountCreateUseCase {
     fun create(props: AccountProps): AccountModel
 }
 
+private val log = KotlinLogging.logger {}
+
 class AccountService(
     private val accountRepository: AccountRepository
 ) : AccountCreateUseCase {
-    private val log = KotlinLogging.logger {}
-
     override fun create(props: AccountProps): AccountModel {
         log.info { "account.create.start memberId=${props.memberId} bankCode=${props.bankCode}" }
         accountRepository.findByMemberIdAndBankCodeAndAccountNumber(
