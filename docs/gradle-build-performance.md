@@ -34,8 +34,10 @@ This design keeps startup cost near one container boot per build while avoiding 
 
 - `build.gradle.kts`
   - Applies the root `buildlogic.testcontainers-support` plugin.
+  - Creates `integrationTest` suites only for modules that actually contain `src/integrationTest`.
 - `gradle.properties`
   - Enables `org.gradle.parallel=true`.
+  - CI-focused application builds keep `bootJar` and disable distribution archive tasks such as `bootDistZip`, `distTar`, and `startScripts`.
 
 ### 3.2 Shared Environment Services
 

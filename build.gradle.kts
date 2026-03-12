@@ -41,6 +41,9 @@ configureByTypePrefix("java") {
     apply(plugin = "java-library")
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
+    val hasIntegrationTestSources = file("src/integrationTest/kotlin").exists() ||
+        file("src/integrationTest/resources").exists()
+
     extensions.configure<JavaPluginExtension> {
         toolchain {
             languageVersion.set(JavaLanguageVersion.of(21))
@@ -50,13 +53,15 @@ configureByTypePrefix("java") {
     testing {
         suites {
             val test by getting(JvmTestSuite::class)
-            val integrationTest by registering(JvmTestSuite::class) {
-                sources {
-                    java {
-                        setSrcDirs(listOf("src/integrationTest/kotlin"))
-                    }
-                    resources {
-                        setSrcDirs(listOf("src/integrationTest/resources"))
+            if (hasIntegrationTestSources) {
+                register<JvmTestSuite>("integrationTest") {
+                    sources {
+                        java {
+                            setSrcDirs(listOf("src/integrationTest/kotlin"))
+                        }
+                        resources {
+                            setSrcDirs(listOf("src/integrationTest/resources"))
+                        }
                     }
                 }
             }
@@ -82,20 +87,22 @@ configureByTypePrefix("java") {
         }
     }
 
-    val integrationTestImplementation by configurations.getting {
-        extendsFrom(configurations.testImplementation.get())
-    }
+    if (hasIntegrationTestSources) {
+        val integrationTestImplementation by configurations.getting {
+            extendsFrom(configurations.testImplementation.get())
+        }
 
-    val integrationTestRuntimeOnly by configurations.getting {
-        extendsFrom(configurations.testRuntimeOnly.get())
-    }
+        val integrationTestRuntimeOnly by configurations.getting {
+            extendsFrom(configurations.testRuntimeOnly.get())
+        }
 
-    val integrationTestCompileOnly by configurations.getting
-    val integrationTestAnnotationProcessor by configurations.getting
+        val integrationTestCompileOnly by configurations.getting
+        val integrationTestAnnotationProcessor by configurations.getting
 
-    tasks {
-        val check by getting {
-            dependsOn("integrationTest")
+        tasks {
+            val check by getting {
+                dependsOn("integrationTest")
+            }
         }
     }
 
