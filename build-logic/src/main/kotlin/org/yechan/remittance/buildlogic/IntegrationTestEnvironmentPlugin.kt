@@ -15,6 +15,14 @@ class IntegrationTestEnvironmentPlugin : Plugin<Project> {
             "dockerEnvironmentBuildService",
             DockerEnvironmentBuildService::class.java
         ) {}
+        val mySqlEnvironment = project.gradle.sharedServices.registerIfAbsent(
+            "sharedMySqlIntegrationTestEnvironmentBuildService",
+            MySqlIntegrationTestEnvironmentBuildService::class.java
+        ) {}
+        val rabbitMqEnvironment = project.gradle.sharedServices.registerIfAbsent(
+            "sharedRabbitMqIntegrationTestEnvironmentBuildService",
+            RabbitMqIntegrationTestEnvironmentBuildService::class.java
+        ) {}
 
         project.allprojects {
             tasks.withType(Test::class.java).configureEach {
@@ -24,40 +32,20 @@ class IntegrationTestEnvironmentPlugin : Plugin<Project> {
                     ":transfer:repository-jpa:integrationTest" -> {
                         configureMySqlIntegrationTest(
                             dockerEnvironment,
-                            registerMySqlEnvironment(project, path)
+                            mySqlEnvironment
                         )
                     }
 
                     ":aggregate:integrationTest" -> {
                         configureMySqlIntegrationTest(
                             dockerEnvironment,
-                            registerMySqlEnvironment(project, path),
-                            registerRabbitMqEnvironment(project, path)
+                            mySqlEnvironment,
+                            rabbitMqEnvironment
                         )
                     }
                 }
             }
         }
-    }
-
-    private fun registerMySqlEnvironment(
-        project: Project,
-        taskPath: String
-    ): Provider<MySqlIntegrationTestEnvironmentBuildService> {
-        return project.gradle.sharedServices.registerIfAbsent(
-            serviceName(taskPath, "mysql"),
-            MySqlIntegrationTestEnvironmentBuildService::class.java
-        ) {}
-    }
-
-    private fun registerRabbitMqEnvironment(
-        project: Project,
-        taskPath: String
-    ): Provider<RabbitMqIntegrationTestEnvironmentBuildService> {
-        return project.gradle.sharedServices.registerIfAbsent(
-            serviceName(taskPath, "rabbitmq"),
-            RabbitMqIntegrationTestEnvironmentBuildService::class.java
-        ) {}
     }
 
     private fun Test.configureMySqlIntegrationTest(
@@ -73,9 +61,9 @@ class IntegrationTestEnvironmentPlugin : Plugin<Project> {
             dockerEnvironmentProvider.get().ensureReady()
 
             val mySqlEnvironment = mySqlEnvironmentProvider.get()
-            mySqlEnvironment.ensureReady()
+            mySqlEnvironment.prepareDatabase(path)
 
-            systemProperty(SPRING_DATASOURCE_URL, mySqlEnvironment.datasourceUrl())
+            systemProperty(SPRING_DATASOURCE_URL, mySqlEnvironment.datasourceUrl(path))
             systemProperty(SPRING_DATASOURCE_USERNAME, mySqlEnvironment.username())
             systemProperty(SPRING_DATASOURCE_PASSWORD, mySqlEnvironment.password())
 
@@ -87,11 +75,6 @@ class IntegrationTestEnvironmentPlugin : Plugin<Project> {
                 systemProperty(SPRING_RABBITMQ_PASSWORD, rabbitMqEnvironment.password())
             }
         }
-    }
-
-    private fun serviceName(taskPath: String, environmentName: String): String {
-        val normalizedTaskPath = taskPath.trimStart(':').replace(':', '-')
-        return "${normalizedTaskPath}-${environmentName}-integration-test-environment"
     }
 
     private companion object {
