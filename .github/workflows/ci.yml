@@ -17,13 +17,15 @@ jobs:
         with:
           distribution: corretto
           java-version-file: .sdkmanrc
-          cache: gradle
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
 
       - name: Build
-        run: ./gradlew build --parallel --stacktrace
+        run: ./gradlew build -x test
+
+      - name: Test
+        run: ./gradlew test -i
 
       - name: Jacoco report
         run: ./gradlew jacocoRootReport
