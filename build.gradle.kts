@@ -100,6 +100,10 @@ configureByTypePrefix("java") {
         val integrationTestAnnotationProcessor by configurations.getting
 
         tasks {
+            val test by getting
+            val integrationTest by getting {
+                dependsOn(test)
+            }
             val check by getting {
                 dependsOn("integrationTest")
             }

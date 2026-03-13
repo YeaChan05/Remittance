@@ -22,13 +22,13 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
 
       - name: Build
-        run: ./gradlew build -x test
+        run: ./gradlew assemble
 
       - name: Test
-        run: ./gradlew test -i
+        run: ./gradlew test --parallel
 
       - name: Jacoco report
-        run: ./gradlew jacocoRootReport
+        run: ./gradlew jacocoRootReport -x test -x integrationTest
 
       - name: Upload coverage
         uses: madrapps/jacoco-report@v1.2
