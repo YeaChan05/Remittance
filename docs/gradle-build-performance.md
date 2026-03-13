@@ -41,28 +41,29 @@ This design keeps startup cost near one container boot per build while avoiding 
 
 ### 3.2 Shared Environment Services
 
-- `IntegrationTestEnvironmentPlugin`
+- `TestcontainersPlugin`
   - Exposes a `testcontainers` DSL to each project.
-  - Hooks the `integrationTest` task only when the project declares the required environments.
-  - Registers one shared Docker availability service.
-  - Registers one shared MySQL environment service.
-  - Registers one shared RabbitMQ environment service.
-  - Before each target task runs, it verifies Docker availability and fails immediately if Docker is unavailable.
-  - For MySQL-backed tasks, it prepares a task-specific database and injects `spring.datasource.*`.
-  - For `:aggregate:integrationTest`, it also injects `spring.rabbitmq.*`.
+  - Wires only the declared `Test` tasks from each module's `build.gradle.kts`.
+  - Delegates task-specific provider resolution and runtime wiring to `TaskContainerBinder`.
+  - Registers one shared container service for the whole build.
 
-- `MySqlIntegrationTestEnvironmentBuildService`
+- `SharedContainerService`
+  - Verifies Docker availability once for the build and fails immediately when Docker is unavailable.
+  - Lazily starts one shared runtime per declared provider key.
+  - Caches runtimes by provider key and Testcontainers runtime coordinates.
+
+- `MySqlSharedContainerProvider`
   - Lazily starts one shared MySQL container.
   - Creates a dedicated database for each task path, for example:
     - `account_repository_jpa_integration_test`
     - `member_repository_jpa_integration_test`
     - `transfer_repository_jpa_integration_test`
     - `aggregate_integration_test`
-  - Returns a datasource URL that points at that task-specific database.
+  - Injects `spring.datasource.*` values that point at the task-specific database.
 
-- `RabbitMqIntegrationTestEnvironmentBuildService`
+- `RabbitMqSharedContainerProvider`
   - Lazily starts one shared RabbitMQ container.
-  - Exposes host, port, username, and password for `:aggregate:integrationTest`.
+  - Injects host, port, username, and password for `:aggregate:integrationTest`.
 
 ## 4. Test Wiring
 
@@ -72,14 +73,18 @@ Tests do not create containers directly. They bind only to Spring properties.
 
 ```kotlin
 testcontainers {
-    mysql()
+    task("integrationTest") {
+        use("mysql")
+    }
 }
 ```
 
 ```kotlin
 testcontainers {
-    mysql()
-    rabbitMq()
+    task("integrationTest") {
+        use("mysql")
+        use("rabbitmq")
+    }
 }
 ```
 

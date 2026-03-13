@@ -1,7 +1,9 @@
 testcontainers {
     bom("org.testcontainers:testcontainers-bom:${libs.versions.testcontainers.get()}")
-    mysql()
-    rabbitMq()
+    task("integrationTest") {
+        use("mysql")
+        use("rabbitmq")
+    }
 }
 
 dependencies {
