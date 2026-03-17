@@ -24,14 +24,7 @@ class TransferOutboxBeanRegistrar : BeanRegistrarDsl({
             bean<TransferEventPublisherProperties>()
         )
     }
-})
 
-@Configuration(proxyBeanMethods = false)
-@ConditionalOnBean(TransferEventPublishUseCase::class)
-@Import(TransferOutboxPublisherBeanRegistrar::class)
-class TransferOutboxPublisherBeanConfiguration
-
-class TransferOutboxPublisherBeanRegistrar : BeanRegistrarDsl({
     registerBean<TransferOutboxPublisher> {
         TransferOutboxPublisher(
             bean(),

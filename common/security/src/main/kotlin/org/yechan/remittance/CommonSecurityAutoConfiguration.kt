@@ -2,10 +2,8 @@ package org.yechan.remittance
 
 import org.springframework.beans.factory.BeanRegistrarDsl
 import org.springframework.boot.autoconfigure.AutoConfiguration
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration
-import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer
@@ -16,10 +14,7 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.access.AccessDeniedHandler
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
-@Import(
-    CommonSecurityBeanRegistrar::class,
-    DefaultAuthorizeHttpRequestsCustomizerConfiguration::class
-)
+@Import(CommonSecurityBeanRegistrar::class)
 @AutoConfiguration(before = [ServletWebSecurityAutoConfiguration::class])
 @EnableConfigurationProperties(AuthTokenProperties::class)
 class CommonSecurityAutoConfiguration
@@ -59,6 +54,10 @@ class CommonSecurityBeanRegistrar : BeanRegistrarDsl({
         )
     }
 
+    registerBean<AuthorizeHttpRequestsCustomizer> {
+        AuthorizeHttpRequestsCustomizer { registry -> registry.anyRequest().authenticated() }
+    }
+
     registerBean<SecurityFilterChain> {
         bean<HttpSecurity>()
             .formLogin(FormLoginConfigurer<HttpSecurity>::disable)
@@ -76,16 +75,5 @@ class CommonSecurityBeanRegistrar : BeanRegistrarDsl({
                 UsernamePasswordAuthenticationFilter::class.java
             )
             .build()
-    }
-})
-
-@Configuration(proxyBeanMethods = false)
-@ConditionalOnMissingBean(AuthorizeHttpRequestsCustomizer::class)
-@Import(DefaultAuthorizeHttpRequestsCustomizerBeanRegistrar::class)
-class DefaultAuthorizeHttpRequestsCustomizerConfiguration
-
-class DefaultAuthorizeHttpRequestsCustomizerBeanRegistrar : BeanRegistrarDsl({
-    registerBean<AuthorizeHttpRequestsCustomizer> {
-        AuthorizeHttpRequestsCustomizer { registry -> registry.anyRequest().authenticated() }
     }
 })
