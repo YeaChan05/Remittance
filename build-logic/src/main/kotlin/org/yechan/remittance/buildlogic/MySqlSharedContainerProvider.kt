@@ -6,6 +6,7 @@ import org.gradle.api.tasks.testing.Test
 import java.sql.Connection
 import java.sql.Driver
 import java.sql.DriverManager
+import java.time.Duration
 import java.util.Locale
 
 internal object MySqlSharedContainerProvider : SharedContainerProvider {
@@ -55,7 +56,7 @@ internal object MySqlSharedContainerProvider : SharedContainerProvider {
         private fun createContainer(): Any {
             val dockerImageNameClass = classLoader.loadClass("org.testcontainers.utility.DockerImageName")
             val parse = dockerImageNameClass.getMethod("parse", String::class.java)
-            val imageName = parse.invoke(null, "mysql:8.0.36")
+            val imageName = parse.invoke(null, "mysql:8.4.8")
             val containerClass = classLoader.loadClass("org.testcontainers.containers.MySQLContainer")
             val container = containerClass.getConstructor(dockerImageNameClass).newInstance(imageName)
 
@@ -64,6 +65,7 @@ internal object MySqlSharedContainerProvider : SharedContainerProvider {
             invoke(container, "withPassword", MYSQL_PASSWORD)
             invoke(container, "withEnv", "MYSQL_ROOT_PASSWORD", MYSQL_PASSWORD)
             invoke(container, "withEnv", "MYSQL_ROOT_HOST", "%")
+            invoke(container, "withStartupTimeout", Duration.ofMinutes(3))
             invoke(container, "start")
             return container
         }
