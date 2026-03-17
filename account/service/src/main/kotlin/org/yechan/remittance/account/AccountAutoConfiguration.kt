@@ -1,32 +1,36 @@
 package org.yechan.remittance.account
 
+import org.springframework.beans.factory.BeanRegistrarDsl
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
-import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
 
+@Import(AccountBeanRegistrar::class, TransferNotificationBeanConfiguration::class)
 @AutoConfiguration
-class AccountAutoConfiguration {
-    @Bean
-    fun accountCreateUseCase(accountRepository: AccountRepository): AccountCreateUseCase {
-        return AccountService(accountRepository)
+class AccountAutoConfiguration
+
+class AccountBeanRegistrar : BeanRegistrarDsl({
+    registerBean<AccountCreateUseCase> {
+        AccountService(bean())
     }
 
-    @Bean
-    fun accountDeleteUseCase(accountRepository: AccountRepository): AccountDeleteUseCase {
-        return AccountDeleteService(accountRepository)
+    registerBean<AccountDeleteUseCase>{
+        AccountDeleteService(bean())
     }
+})
 
-    @Bean
-    @ConditionalOnBean(NotificationPushPort::class)
-    fun transferNotificationUseCase(
-        accountRepository: AccountRepository,
-        processedEventRepository: ProcessedEventRepository,
-        notificationPushPort: NotificationPushPort
-    ): TransferNotificationUseCase {
-        return TransferNotificationService(
-            accountRepository,
-            processedEventRepository,
-            notificationPushPort
+@Configuration(proxyBeanMethods = false)
+@ConditionalOnBean(NotificationPushPort::class)
+@Import(TransferNotificationBeanRegistrar::class)
+class TransferNotificationBeanConfiguration
+
+class TransferNotificationBeanRegistrar : BeanRegistrarDsl({
+    registerBean<TransferNotificationUseCase>() {
+        TransferNotificationService(
+            bean(),
+            bean(),
+            bean()
         )
     }
-}
+})

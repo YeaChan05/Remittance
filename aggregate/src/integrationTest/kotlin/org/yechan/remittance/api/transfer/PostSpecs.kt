@@ -1,16 +1,10 @@
 package org.yechan.remittance.api.transfer
 
-import java.math.BigDecimal
-import java.math.RoundingMode
-import java.time.LocalDateTime
-import java.util.Optional
-import java.util.concurrent.atomic.AtomicBoolean
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
@@ -26,17 +20,16 @@ import org.yechan.remittance.TransferTestFixtures
 import org.yechan.remittance.TransferTestFixtures.LedgerRow
 import org.yechan.remittance.TransferTestFixturesConfig
 import org.yechan.remittance.account.AccountIdentifier
-import org.yechan.remittance.transfer.IdempotencyKeyProps
-import org.yechan.remittance.transfer.TransferIdentifier
-import org.yechan.remittance.transfer.TransferModel
-import org.yechan.remittance.transfer.TransferProps
-import org.yechan.remittance.transfer.TransferQueryCondition
-import org.yechan.remittance.transfer.TransferRepository
-import org.yechan.remittance.transfer.TransferRequestProps
+import org.yechan.remittance.transfer.*
 import org.yechan.remittance.transfer.dto.DepositRequest
 import org.yechan.remittance.transfer.dto.IdempotencyKeyCreateResponse
 import org.yechan.remittance.transfer.dto.TransferRequest
 import org.yechan.remittance.transfer.dto.WithdrawalRequest
+import java.math.BigDecimal
+import java.math.RoundingMode
+import java.time.LocalDateTime
+import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 @SpringBootTest(classes = [AggregateApplication::class])
 @Import(TransferTestFixturesConfig::class, PostSpecs.TransferFailureConfig::class)
@@ -793,7 +786,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         @Bean
         @Primary
         fun failureTransferRepository(
-            @Qualifier("transferRepository") delegate: TransferRepository,
+            delegate: TransferRepository,
             transferFailureSwitch: TransferFailureSwitch
         ): TransferRepository {
             return FailureTransferRepository(delegate, transferFailureSwitch)

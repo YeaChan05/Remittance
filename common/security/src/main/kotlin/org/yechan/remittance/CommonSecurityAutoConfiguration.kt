@@ -1,11 +1,12 @@
 package org.yechan.remittance
 
-import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.BeanRegistrarDsl
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration
-import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer
@@ -15,74 +16,76 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.access.AccessDeniedHandler
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
+@Import(
+    CommonSecurityBeanRegistrar::class,
+    DefaultAuthorizeHttpRequestsCustomizerConfiguration::class
+)
 @AutoConfiguration(before = [ServletWebSecurityAutoConfiguration::class])
 @EnableConfigurationProperties(AuthTokenProperties::class)
-class CommonSecurityAutoConfiguration {
-    @Bean
-    fun tokenGenerator(authTokenProperties: AuthTokenProperties): TokenGenerator {
-        return JwtTokenGenerator(
+class CommonSecurityAutoConfiguration
+
+class CommonSecurityBeanRegistrar : BeanRegistrarDsl({
+    registerBean<TokenGenerator> {
+        val authTokenProperties = bean<AuthTokenProperties>()
+
+        JwtTokenGenerator(
             authTokenProperties.salt,
             authTokenProperties.accessExpiresIn,
             authTokenProperties.refreshExpiresIn
         )
     }
 
-    @Bean
-    fun tokenParser(): TokenParser {
-        return JwtTokenParser()
+    registerBean<TokenParser> {
+        JwtTokenParser()
     }
 
-    @Bean
-    fun tokenVerifier(authTokenProperties: AuthTokenProperties): TokenVerifier {
-        return JwtTokenVerifier(authTokenProperties.salt)
+    registerBean<TokenVerifier> {
+        JwtTokenVerifier(bean<AuthTokenProperties>().salt)
     }
 
-    @Bean
-    fun jwtAuthenticationFilter(
-        parser: TokenParser,
-        verifier: TokenVerifier,
-        authenticationEntryPoint: AuthenticationEntryPoint
-    ): JwtAuthenticationFilter {
-        return JwtAuthenticationFilter(parser, verifier, authenticationEntryPoint)
+    registerBean<AuthenticationEntryPoint> {
+        DefaultAuthenticationEntryPoint()
     }
 
-    @Bean
-    fun authenticationEntryPoint(): AuthenticationEntryPoint {
-        return DefaultAuthenticationEntryPoint()
+    registerBean<AccessDeniedHandler> {
+        DefaultAccessDeniedHandler()
     }
 
-    @Bean
-    fun accessDeniedHandler(): AccessDeniedHandler {
-        return DefaultAccessDeniedHandler()
+    registerBean<JwtAuthenticationFilter> {
+        JwtAuthenticationFilter(
+            bean(),
+            bean(),
+            bean()
+        )
     }
 
-    @Bean
-    fun securityFilterChain(
-        http: HttpSecurity,
-        jwtAuthenticationFilter: JwtAuthenticationFilter,
-        authenticationEntryPoint: AuthenticationEntryPoint,
-        accessDeniedHandler: AccessDeniedHandler,
-        @Qualifier("authorizeHttpRequestsCustomizer")
-        authorizeHttpRequestsCustomizer: AuthorizeHttpRequestsCustomizer
-    ): SecurityFilterChain {
-        return http
+    registerBean<SecurityFilterChain> {
+        bean<HttpSecurity>()
             .formLogin(FormLoginConfigurer<HttpSecurity>::disable)
             .csrf(CsrfConfigurer<HttpSecurity>::disable)
             .sessionManagement { session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             }
             .exceptionHandling { handler ->
-                handler.authenticationEntryPoint(authenticationEntryPoint)
-                handler.accessDeniedHandler(accessDeniedHandler)
+                handler.authenticationEntryPoint(bean())
+                handler.accessDeniedHandler(bean())
             }
-            .authorizeHttpRequests(authorizeHttpRequestsCustomizer::customize)
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .authorizeHttpRequests(bean<AuthorizeHttpRequestsCustomizer>()::customize)
+            .addFilterBefore(
+                bean<JwtAuthenticationFilter>(),
+                UsernamePasswordAuthenticationFilter::class.java
+            )
             .build()
     }
+})
 
-    @Bean(name = ["authorizeHttpRequestsCustomizer"])
-    @ConditionalOnMissingBean(name = ["authorizeHttpRequestsCustomizer"])
-    fun authorizeHttpRequestsCustomizer(): AuthorizeHttpRequestsCustomizer {
-        return AuthorizeHttpRequestsCustomizer { registry -> registry.anyRequest().authenticated() }
+@Configuration(proxyBeanMethods = false)
+@ConditionalOnMissingBean(AuthorizeHttpRequestsCustomizer::class)
+@Import(DefaultAuthorizeHttpRequestsCustomizerBeanRegistrar::class)
+class DefaultAuthorizeHttpRequestsCustomizerConfiguration
+
+class DefaultAuthorizeHttpRequestsCustomizerBeanRegistrar : BeanRegistrarDsl({
+    registerBean<AuthorizeHttpRequestsCustomizer> {
+        AuthorizeHttpRequestsCustomizer { registry -> registry.anyRequest().authenticated() }
     }
-}
+})

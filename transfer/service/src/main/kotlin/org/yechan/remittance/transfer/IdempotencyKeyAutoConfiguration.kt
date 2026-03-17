@@ -1,19 +1,22 @@
 package org.yechan.remittance.transfer
 
-import java.time.Clock
+import org.springframework.beans.factory.BeanRegistrarDsl
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Import
+import java.time.Clock
 
+@Import(IdempotencyKeyBeanRegistrar::class)
 @AutoConfiguration
 @EnableConfigurationProperties(IdempotencyKeyProperties::class)
-class IdempotencyKeyAutoConfiguration {
-    @Bean
-    fun idempotencyKeyCreateUseCase(
-        repository: IdempotencyKeyRepository,
-        idempotencyKeyClock: Clock,
-        properties: IdempotencyKeyProperties
-    ): IdempotencyKeyCreateUseCase {
-        return IdempotencyKeyService(repository, idempotencyKeyClock, properties.expiresIn)
+class IdempotencyKeyAutoConfiguration
+
+class IdempotencyKeyBeanRegistrar : BeanRegistrarDsl({
+    registerBean<IdempotencyKeyCreateUseCase> {
+        IdempotencyKeyService(
+            bean(),
+            bean<Clock>(),
+            bean<IdempotencyKeyProperties>().expiresIn
+        )
     }
-}
+})

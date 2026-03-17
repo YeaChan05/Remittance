@@ -1,19 +1,19 @@
 package org.yechan.remittance.account
 
+import org.springframework.beans.factory.BeanRegistrarDsl
 import org.springframework.boot.autoconfigure.AutoConfiguration
-import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
 
+@Import(AccountController::class, NotificationApiController::class, AccountApiBeanRegistrar::class)
 @AutoConfiguration
-@Import(AccountController::class, NotificationApiController::class)
-class AccountApiAutoConfiguration {
-    @Bean
-    fun notificationSessionRegistry(): NotificationSessionRegistry {
-        return NotificationSessionRegistry()
+class AccountApiAutoConfiguration
+
+class AccountApiBeanRegistrar : BeanRegistrarDsl({
+    registerBean<NotificationSessionRegistry> {
+        NotificationSessionRegistry()
     }
 
-    @Bean
-    fun notificationPushPort(registry: NotificationSessionRegistry): NotificationPushPort {
-        return NotificationPushAdapter(registry)
+    registerBean<NotificationPushPort> {
+        NotificationPushAdapter(bean())
     }
-}
+})

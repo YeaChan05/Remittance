@@ -1,13 +1,15 @@
 package org.yechan.remittance.auth
 
+import org.springframework.beans.factory.BeanRegistrarDsl
 import org.springframework.boot.autoconfigure.AutoConfiguration
-import org.springframework.context.annotation.Bean
-import org.yechan.remittance.member.MemberInternalApi
+import org.springframework.context.annotation.Import
 
+@Import(AuthClientBeanRegistrar::class)
 @AutoConfiguration
-class AuthClientConfiguration {
-    @Bean
-    fun memberAuthClient(memberInternalApi: MemberInternalApi): MemberAuthClient {
-        return MemberAuthClientAdapter(memberInternalApi)
+class AuthClientConfiguration
+
+class AuthClientBeanRegistrar : BeanRegistrarDsl({
+    registerBean<MemberAuthClient> {
+        MemberAuthClientAdapter(bean())
     }
-}
+})

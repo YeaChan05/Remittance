@@ -1,34 +1,22 @@
 package org.yechan.remittance.member
 
+import org.springframework.beans.factory.BeanRegistrarDsl
 import org.springframework.boot.autoconfigure.AutoConfiguration
-import org.springframework.context.annotation.Bean
-import org.yechan.remittance.PasswordHashEncoder
-import org.yechan.remittance.TokenGenerator
+import org.springframework.context.annotation.Import
 
+@Import(MemberBeanRegistrar::class)
 @AutoConfiguration
-class MemberAutoConfiguration {
-    @Bean
-    fun memberCreateUseCase(
-        memberRepository: MemberRepository,
-        passwordHashEncoder: PasswordHashEncoder
-    ): MemberCreateUseCase {
-        return MemberService(memberRepository, passwordHashEncoder)
+class MemberAutoConfiguration
+class MemberBeanRegistrar: BeanRegistrarDsl({
+    registerBean<MemberCreateUseCase> {
+        MemberService(bean(), bean())
     }
 
-    @Bean
-    fun memberQueryUseCase(
-        memberRepository: MemberRepository,
-        passwordHashEncoder: PasswordHashEncoder,
-        tokenGenerator: TokenGenerator
-    ): MemberQueryUseCase {
-        return MemberQueryService(memberRepository, passwordHashEncoder, tokenGenerator)
+    registerBean<MemberQueryUseCase> {
+        MemberQueryService(bean(), bean(), bean())
     }
 
-    @Bean
-    fun memberAuthQueryUseCase(
-        memberRepository: MemberRepository,
-        passwordHashEncoder: PasswordHashEncoder
-    ): MemberAuthQueryUseCase {
-        return MemberAuthQueryService(memberRepository, passwordHashEncoder)
+    registerBean<MemberAuthQueryUseCase> {
+        MemberAuthQueryService(bean(), bean())
     }
-}
+})

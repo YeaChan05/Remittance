@@ -1,16 +1,14 @@
 package org.yechan.remittance.transfer.repository
 
+import org.springframework.beans.factory.BeanRegistrarDsl
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration
 import org.springframework.boot.persistence.autoconfigure.EntityScan
-import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Import
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
-import org.yechan.remittance.transfer.DailyLimitUsageRepository
-import org.yechan.remittance.transfer.IdempotencyKeyRepository
-import org.yechan.remittance.transfer.LedgerRepository
-import org.yechan.remittance.transfer.OutboxEventRepository
-import org.yechan.remittance.transfer.TransferRepository
+import org.yechan.remittance.transfer.*
 
+@Import(TransferRepositoryBeanRegistrar::class)
 @AutoConfiguration(before = [DataJpaRepositoriesAutoConfiguration::class])
 @EntityScan(
     basePackageClasses = [
@@ -30,29 +28,26 @@ import org.yechan.remittance.transfer.TransferRepository
         DailyLimitUsageJpaRepository::class
     ]
 )
-class TransferRepositoryAutoConfiguration {
-    @Bean
-    fun idempotencyKeyRepository(repository: IdempotencyKeyJpaRepository): IdempotencyKeyRepository {
-        return IdempotencyKeyRepositoryImpl(repository)
+class TransferRepositoryAutoConfiguration
+
+class TransferRepositoryBeanRegistrar : BeanRegistrarDsl({
+    registerBean<IdempotencyKeyRepository> {
+        IdempotencyKeyRepositoryImpl(bean())
     }
 
-    @Bean
-    fun transferRepository(repository: TransferJpaRepository): TransferRepository {
-        return TransferRepositoryImpl(repository)
+    registerBean<TransferRepository> {
+        TransferRepositoryImpl(bean())
     }
 
-    @Bean
-    fun outboxEventRepository(repository: OutboxEventJpaRepository): OutboxEventRepository {
-        return OutboxEventRepositoryImpl(repository)
+    registerBean<OutboxEventRepository> {
+        OutboxEventRepositoryImpl(bean())
     }
 
-    @Bean
-    fun ledgerRepository(repository: LedgerJpaRepository): LedgerRepository {
-        return LedgerRepositoryImpl(repository)
+    registerBean<LedgerRepository> {
+        LedgerRepositoryImpl(bean())
     }
 
-    @Bean
-    fun dailyLimitUsageRepository(repository: DailyLimitUsageJpaRepository): DailyLimitUsageRepository {
-        return DailyLimitUsageRepositoryImpl(repository)
+    registerBean<DailyLimitUsageRepository> {
+        DailyLimitUsageRepositoryImpl(bean())
     }
-}
+})

@@ -5,12 +5,18 @@ import org.springframework.amqp.core.BindingBuilder
 import org.springframework.amqp.core.DirectExchange
 import org.springframework.amqp.core.Queue
 import org.springframework.amqp.rabbit.annotation.EnableRabbit
+import org.springframework.beans.factory.BeanRegistrarDsl
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
 
+@Import(
+    TransferNotificationInfrastructureBeanRegistrar::class,
+    TransferNotificationConsumerBeanConfiguration::class
+)
 @AutoConfiguration
 @EnableRabbit
 @ConditionalOnProperty(
@@ -20,39 +26,38 @@ import org.springframework.context.annotation.Bean
     matchIfMissing = true
 )
 @EnableConfigurationProperties(TransferNotificationConsumerProperties::class)
-class TransferNotificationConsumerAutoConfiguration {
-    @Bean
-    fun transferNotificationPayloadParser(): TransferNotificationPayloadParser {
-        return TransferNotificationPayloadParser()
+class TransferNotificationConsumerAutoConfiguration
+
+class TransferNotificationInfrastructureBeanRegistrar : BeanRegistrarDsl({
+    registerBean<TransferNotificationPayloadParser> {
+        TransferNotificationPayloadParser()
     }
 
-    @Bean
-    fun transferNotificationExchange(properties: TransferNotificationConsumerProperties): DirectExchange {
-        return DirectExchange(properties.exchange)
+    registerBean<DirectExchange> {
+        DirectExchange(bean<TransferNotificationConsumerProperties>().exchange)
     }
 
-    @Bean
-    fun transferNotificationQueue(properties: TransferNotificationConsumerProperties): Queue {
-        return Queue(properties.queue)
+    registerBean<Queue> {
+        Queue(bean<TransferNotificationConsumerProperties>().queue)
     }
 
-    @Bean
-    fun transferNotificationBinding(
-        transferNotificationQueue: Queue,
-        transferNotificationExchange: DirectExchange,
-        properties: TransferNotificationConsumerProperties
-    ): Binding {
-        return BindingBuilder.bind(transferNotificationQueue)
-            .to(transferNotificationExchange)
-            .with(properties.routingKey)
+    registerBean<Binding> {
+        BindingBuilder.bind(bean<Queue>())
+            .to(bean<DirectExchange>())
+            .with(bean<TransferNotificationConsumerProperties>().routingKey)
     }
+})
 
-    @Bean
-    @ConditionalOnBean(TransferNotificationUseCase::class)
-    fun transferNotificationConsumer(
-        transferNotificationUseCase: TransferNotificationUseCase,
-        parser: TransferNotificationPayloadParser
-    ): TransferNotificationConsumer {
-        return TransferNotificationConsumer(transferNotificationUseCase, parser)
+@Configuration(proxyBeanMethods = false)
+@ConditionalOnBean(TransferNotificationUseCase::class)
+@Import(TransferNotificationConsumerBeanRegistrar::class)
+class TransferNotificationConsumerBeanConfiguration
+
+class TransferNotificationConsumerBeanRegistrar : BeanRegistrarDsl({
+    registerBean<TransferNotificationConsumer> {
+        TransferNotificationConsumer(
+            bean(),
+            bean()
+        )
     }
-}
+})
