@@ -55,7 +55,12 @@ class TransferBeanRegistrar : BeanRegistrarDsl({
     registerBean<TransferEventPublishUseCase> {
         TransferEventPublishService(
             bean(),
+            bean(),
             bean()
         )
+    }
+
+    registerBean<OutboxEventStatusUpdater> {
+        OutboxEventStatusUpdater(bean())
     }
 })

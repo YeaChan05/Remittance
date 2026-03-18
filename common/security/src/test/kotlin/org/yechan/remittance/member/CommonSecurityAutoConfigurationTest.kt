@@ -17,6 +17,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.context.WebApplicationContext
+import org.yechan.remittance.AuthorizeHttpRequestsCustomizer
+import org.yechan.remittance.PrioritizedAuthorizeHttpRequestsCustomizer
 import org.yechan.remittance.TokenGenerator
 
 @SpringBootTest(
@@ -69,11 +71,31 @@ class CommonSecurityAutoConfigurationTest {
             .isEqualTo("1")
     }
 
+    @Test
+    fun `additional customizers are applied before default closing rule`() {
+        restTestClient.get()
+            .uri("/open")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody(String::class.java)
+            .isEqualTo("open")
+
+        restTestClient.get()
+            .uri("/secure")
+            .exchange()
+            .expectStatus().isUnauthorized
+    }
+
     @SpringBootConfiguration
     @EnableAutoConfiguration
     class TestApplication {
         @RestController
         class TestController {
+            @GetMapping("/open")
+            fun open(): String {
+                return "open"
+            }
+
             @GetMapping("/secure")
             fun secure(authentication: Authentication): String {
                 return authentication.name
@@ -90,6 +112,13 @@ class CommonSecurityAutoConfigurationTest {
                     .apply<DefaultMockMvcBuilder>(springSecurity())
                     .build()
             return RestTestClient.bindTo(mockMvc).build()
+        }
+
+        @Bean
+        fun openEndpointCustomizer(): AuthorizeHttpRequestsCustomizer {
+            return PrioritizedAuthorizeHttpRequestsCustomizer(
+                0
+            ) { registry -> registry.requestMatchers("/open").permitAll() }
         }
     }
 }

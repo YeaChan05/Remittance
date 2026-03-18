@@ -9,7 +9,8 @@ class TransferEventPublishServiceTest {
     fun `신규 아웃박스 이벤트를 발행하면 SENT로 마킹한다`() {
         val repository = FakeOutboxEventRepository(sampleEvents())
         val publisher = FakeTransferEventPublisher()
-        val service = TransferEventPublishService(repository, publisher)
+        val updater = FakeOutboxEventStatusUpdater(repository)
+        val service = TransferEventPublishService(repository, publisher, updater)
 
         val published = service.publish(10)
 
@@ -22,7 +23,8 @@ class TransferEventPublishServiceTest {
     fun `발행 중 예외가 나면 즉시 중단한다`() {
         val repository = FakeOutboxEventRepository(sampleEvents())
         val publisher = FakeTransferEventPublisher().apply { failOn(2L) }
-        val service = TransferEventPublishService(repository, publisher)
+        val updater = FakeOutboxEventStatusUpdater(repository)
+        val service = TransferEventPublishService(repository, publisher, updater)
 
         val published = service.publish(10)
 
@@ -78,5 +80,13 @@ class TransferEventPublishServiceTest {
         }
 
         fun publishedCount(): Int = published.size
+    }
+
+    private class FakeOutboxEventStatusUpdater(
+        private val repository: OutboxEventRepository
+    ) : OutboxEventStatusUpdater(repository) {
+        override fun markSent(identifier: OutboxEventIdentifier) {
+            repository.markSent(identifier)
+        }
     }
 }

@@ -1,4 +1,4 @@
-package org.yechan.remittance.auth
+package org.yechan.remittance.config
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -10,36 +10,37 @@ import org.springframework.core.Ordered
 import org.yechan.remittance.AuthorizeHttpRequestsCustomizer
 import org.yechan.remittance.PrioritizedAuthorizeHttpRequestsCustomizer
 
-class AuthSecurityConfigurationTest {
+class AggregateSecurityConfigurationTest {
     @Test
-    fun `보안 설정은 auth customizer를 default보다 먼저 등록한다`() {
+    fun `보안 설정은 aggregate customizer를 default보다 먼저 등록한다`() {
         val context = AnnotationConfigApplicationContext().apply {
             register(TestConfiguration::class.java)
             refresh()
         }
 
-        val authCustomizer = context.getBean(
-            "authAuthorizeHttpRequestsCustomizer",
+        val aggregateCustomizer = context.getBean(
+            "aggregateAuthorizeHttpRequestsCustomizer",
             AuthorizeHttpRequestsCustomizer::class.java
         )
         val defaultCustomizer = context.getBean(
             "defaultAuthorizeHttpRequestsCustomizer",
             AuthorizeHttpRequestsCustomizer::class.java
         )
-        val orderedCustomizers = context.getBeanProvider(AuthorizeHttpRequestsCustomizer::class.java)
-            .orderedStream()
-            .toList()
+        val orderedCustomizers =
+            context.getBeanProvider(AuthorizeHttpRequestsCustomizer::class.java)
+                .orderedStream()
+                .toList()
 
-        assertThat(authCustomizer).isInstanceOf(PrioritizedAuthorizeHttpRequestsCustomizer::class.java)
+        assertThat(aggregateCustomizer).isInstanceOf(PrioritizedAuthorizeHttpRequestsCustomizer::class.java)
         assertThat(defaultCustomizer).isInstanceOf(PrioritizedAuthorizeHttpRequestsCustomizer::class.java)
-        assertThat((authCustomizer as Ordered).order).isLessThan((defaultCustomizer as Ordered).order)
-        assertThat(orderedCustomizers).containsExactly(authCustomizer, defaultCustomizer)
+        assertThat((aggregateCustomizer as Ordered).order).isLessThan((defaultCustomizer as Ordered).order)
+        assertThat(orderedCustomizers).containsExactly(aggregateCustomizer, defaultCustomizer)
 
         context.close()
     }
 
     @Configuration(proxyBeanMethods = false)
-    @Import(AuthSecurityConfiguration::class)
+    @Import(AggregateSecurityConfiguration::class)
     class TestConfiguration {
         @Bean("defaultAuthorizeHttpRequestsCustomizer")
         fun defaultAuthorizeHttpRequestsCustomizer(): AuthorizeHttpRequestsCustomizer {

@@ -55,6 +55,7 @@ include(":auth:infrastructure")
 
 include(":common:application-api")
 include(":common:api")
+include(":common:boot")
 include(":common:exception")
 include(":common:repository-jpa")
 include(":common:security")

@@ -3,16 +3,20 @@ package org.yechan.remittance.config
 import org.springframework.beans.factory.BeanRegistrarDsl
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
+import org.springframework.core.Ordered
 import org.springframework.http.HttpMethod
 import org.yechan.remittance.AuthorizeHttpRequestsCustomizer
+import org.yechan.remittance.PrioritizedAuthorizeHttpRequestsCustomizer
 
 @Import(AggregateSecurityBeanRegistrar::class)
 @Configuration
 class AggregateSecurityConfiguration
 
 class AggregateSecurityBeanRegistrar : BeanRegistrarDsl({
-    registerBean<AuthorizeHttpRequestsCustomizer> {
-        AuthorizeHttpRequestsCustomizer { registry ->
+    registerBean<AuthorizeHttpRequestsCustomizer>("aggregateAuthorizeHttpRequestsCustomizer") {
+        PrioritizedAuthorizeHttpRequestsCustomizer(
+            Ordered.HIGHEST_PRECEDENCE
+        ) { registry ->
             registry
                 .requestMatchers(
                     "/swagger-ui/**",
@@ -25,7 +29,6 @@ class AggregateSecurityBeanRegistrar : BeanRegistrarDsl({
                     "/swagger/**"
                 ).permitAll()
                 .requestMatchers(HttpMethod.POST, "/login", "/members").permitAll()
-                .anyRequest().authenticated()
         }
     }
 })

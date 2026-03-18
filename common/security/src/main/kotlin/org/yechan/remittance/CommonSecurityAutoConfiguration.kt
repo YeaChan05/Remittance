@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration
 import org.springframework.context.annotation.Import
+import org.springframework.core.Ordered
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer
@@ -54,11 +55,16 @@ class CommonSecurityBeanRegistrar : BeanRegistrarDsl({
         )
     }
 
-    registerBean<AuthorizeHttpRequestsCustomizer> {
-        AuthorizeHttpRequestsCustomizer { registry -> registry.anyRequest().authenticated() }
+    registerBean<AuthorizeHttpRequestsCustomizer>("defaultAuthorizeHttpRequestsCustomizer") {
+        PrioritizedAuthorizeHttpRequestsCustomizer(
+            Ordered.LOWEST_PRECEDENCE,
+            AuthorizeHttpRequestsCustomizer { registry -> registry.anyRequest().authenticated() }
+        )
     }
 
     registerBean<SecurityFilterChain> {
+        val authorizeHttpRequestsCustomizers = beanProvider<AuthorizeHttpRequestsCustomizer>()
+
         bean<HttpSecurity>()
             .formLogin(FormLoginConfigurer<HttpSecurity>::disable)
             .csrf(CsrfConfigurer<HttpSecurity>::disable)
@@ -69,7 +75,11 @@ class CommonSecurityBeanRegistrar : BeanRegistrarDsl({
                 handler.authenticationEntryPoint(bean())
                 handler.accessDeniedHandler(bean())
             }
-            .authorizeHttpRequests(bean<AuthorizeHttpRequestsCustomizer>()::customize)
+            .authorizeHttpRequests { registry ->
+                authorizeHttpRequestsCustomizers.orderedStream().forEach { customizer ->
+                    customizer.customize(registry)
+                }
+            }
             .addFilterBefore(
                 bean<JwtAuthenticationFilter>(),
                 UsernamePasswordAuthenticationFilter::class.java
