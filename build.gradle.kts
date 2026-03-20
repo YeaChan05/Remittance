@@ -37,7 +37,7 @@ configurations {
     }
 }
 
-configureByTypePrefix("java") {
+configureByTypePrefix("kotlin") {
     apply(plugin = "java-library")
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
@@ -133,7 +133,7 @@ configureByTypeHaving("boot") {
     }
 }
 
-configureByTypeHaving("java", "boot") {
+configureByTypeHaving("kotlin", "boot") {
     apply(plugin = "org.springframework.boot")
     apply(plugin = "org.jetbrains.kotlin.plugin.spring")
 }
