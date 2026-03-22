@@ -17,7 +17,7 @@ class AccountBeanRegistrar : BeanRegistrarDsl({
         AccountDeleteService(bean())
     }
 
-    registerBean<TransferNotificationUseCase>() {
+    registerBean<TransferNotificationUseCase> {
         TransferNotificationService(
             bean(),
             bean(),
