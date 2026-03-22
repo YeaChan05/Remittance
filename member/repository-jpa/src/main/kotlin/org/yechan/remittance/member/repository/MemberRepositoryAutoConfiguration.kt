@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.yechan.remittance.member.MemberRepository
 
 @Import(MemberRepositoryBeanRegistrar::class)
-@AutoConfiguration(before = [DataJpaRepositoriesAutoConfiguration::class])
+@AutoConfiguration
 @EntityScan(basePackageClasses = [MemberEntity::class])
 @EnableJpaRepositories(basePackageClasses = [MemberJpaRepository::class])
 class MemberRepositoryAutoConfiguration

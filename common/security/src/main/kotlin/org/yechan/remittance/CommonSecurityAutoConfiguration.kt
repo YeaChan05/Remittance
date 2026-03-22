@@ -16,7 +16,7 @@ import org.springframework.security.web.access.AccessDeniedHandler
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 @Import(CommonSecurityBeanRegistrar::class)
-@AutoConfiguration(before = [ServletWebSecurityAutoConfiguration::class])
+@AutoConfiguration
 @EnableConfigurationProperties(AuthTokenProperties::class)
 class CommonSecurityAutoConfiguration
 
@@ -57,9 +57,8 @@ class CommonSecurityBeanRegistrar : BeanRegistrarDsl({
 
     registerBean<AuthorizeHttpRequestsCustomizer>("defaultAuthorizeHttpRequestsCustomizer") {
         PrioritizedAuthorizeHttpRequestsCustomizer(
-            Ordered.LOWEST_PRECEDENCE,
-            AuthorizeHttpRequestsCustomizer { registry -> registry.anyRequest().authenticated() }
-        )
+            Ordered.LOWEST_PRECEDENCE
+        ) { registry -> registry.anyRequest().authenticated() }
     }
 
     registerBean<SecurityFilterChain> {

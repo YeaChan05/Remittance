@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.yechan.remittance.transfer.*
 
 @Import(TransferRepositoryBeanRegistrar::class)
-@AutoConfiguration(before = [DataJpaRepositoriesAutoConfiguration::class])
+@AutoConfiguration
 @EntityScan(
     basePackageClasses = [
         IdempotencyKeyEntity::class,
