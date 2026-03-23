@@ -14,7 +14,7 @@ class TransferEventPublishService(
     private val outboxEventStatusUpdater: OutboxEventStatusUpdater,
 ) : TransferEventPublishUseCase {
     override fun publish(limit: Int?): Int {
-        log.info { "transfer.event.publish.start limit=$limit" }
+        log.trace { "transfer.event.publish.start limit=$limit" }
         val events = outboxEventRepository.findNewForPublish(limit)
         var published = 0
         for (event in events) {
@@ -23,13 +23,13 @@ class TransferEventPublishService(
                 transferEventPublisher.publish(event)
                 outboxEventStatusUpdater.markSent(event)
                 published += 1
-                log.info { "transfer.event.publish.success eventId=${event.eventId}" }
+                log.trace { "transfer.event.publish.success eventId=${event.eventId}" }
             } catch (ex: RuntimeException) {
                 log.error(ex) { "transfer.event.publish.failed eventId=${event.eventId}" }
                 break
             }
         }
-        log.info { "transfer.event.publish.done published=$published" }
+        log.trace { "transfer.event.publish.done published=$published" }
         return published
     }
 }
