@@ -1,4 +1,10 @@
-package org.yechan.remittance.member
+package org.yechan.remittance.member.internal.adapter
+
+import org.yechan.remittance.member.MemberAuthQueryUseCase
+import org.yechan.remittance.member.MemberLoginProps
+import org.yechan.remittance.member.internal.contract.LoginVerifyRequest
+import org.yechan.remittance.member.internal.contract.LoginVerifyResponse
+import org.yechan.remittance.member.internal.contract.MemberInternalApi
 
 class MemberInternalAdapter(
     private val memberAuthQueryUseCase: MemberAuthQueryUseCase,

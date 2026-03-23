@@ -1,7 +1,7 @@
 package org.yechan.remittance.auth
 
-import org.yechan.remittance.member.LoginVerifyRequest
-import org.yechan.remittance.member.MemberInternalApi
+import org.yechan.remittance.member.internal.contract.LoginVerifyRequest
+import org.yechan.remittance.member.internal.contract.MemberInternalApi
 
 class MemberAuthClientAdapter(
     private val memberInternalApi: MemberInternalApi,

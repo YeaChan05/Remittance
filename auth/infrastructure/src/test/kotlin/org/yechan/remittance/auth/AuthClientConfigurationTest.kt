@@ -3,8 +3,8 @@ package org.yechan.remittance.auth
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
-import org.yechan.remittance.member.LoginVerifyResponse
-import org.yechan.remittance.member.MemberInternalApi
+import org.yechan.remittance.member.internal.contract.LoginVerifyResponse
+import org.yechan.remittance.member.internal.contract.MemberInternalApi
 
 class AuthClientConfigurationTest {
     @Test

@@ -1,4 +1,4 @@
-package org.yechan.remittance.member
+package org.yechan.remittance.member.internal.contract
 
 fun interface MemberInternalApi {
     fun verify(request: LoginVerifyRequest): LoginVerifyResponse

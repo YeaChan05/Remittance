@@ -1,4 +1,4 @@
-package org.yechan.remittance.member
+package org.yechan.remittance.member.internal.contract
 
 data class LoginVerifyResponse(
     val valid: Boolean,

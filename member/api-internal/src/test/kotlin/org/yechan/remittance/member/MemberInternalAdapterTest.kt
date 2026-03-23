@@ -1,8 +1,12 @@
-package org.yechan.remittance.member
+package org.yechan.remittance.member.internal.adapter
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.yechan.remittance.member.MemberAuthQueryUseCase
+import org.yechan.remittance.member.MemberAuthValue
+import org.yechan.remittance.member.MemberLoginProps
+import org.yechan.remittance.member.internal.contract.LoginVerifyRequest
 import java.util.concurrent.atomic.AtomicReference
 
 class MemberInternalAdapterTest {
