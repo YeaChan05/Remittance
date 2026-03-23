@@ -40,7 +40,8 @@ class TransferService(
         }
 
         // 2. 이번 요청이 실제 처리 권한을 선점하지 못하면 저장된 결과를 그대로 반환
-        val marked = idempotencyHandler.markInProgress(memberId, idempotencyKey, scope, requestHash, now)
+        val marked =
+            idempotencyHandler.markInProgress(memberId, idempotencyKey, scope, requestHash, now)
 
         if (!marked) {
             log.info { "transfer.idempotency.existing memberId=$memberId scope=$scope" }
