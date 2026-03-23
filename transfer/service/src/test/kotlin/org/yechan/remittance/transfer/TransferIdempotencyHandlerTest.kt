@@ -1,49 +1,119 @@
 package org.yechan.remittance.transfer
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
 class TransferIdempotencyHandlerTest {
     @Test
-    fun `만료된 멱등키 조회는 예외를 던진다`() {
-        val now = LocalDateTime.parse("2026-01-01T10:00:00")
-        val key = TestKey(
-            IdempotencyKeyProps.IdempotencyKeyStatusValue.BEFORE_START,
-            LocalDateTime.parse("2026-01-01T09:00:00"),
-            null,
-        )
+    fun `멱등키가 없으면 예외를 던진다`() {
         val handler = TransferIdempotencyHandler(
-            FixedKeyRepository(key),
+            RecordingKeyRepository(key = null),
             TransferSnapshotUtil(ObjectMapper()),
         )
 
-        assertThrows(TransferIdempotencyKeyExpiredException::class.java) {
-            handler.loadKey(1L, "k", IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER, now)
-        }
+        assertThatThrownBy {
+            handler.loadKey(1L, "k", IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER, now())
+        }.isInstanceOf(TransferIdempotencyKeyNotFoundException::class.java)
+    }
+
+    @Test
+    fun `만료된 멱등키 조회는 예외를 던진다`() {
+        val handler = TransferIdempotencyHandler(
+            RecordingKeyRepository(
+                TestKey(
+                    status = IdempotencyKeyProps.IdempotencyKeyStatusValue.BEFORE_START,
+                    expiresAt = LocalDateTime.parse("2026-01-01T09:00:00"),
+                    responseSnapshot = null,
+                ),
+            ),
+            TransferSnapshotUtil(ObjectMapper()),
+        )
+
+        assertThatThrownBy {
+            handler.loadKey(1L, "k", IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER, now())
+        }.isInstanceOf(TransferIdempotencyKeyExpiredException::class.java)
+    }
+
+    @Test
+    fun `markInProgress는 repository 결과 true를 그대로 반환한다`() {
+        val repository = RecordingKeyRepository(
+            key = TestKey(
+                status = IdempotencyKeyProps.IdempotencyKeyStatusValue.BEFORE_START,
+                expiresAt = null,
+                responseSnapshot = null,
+            ),
+            markInProgressResult = true,
+        )
+        val handler = TransferIdempotencyHandler(repository, TransferSnapshotUtil(ObjectMapper()))
+
+        val result = handler.markInProgress(
+            1L,
+            "k",
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
+            "hash",
+            now(),
+        )
+
+        assertThat(result).isTrue()
+        assertThat(repository.markInProgressArgs).isEqualTo(
+            MarkInProgressArgs(
+                memberId = 1L,
+                scope = IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
+                idempotencyKey = "k",
+                requestHash = "hash",
+                startedAt = now(),
+            ),
+        )
+    }
+
+    @Test
+    fun `markInProgress는 repository 결과 false를 그대로 반환한다`() {
+        val repository = RecordingKeyRepository(
+            key = TestKey(
+                status = IdempotencyKeyProps.IdempotencyKeyStatusValue.BEFORE_START,
+                expiresAt = null,
+                responseSnapshot = null,
+            ),
+            markInProgressResult = false,
+        )
+        val handler = TransferIdempotencyHandler(repository, TransferSnapshotUtil(ObjectMapper()))
+
+        val result = handler.markInProgress(
+            1L,
+            "k",
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
+            "hash",
+            now(),
+        )
+
+        assertThat(result).isFalse()
+        assertThat(repository.markInProgressArgs?.requestHash).isEqualTo("hash")
     }
 
     @Test
     fun `요청 해시가 다르면 충돌 예외를 던진다`() {
-        val key = TestKey(IdempotencyKeyProps.IdempotencyKeyStatusValue.BEFORE_START, null, null)
-        key.requestHash = "hash"
+        val key = TestKey(IdempotencyKeyProps.IdempotencyKeyStatusValue.BEFORE_START, null, null).apply {
+            requestHash = "hash"
+        }
         val handler = TransferIdempotencyHandler(
-            FixedKeyRepository(key),
+            RecordingKeyRepository(key),
             TransferSnapshotUtil(ObjectMapper()),
         )
 
-        assertThrows(TransferIdempotencyKeyConflictException::class.java) {
+        assertThatThrownBy {
             handler.resolveExisting(1L, "k", IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER, "other")
-        }
+        }.isInstanceOf(TransferIdempotencyKeyConflictException::class.java)
     }
 
     @Test
     fun `IN_PROGRESS 상태면 진행 중 결과를 반환한다`() {
-        val key = TestKey(IdempotencyKeyProps.IdempotencyKeyStatusValue.IN_PROGRESS, null, null)
         val handler = TransferIdempotencyHandler(
-            FixedKeyRepository(key),
+            RecordingKeyRepository(
+                TestKey(IdempotencyKeyProps.IdempotencyKeyStatusValue.IN_PROGRESS, null, null),
+            ),
             TransferSnapshotUtil(ObjectMapper()),
         )
 
@@ -54,14 +124,15 @@ class TransferIdempotencyHandlerTest {
             null,
         )
 
-        assertEquals(TransferProps.TransferStatusValue.IN_PROGRESS, result.status)
+        assertThat(result.status).isEqualTo(TransferProps.TransferStatusValue.IN_PROGRESS)
     }
 
     @Test
     fun `스냅샷이 없으면 진행 중 결과를 반환한다`() {
-        val key = TestKey(IdempotencyKeyProps.IdempotencyKeyStatusValue.SUCCEEDED, null, null)
         val handler = TransferIdempotencyHandler(
-            FixedKeyRepository(key),
+            RecordingKeyRepository(
+                TestKey(IdempotencyKeyProps.IdempotencyKeyStatusValue.SUCCEEDED, null, null),
+            ),
             TransferSnapshotUtil(ObjectMapper()),
         )
 
@@ -72,17 +143,21 @@ class TransferIdempotencyHandlerTest {
             null,
         )
 
-        assertEquals(TransferProps.TransferStatusValue.IN_PROGRESS, result.status)
+        assertThat(result.status).isEqualTo(TransferProps.TransferStatusValue.IN_PROGRESS)
     }
 
     @Test
     fun `스냅샷이 있으면 기존 결과를 반환한다`() {
         val snapshotUtil = TransferSnapshotUtil(ObjectMapper())
         val snapshotResult = TransferResult(TransferProps.TransferStatusValue.SUCCEEDED, 99L, null)
-        val snapshot = snapshotUtil.toSnapshot(snapshotResult)
-        val key = TestKey(IdempotencyKeyProps.IdempotencyKeyStatusValue.SUCCEEDED, null, snapshot)
-
-        val handler = TransferIdempotencyHandler(FixedKeyRepository(key), snapshotUtil)
+        val repository = RecordingKeyRepository(
+            TestKey(
+                status = IdempotencyKeyProps.IdempotencyKeyStatusValue.SUCCEEDED,
+                expiresAt = null,
+                responseSnapshot = snapshotUtil.toSnapshot(snapshotResult),
+            ),
+        )
+        val handler = TransferIdempotencyHandler(repository, snapshotUtil)
 
         val result = handler.resolveExisting(
             1L,
@@ -91,13 +166,58 @@ class TransferIdempotencyHandlerTest {
             null,
         )
 
-        assertEquals(snapshotResult.status, result.status)
-        assertEquals(snapshotResult.transferId, result.transferId)
+        assertThat(result).isEqualTo(snapshotResult)
     }
 
-    private class FixedKeyRepository(
+    @Test
+    fun `markFailed는 실패 결과를 스냅샷으로 저장한다`() {
+        val repository = RecordingKeyRepository(
+            TestKey(IdempotencyKeyProps.IdempotencyKeyStatusValue.IN_PROGRESS, null, null),
+        )
+        val snapshotUtil = TransferSnapshotUtil(ObjectMapper())
+        val handler = TransferIdempotencyHandler(repository, snapshotUtil)
+        val failed = TransferResult.failed(TransferFailureCode.INSUFFICIENT_BALANCE)
+
+        handler.markFailed(
+            1L,
+            "k",
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
+            failed,
+            now(),
+        )
+
+        val args = requireNotNull(repository.markFailedArgs)
+        assertThat(args.memberId).isEqualTo(1L)
+        assertThat(args.scope).isEqualTo(IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER)
+        assertThat(args.idempotencyKey).isEqualTo("k")
+        assertThat(snapshotUtil.fromSnapshot(args.responseSnapshot)).isEqualTo(failed)
+    }
+
+    private fun now(): LocalDateTime = LocalDateTime.parse("2026-01-01T10:00:00")
+
+    private data class MarkInProgressArgs(
+        val memberId: Long,
+        val scope: IdempotencyKeyProps.IdempotencyScopeValue,
+        val idempotencyKey: String,
+        val requestHash: String,
+        val startedAt: LocalDateTime,
+    )
+
+    private data class MarkFailedArgs(
+        val memberId: Long,
+        val scope: IdempotencyKeyProps.IdempotencyScopeValue,
+        val idempotencyKey: String,
+        val responseSnapshot: String,
+        val completedAt: LocalDateTime,
+    )
+
+    private class RecordingKeyRepository(
         private val key: IdempotencyKeyModel?,
+        private val markInProgressResult: Boolean = false,
     ) : IdempotencyKeyRepository {
+        var markInProgressArgs: MarkInProgressArgs? = null
+        var markFailedArgs: MarkFailedArgs? = null
+
         override fun save(props: IdempotencyKeyProps): IdempotencyKeyModel = requireNotNull(key)
 
         override fun findByKey(
@@ -112,7 +232,10 @@ class TransferIdempotencyHandlerTest {
             idempotencyKey: String,
             requestHash: String,
             startedAt: LocalDateTime,
-        ): Boolean = false
+        ): Boolean {
+            markInProgressArgs = MarkInProgressArgs(memberId, scope, idempotencyKey, requestHash, startedAt)
+            return markInProgressResult
+        }
 
         override fun markSucceeded(
             memberId: Long,
@@ -128,7 +251,10 @@ class TransferIdempotencyHandlerTest {
             idempotencyKey: String,
             responseSnapshot: String,
             completedAt: LocalDateTime,
-        ): IdempotencyKeyModel = requireNotNull(key)
+        ): IdempotencyKeyModel {
+            markFailedArgs = MarkFailedArgs(memberId, scope, idempotencyKey, responseSnapshot, completedAt)
+            return requireNotNull(key)
+        }
 
         override fun markTimeoutBefore(
             cutoff: LocalDateTime,
