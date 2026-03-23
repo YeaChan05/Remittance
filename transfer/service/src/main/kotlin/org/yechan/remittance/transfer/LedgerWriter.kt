@@ -67,7 +67,12 @@ open class LedgerWriter(
         now: LocalDateTime,
     ) {
         val resolvedTransferId = requireNotNull(transferId)
-        if (ledgerRepository.existsByTransferIdAndAccountIdAndSide(resolvedTransferId, accountId, side)) {
+        if (ledgerRepository.existsByTransferIdAndAccountIdAndSide(
+                resolvedTransferId,
+                accountId,
+                side,
+            )
+        ) {
             log.debug { "ledger.record.exists transferId=$transferId accountId=$accountId side=$side" }
             return
         }
