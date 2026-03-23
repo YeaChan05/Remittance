@@ -116,46 +116,44 @@
 
 ### api-internal (서버 입장 내부 API)
 
-- Controller
+- 패키지
 
-    - `DomainInternalApiController`
-- Adapter
+    - `internal.contract`
+    - `internal.adapter`
+- 계약
 
-    - `DomainInternalAdapter`
-- DTO
-
+    - `DomainInternalApi`
     - `{Domain}{Action}Request`
     - `{Domain}{Action}Response`
+- 구현
+
+    - `DomainInternalAdapter`
+    - `DomainInternalApiAutoConfiguration`
+
+규칙
+
+- consumer는 `internal.contract`만 import
+- adapter는 provider `service`만 호출
 
 ---
 
-### api-internal-client (클라이언트 입장)
+### consumer-side internal client (infrastructure)
 
 - Client
 
-    - `DomainInternalApiClient`
-- DTO
+    - `DomainClient`
+    - `DomainClientAdapter`
+- transfer-local DTO
 
-    - `DomainInternalApiDto`
-
-규칙
-
-- 다른 애플리케이션 호출 전용
-- service / repository 직접 참조 x
-
----
-
-### in-port-internal
-
-- 제공 기능 인터페이스
-
-    - `DomainApi`
-    - `DomainInternalApi`
+    - `DomainSnapshot`
+    - `DomainCommand`
+    - `DomainQuery`
 
 규칙
 
-- 기술·전송 방식 비의존
-- 애플리케이션 간 연동의 유일한 계약
+- consumer `service`는 provider `api-internal` DTO를 직접 보지 않는다
+- consumer `infrastructure`가 provider 계약을 transfer-local 타입으로 변환한다
+- `api-internal-client` 는 현재 기본 구조가 아니며 future option으로만 남긴다
 
 ---
 

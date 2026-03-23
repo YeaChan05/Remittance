@@ -8,6 +8,9 @@
 - 도메인 간 직접 의존은 model -> model 수준에서만 제한적으로 허용한다.
 - 구현 기술(JPA, Web, MQ, Batch 등)은 구현 모듈에만 존재한다.
 - Core 모듈은 구현 모듈을 절대 의존하지 않는다.
+- `service -> other-domain:infrastructure` 는 금지한다.
+- `service -> other-domain:api-internal` 도 금지한다.
+- 내부 통신은 `consumer:infrastructure -> provider:api-internal.internal.contract` 경로만 허용한다.
 - 예외: 인증/암호화가 필요한 유스케이스는 `common:security` 의존을 허용한다.
 - `api` 와 `implementation` 은 다음 의미를 가진다.
 
@@ -43,9 +46,11 @@ dependencies {
 - 책임
 
     - 외부 시스템 연결 규격(Port) 정의
+    - 내부 통신을 채택한 consumer-side client adapter 보관
 - 의존 가능
 
     - `{domain}:model`
+    - (consumer-side internal client일 때) `{provider}:api-internal`
 - 의존 금지
 
     - repository-*, api, application
@@ -76,6 +81,8 @@ dependencies {
 - 의존 금지
 
     - repository-*, api, application
+    - other-domain infrastructure
+    - other-domain api-internal
 
 ```kotlin
 dependencies {
@@ -197,6 +204,7 @@ dependencies {
 ```mermaid
 graph TD
     Infrastructure --> Model
+    Infrastructure --> ProviderApiInternal
     Service --> Model
     Service --> Infrastructure
     Service --> Exception
@@ -224,6 +232,7 @@ graph LR
     Service -.->|의존 금지| Repository
     Api -.->|의존 금지| Repository
     Infrastructure -.->|의존 금지| Repository
+    Service -.->|의존 금지| OtherDomainApiInternal
 ```
 
 ---
@@ -232,6 +241,7 @@ graph LR
 
 - model은 아무것도 의존하지 않는다
 - service는 계약(infrastructure)만 안다
+- 내부 통신은 consumer infrastructure가 provider api-internal을 감싼다
 - repository는 구현이지만 core를 거꾸로 끌어오지 않는다
 - api는 orchestration을 하지 않는다
 - application은 조립만 한다

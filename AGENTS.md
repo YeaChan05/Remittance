@@ -44,6 +44,7 @@ API 작업은 관련 API 문서를 직접 봅니다.
 - 모듈 트리, Driving/Core/Driven/Assembly: [docs/rule/module.md](docs/rule/module.md)
 - 모듈 간 의존 방향, `api` / `implementation` 사용 기준: [docs/rule/dependencies.md](docs/rule/dependencies.md)
 - 인증/인가 경계와 `api-internal` 협력: [docs/filter_arch.md](docs/filter_arch.md)
+- 내부 통신 기본 경로: `service -> own infrastructure -> provider:api-internal.internal.contract`
 
 코드 파일 레벨에서 wiring 패턴을 확인할 때는 아래를 직접 봅니다.
 
@@ -57,6 +58,7 @@ API 작업은 관련 API 문서를 직접 봅니다.
 - `aggregate`는 조립만 담당합니다.
 - Core는 구현 기술에 직접 의존하지 않습니다.
 - 도메인 간 직접 의존은 매우 제한적으로만 허용됩니다.
+- cross-domain 내부 호출은 consumer `infrastructure`가 provider `api-internal` 계약을 감싸는 방식으로만 둡니다.
 - Spring bean 등록은 이 레포의 기존 `BeanRegistrarDsl` 패턴을 우선 따릅니다.
 
 ## Coding Rules
@@ -111,11 +113,13 @@ API별 비즈니스 규칙은 해당 API 문서를 직접 읽습니다.
 - 기능 구현은 테스트 우선으로 진행하고, 기존 테스트 패턴을 먼저 복제합니다.
 - bean 등록 변경 시 기존 `BeanRegistrarDsl` wiring 파일도 함께 확인합니다.
 - API/흐름/구조 계약이 바뀌면 해당 문서도 같이 갱신합니다.
+- 내부 통신 계약을 추가하거나 변경할 때는 provider `api-internal`의 `internal.contract` / `internal.adapter` 분리를 유지합니다.
 
 ### Don't
 
 - 애플리케이션에 비즈니스 로직을 넣지 않습니다.
 - `service`에서 `repository-jpa` 같은 구현 모듈에 직접 의존하지 않습니다.
+- `service`에서 다른 도메인의 `infrastructure`나 `api-internal`을 직접 참조하지 않습니다.
 - `api`에서 repository를 직접 호출하지 않습니다.
 - 문서 없이 새로운 도메인 용어, API 응답 형태, 이벤트 계약을 임의로 만들지 않습니다.
 - 기존 패턴과 무관한 Spring bean 등록 방식이나 테스트 구조를 새로 들여오지 않습니다.

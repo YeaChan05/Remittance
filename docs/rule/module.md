@@ -6,7 +6,7 @@
 
 * Driving -> Core -> Driven 방향만 허용한다.
 * 기술(JPA, Web, MQ 등)은 Driven 모듈에 둔다.
-* 다른 애플리케이션과의 연결은 `api-internal` 계약으로만 한다.
+* 다른 도메인과의 내부 연결은 `service -> own infrastructure -> provider:api-internal.internal.contract` 경로만 허용한다.
 * 인증/인가 책임은 역할별로 분리한다.
     * 로그인/토큰 발급: `auth:service`
     * 자격 검증: `member:service` + `member:api-internal`
@@ -80,7 +80,8 @@
 * `repository-{type}`: 현재 `jpa` 사용
 * `schema`: Liquibase changelog 보관
 * `mq-{type}`: MQ 기반 비동기 연동
-* `api-internal`: 내부 계약/어댑터 제공(다른 도메인에서 직접 호출)
+* `api-internal`: 내부 계약과 provider-side adapter 제공
+    * 현재 기본 패키지 구조는 `internal.contract`, `internal.adapter`
 
 ---
 
@@ -102,19 +103,22 @@
 
 ---
 
-### 4.2 infrastructure (out-port)
+### 4.2 infrastructure
 
-* 외부세계와의 연결 "규격(포트)"만 정의한다.
-* 구현체 금지.
-* repository, external-client, event-publisher 같은 interface만 둔다.
+* service가 사용할 외부 연결 경계를 둔다.
+* 기본은 out-port interface를 두는 모듈이다.
+* 같은 프로세스 내부 통신을 채택한 consumer 도메인은 여기서 provider `api-internal` 계약을 감싸는 client adapter를 둘 수 있다.
+* repository, external-client, internal-client, event-publisher 같은 경계를 둔다.
 
 의존
 
 * `model`
+* (consumer-side internal client일 때) 상대 도메인의 `api-internal`
 
 노출(Gradle)
 
-* `api(project(":{domain}:model"))` 형태로 계약은 노출, 구현은 숨김
+* `api(project(":{domain}:model"))` 형태로 도메인 타입은 노출한다.
+* 상대 도메인 `api-internal` 의존이 필요하면 `implementation(...)` 으로 숨긴다.
 
 ---
 
@@ -134,6 +138,7 @@
 금지
 
 * `repository-*`, `api` 등 구현체 직접 의존 x
+* 다른 도메인의 `infrastructure`, `api-internal` 직접 의존 x
 
 ---
 
@@ -175,8 +180,10 @@
 
 ### 5.2 api-internal (Internal Inbound Adapter)
 
-* 내부 계약/DTO와 호출 어댑터만 포함한다.
-* 타 도메인이 직접 호출하는 경로로 사용한다.
+* 내부 계약과 provider-side adapter를 함께 둔다.
+* 현재 기본 패키지 분리는 아래와 같다.
+    * `internal.contract`: 타 도메인이 import 하는 계약/DTO
+    * `internal.adapter`: provider use case를 호출하는 adapter와 auto-configuration
 
 의존
 
@@ -246,8 +253,8 @@
     * 가능하면 다른 도메인의 `model/service/repository`를 의존 x
 * 허용
 
-    * `api-internal-client` ↔ 상대 앱 `api-internal`
-    * 내부 연동 시 `api-internal` 계약 우선
+    * `consumer:infrastructure` -> `provider:api-internal`
+    * 단, consumer는 provider의 `internal.contract` 패키지만 import
 * 연결 방식
 
     * 런타임(HTTP/MQ) 연결은 간접(Indirect) 관계로만 표현
@@ -275,6 +282,7 @@
     - 의존: `auth:exception`, `auth:infrastructure`, `common:security`
 * `auth:infrastructure`
     - 의존: `member:api-internal`
+    - 사용 패키지: `member.internal.contract`
 
 ### 9.2 member (내부 인증 제공)
 
@@ -282,12 +290,21 @@
     - 의존: `member:model`, `member:infrastructure`, `member:exception`
 * `member:api-internal`
     - 의존: `member:service`
+    - 패키지: `internal.contract`, `internal.adapter`
 
-### 9.3 common/aggregate
+### 9.3 transfer (consumer-side internal client)
+
+* `transfer:service`
+    - 의존: `transfer:model`, `transfer:infrastructure`, `transfer:exception`
+* `transfer:infrastructure`
+    - 의존: `transfer:model`, `account:api-internal`, `member:api-internal`
+    - 역할: `TransferAccountClient`, `TransferMemberClient` adapter 제공
+
+### 9.4 common/aggregate
 
 * `common:security`
     - 의존: `common:exception`
 * `aggregate`
     - 의존: `common:security`, `account:api`, `transfer:api`, `member:api`,
-      `account|transfer|member:repository-jpa`, `account|transfer|member:schema`,
+      `account|member:api-internal`, `account|transfer|member:repository-jpa`, `account|transfer|member:schema`,
       `account|transfer:mq-rabbitmq`
