@@ -15,13 +15,22 @@ plugins {
     `java-library`
     `jvm-test-suite`
     id("buildlogic.testcontainers-support")
-    alias(libs.plugins.spotless)
+    alias(libs.plugins.ktlint)
     alias(libs.plugins.build.recipe)
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.spring) apply false
     alias(libs.plugins.kotlin.jpa) apply false
     alias(libs.plugins.spring.boot) apply false
     jacoco
+}
+
+ktlint {
+    version.set("1.8.0")
+    filter {
+        exclude("**/build/**")
+        exclude("**/generated/**")
+        exclude("**/out/**")
+    }
 }
 
 allprojects {
@@ -185,6 +194,15 @@ val jacocoAggregationProjects = mutableListOf<Project>()
 
 subprojects {
     apply(plugin = "jacoco")
+    apply(plugin = "org.jlleitschuh.gradle.ktlint")
+
+    ktlint {
+        filter {
+            exclude("**/build/**")
+            exclude("**/generated/**")
+            exclude("**/out/**")
+        }
+    }
 
     plugins.withType<JavaPlugin> {
         jacocoAggregationProjects.add(this@subprojects)
@@ -210,31 +228,24 @@ subprojects {
     }
 }
 
-spotless {
-    kotlin {
-        ktfmt()
-        targetExclude(
-            "**/build/**",
-            "**/generated/**",
-            "**/out/**"
-        )
-    }
-}
-
 tasks.register<JacocoReport>("jacocoRootReport") {
-    dependsOn(jacocoAggregationProjects.flatMap { project ->
-        project.tasks.withType<Test>().toList()
-    })
+    dependsOn(
+        jacocoAggregationProjects.flatMap { project ->
+            project.tasks.withType<Test>().toList()
+        },
+    )
 
     val sourceSets = jacocoAggregationProjects.mapNotNull { project ->
         project.extensions.findByType(SourceSetContainer::class.java)?.findByName("main")
     }
 
-    executionData.setFrom(jacocoAggregationProjects.map { project ->
-        project.fileTree(project.layout.buildDirectory) {
-            include("jacoco/*.exec")
-        }
-    })
+    executionData.setFrom(
+        jacocoAggregationProjects.map { project ->
+            project.fileTree(project.layout.buildDirectory) {
+                include("jacoco/*.exec")
+            }
+        },
+    )
 
     classDirectories.setFrom(sourceSets.map { it.output })
     sourceDirectories.setFrom(sourceSets.map { it.allSource.srcDirs })
