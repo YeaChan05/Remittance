@@ -6,10 +6,12 @@
 - endpoint: `POST /members`
 - Content-Type: `application/json`
 
-## requset
+## request
 
 - body
     - `name`: 회원 이름 (문자열)
+    - `email`: 회원 이메일 (문자열)
+    - `password`: 비밀번호 (문자열)
 
 ```http request
 POST /members
@@ -44,3 +46,4 @@ Content-Type: application/json
 - status: `500 Internal Server Error`
 - context
     - duplicate email
+    - invalid password during hashing

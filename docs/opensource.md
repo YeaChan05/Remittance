@@ -15,7 +15,7 @@
 
 ## 빌드 플러그인
 
-- Spotless: `com.diffplug.spotless` - 코드 포맷팅
+- ktlint Gradle Plugin: `org.jlleitschuh.gradle.ktlint` - Kotlin 코드 lint/포맷
 - Jacoco: `jacoco` - 코드 커버리지 측정
 - Build Recipe Plugin: `com.linecorp.build-recipe-plugin` - 멀티모듈 공통 Gradle 설정
 

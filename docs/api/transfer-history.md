@@ -5,6 +5,7 @@
 - goal: 지정된 계좌의 송금/수취 내역을 최신순으로 조회한다.
 - endpoint: `GET /transfers`
 - Content-Type: `application/json`
+- Authorization: `Bearer {accessToken}`
 
 ## request
 
@@ -16,6 +17,7 @@
 
 ```http request
 GET /transfers?accountId=1&from=2025-01-01T00:00:00&to=2025-01-31T23:59:59&limit=20
+Authorization: Bearer {accessToken}
 ```
 
 ## response
@@ -43,7 +45,11 @@ GET /transfers?accountId=1&from=2025-01-01T00:00:00&to=2025-01-31T23:59:59&limit
 
 ## error
 
-- status: `400 BAD_REQUEST`
+- status: `400 Bad Request`
 - context
     - `INVALID_REQUEST`
     - `ACCOUNT_NOT_FOUND`
+
+- status: `401 Unauthorized`
+- context
+    - authentication required

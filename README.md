@@ -9,7 +9,7 @@
 - [의존성 규칙](docs/rule/dependencies.md)
 - [외부 라이브러리|오픈소스](docs/opensource.md)
 - [API 문서](docs/api)
-
+- [모듈 및 코드 의존 가이드라인](architecture_guide.puml)
 ## API 요약
 
 - 회원가입 `POST /members`
@@ -20,7 +20,7 @@
 - 입금 `POST /deposits/{idempotencyKey}`
 - 이체 `POST /transfers/{idempotencyKey}` (수수료 1%, 일 한도 3,000,000원)
 - 거래내역 조회 `GET /transfers?accountId=...` (최신순)
-- 계좌 이체 알림(SSE) `GET /notifications/stream`
+- 계좌 이체 알림(SSE) `GET /notification/subscribe`
 
 ## 실행 방법
 

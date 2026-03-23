@@ -5,6 +5,7 @@
 - goal: 출금 계좌에서 다른 계좌로 이체한다.
 - endpoint: `POST /transfers/{idempotencyKey}`
 - Content-Type: `application/json`
+- Authorization: `Bearer {accessToken}`
 - 수수료: 이체 금액의 1%를 출금 계좌에서 추가 차감한다.
 
 ## request
@@ -19,6 +20,7 @@
 ```http request
 POST /transfers/{idempotencyKey}
 Content-Type: application/json
+Authorization: Bearer {accessToken}
 
 {
   "fromAccountId": 1,
@@ -35,6 +37,16 @@ Content-Type: application/json
     - `transferId`: 거래 ID
     - `errorCode`: 실패 코드
 
+`FAILED`는 HTTP 에러 대신 응답 body로 반환된다.
+현재 구현에서 자주 나오는 `errorCode`는 아래와 같다.
+
+- `INVALID_REQUEST`
+- `ACCOUNT_NOT_FOUND`
+- `OWNER_NOT_FOUND`
+- `MEMBER_NOT_FOUND`
+- `INSUFFICIENT_BALANCE`
+- `DAILY_LIMIT_EXCEEDED`
+
 ```json
 {
   "status": "SUCCEEDED",
@@ -45,8 +57,20 @@ Content-Type: application/json
 
 ## error
 
-- status: `400 BAD_REQUEST`
+- status: `400 Bad Request`
 - context
-    - `INVALID_REQUEST`
-    - `INSUFFICIENT_BALANCE`
-    - `DAILY_LIMIT_EXCEEDED`
+    - request body validation failure
+    - idempotency key expired
+    - same idempotency key with different request body
+
+- status: `401 Unauthorized`
+- context
+    - authentication required
+
+- status: `404 Not Found`
+- context
+    - idempotency key not found
+
+- status: `500 Internal Server Error`
+- context
+    - unexpected persistence failure

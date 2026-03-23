@@ -1,7 +1,7 @@
 # 계좌 이체 흐름
 
 계좌 이체는 멱등 처리 + outbox 패턴을 사용해
-정확히 한 번의 송금과 최소 한 번의 이벤트 발행을 보장한다.
+동일 요청의 재실행을 제어하고, 이체 성공 시 outbox 이벤트를 남긴다.
 
 ```mermaid
 flowchart TD
@@ -13,9 +13,8 @@ flowchart TD
     idemStore{멱등 레코드 상태}
     idemSuccess[응답 스냅샷 반환]
     idemFailed[FAILED 응답 반환]
-    idemProgress[202 IN_PROGRESS 반환]
-    idemConflict[409 Conflict 반환]
-    watchdog[IN_PROGRESS 배치 감시]
+    idemProgress[200 IN_PROGRESS 반환]
+    idemConflict[400 Bad Request]
     tx1[TX1: 송금 + Outbox]
     balanceCheck{잔액 충분?}
     tx1Failed[FAILED 기록 + 응답]
@@ -35,7 +34,6 @@ flowchart TD
     idemStore -- SUCCEEDED --> idemSuccess
     idemStore -- FAILED --> idemFailed
     idemStore -- IN_PROGRESS --> idemProgress
-    idemProgress -.-> watchdog
     idemStore -- HASH_MISMATCH --> idemConflict
     idemStore -- 신규/선점 --> tx1
     tx1 --> balanceCheck
@@ -57,7 +55,7 @@ flowchart TD
 ### `integration.idempotency_key`
 
 - `(client_id, scope, idempotency_key)` UNIQUE
-- `status`: `IN_PROGRESS | SUCCEEDED | FAILED`
+- `status`: `BEFORE_START | IN_PROGRESS | SUCCEEDED | FAILED | TIMEOUT`
 - `request_hash`
 - `response_snapshot` (transferId, status, error_code)
 - `started_at`, `completed_at`
@@ -85,9 +83,10 @@ flowchart TD
 
 ## 1. 클라이언트 요청
 
-- `POST /idempotency-keys`로 짧은 수명(예: 10~30분)의 `Idempotency-Key` 발급
-- 동일 요청 재시도 시 동일 키 사용
-- 요청 바디
+- 먼저 `POST /idempotency-keys`로 멱등키를 발급받는다.
+- 현재 aggregate 기본 설정에서 멱등키 만료 시간은 `24h`다.
+- 실제 이체 요청은 `POST /transfers/{idempotencyKey}` 로 보낸다.
+- 동일 요청 재시도 시 같은 키를 사용한다.
 
 ```json
 {
@@ -106,57 +105,23 @@ flowchart TD
 
 ---
 
-## 3. 멱등 레코드 선점 (트랜잭션 A)
+## 3. 멱등 처리
 
-### 선점 시도
+현재 구현은 아래 순서로 동작한다.
 
-```sql
-UPDATE integration.idempotency_key
-SET status       = 'IN_PROGRESS',
-    request_hash = ?,
-    started_at   = now()
-WHERE client_id = ?
-  AND scope = ?
-  AND idempotency_key = ?
-  AND status IS NULL;
-```
-
----
-
-### 기존 레코드 존재 시 처리
-
-#### status = `SUCCEEDED`
-
-- `response_snapshot` 그대로 반환
-- 즉시 종료
-
-#### status = `IN_PROGRESS`
-
-- `started_at` 기준 timeout 검사
-
-    - timeout 미초과 → `200 OK`
-
-      ```json
-      { "status": "IN_PROGRESS" }
-      ```
-    - timeout 초과 → 배치 대상 (요청 경로에서 상태 변경하지 않음)
-
-#### status = `FAILED`
-
-- FAILED 응답 그대로 반환
-- 같은 멱등키 재시도 금지
-- 재시도는 새 멱등키로만 허용
+1. 키를 조회한다.
+   - 없으면 `404 Not Found`
+   - 만료되었으면 `400 Bad Request`
+2. 요청 바디 해시를 계산한다.
+3. 기존 상태를 확인한다.
+   - `SUCCEEDED` 또는 `FAILED` 이면 저장된 스냅샷을 그대로 반환
+   - `IN_PROGRESS` 이면 `200 OK` + `{"status":"IN_PROGRESS"}` 반환
+4. 같은 키에 다른 요청 바디가 오면 `400 Bad Request`
+5. 신규 또는 `BEFORE_START` 상태면 `IN_PROGRESS`로 선점하고 처리로 진입한다.
 
 ---
 
-### request_hash 불일치
-
-- 동일 멱등키 + 다른 요청 바디
-- `409 Conflict`
-
----
-
-## 4. 송금 처리 (트랜잭션 B)
+## 4. 송금 처리
 
 ### 4-1. TX1 (Transfer + Outbox)
 
@@ -177,24 +142,26 @@ WHERE client_id = ?
 5. outbox 적재
 
     - `TRANSFER_COMPLETED`, `status = NEW`
+    - 현재 구현에서 outbox는 `TRANSFER` scope일 때만 생성
 6. 멱등 레코드 완료 처리
 
     - `status = SUCCEEDED`
     - `response_snapshot` 저장
 7. TX1 커밋
 
-    - 실패 시 전체 롤백 + `FAILED`
+    - 도중 `TransferFailedException` 발생 시 `FAILED` 스냅샷 저장 후 `200 OK` 응답 body로 반환
+    - 예상하지 못한 예외 발생 시 전체 롤백되고 멱등 상태는 `IN_PROGRESS`로 남을 수 있음
 
 ### 4-2. TX2 (Ledger)
 
-1. 별도 트랜잭션 시작
+1. 별도 트랜잭션(`REQUIRES_NEW`) 시작
 2. Ledger 기록
 
     - `(transfer_id, account_id, side)` UNIQUE
 3. TX2 커밋
 
-    - 실패 시 TX2만 롤백
-    - Transfer는 성공 유지, Ledger는 재시도/보정 대상
+    - 실패 시 예외를 다시 던진다
+    - TX1이 이미 커밋된 상태일 수 있으므로, 요청은 `500`이지만 transfer/outbox/idempotency는 이미 성공 상태일 수 있다
 
 ---
 
@@ -209,47 +176,20 @@ WHERE client_id = ?
 }
 ```
 
-- 응답 전 서버 크래시 발생 시
-  → 재요청에서 `response_snapshot`으로 동일 응답 반환
+- 비즈니스 실패도 현재 구현에서는 HTTP 200 + body `status=FAILED` 로 반환된다.
+- 응답 전 서버 크래시가 발생하면 멱등 상태에 따라 다음 재요청에서 `SUCCEEDED`, `FAILED`, `IN_PROGRESS` 중 하나가 반환될 수 있다.
 
 ---
 
-## 6. IN_PROGRESS → FAILED 배치(watchdog)
+## 6. TIMEOUT 상태에 대한 현재 구현 메모
 
-### 목적
-
-- 고아 `IN_PROGRESS` 제거
-- 장애 후 정합성 회복
-
-### 동작
-
-- 주기 실행(예: 1분)
-
-```sql
-UPDATE integration.idempotency_key
-SET status       = 'FAILED',
-    completed_at = now(),
-    error_code   = 'TIMEOUT'
-WHERE status = 'IN_PROGRESS'
-  AND started_at < now() - timeout;
-```
-
-- @Scheduled 기반 단순 스케줄러 사용
-- 멀티 인스턴스에서도 안전 (멱등 UPDATE)
+- repository 계층은 오래된 `IN_PROGRESS`를 `TIMEOUT`으로 바꾸는 기능을 지원한다.
+- 하지만 현재 aggregate 애플리케이션에는 이를 주기적으로 실행하는 watchdog 스케줄러가 연결되어 있지 않다.
+- 따라서 현재 문서 기준의 실행 경로에서는 `IN_PROGRESS` 정리 배치를 전제하지 않는다.
 
 ---
 
 ## 7. outbox publisher
-
-```sql
-SELECT *
-FROM integration.outbox_events
-WHERE status = 'NEW'
-ORDER BY created_at
-    FOR
-UPDATE SKIP LOCKED
-    LIMIT N;
-```
 
 - publish 성공 → `SENT`
 - 실패 → 상태 유지 + backoff
@@ -257,73 +197,10 @@ UPDATE SKIP LOCKED
 
 ---
 
-## 8. RabbitMQ consumer
+## 8. 현재 구현에서 주의할 HTTP 동작
 
-1. `event_id` 기준 처리 이력 조회
-2. 이미 처리됨 → ACK
-3. 최초 처리
+- `INSUFFICIENT_BALANCE`, `DAILY_LIMIT_EXCEEDED`, `ACCOUNT_NOT_FOUND` 같은 도메인 실패는 주로 `200 OK` + `status=FAILED`로 반환된다.
+- 요청 body 검증 실패, 멱등키 만료, 멱등키 body conflict는 `400 Bad Request`다.
+- 멱등키 미존재는 `404 Not Found`다.
 
-    - 알림 / 정산 / 후처리
-    - 처리 이력 기록
-    - ACK
-4. 중간 실패
-
-    - ACK 안 함
-    - 재전달은 멱등 소비로 흡수
-
----
-
-## 9. observability
-
-### 로그 키
-
-- `idempotency_key`
-- `transferId`
-- `event_id`
-
-### 메트릭
-
-- IN_PROGRESS 체류 시간
-- FAILED 비율
-- outbox backlog 크기
-
----
-
-## 10. integration 스키마(DDL)
-
-### 10-1. idempotency_key
-
-```sql
-CREATE TABLE integration.idempotency_key
-(
-    idempotency_key_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    client_id          BIGINT      NOT NULL,
-    scope              VARCHAR(50) NOT NULL,
-    idempotency_key    CHAR(36)    NOT NULL,
-    status             VARCHAR(20) NULL,
-    request_hash       CHAR(64)    NULL,
-    response_snapshot  JSON        NULL,
-    started_at         DATETIME(6) NULL,
-    completed_at       DATETIME(6) NULL,
-    expires_at         DATETIME(6) NOT NULL,
-    UNIQUE KEY uk_idempotency_key (client_id, scope, idempotency_key),
-    KEY idx_idempotency_key_status_started_at (status, started_at),
-    KEY idx_idempotency_key_expires_at (expires_at)
-);
-```
-
-### 10-2. outbox_events
-
-```sql
-CREATE TABLE integration.outbox_events
-(
-    event_id       CHAR(36) PRIMARY KEY,
-    aggregate_type VARCHAR(50)  NOT NULL,
-    aggregate_id   VARCHAR(50)  NOT NULL,
-    event_type     VARCHAR(100) NOT NULL,
-    payload        JSON         NOT NULL,
-    status         VARCHAR(20)  NOT NULL,
-    created_at     DATETIME(6)  NOT NULL,
-    KEY idx_outbox_events_status_created_at (status, created_at)
-);
-```
+추가 후처리와 소비 흐름은 [transfer-notification.md](transfer-notification.md)를 따른다.

@@ -49,3 +49,6 @@ Content-Type: application/json
 - context
     - invalid credentials
 
+- status: `500 Internal Server Error`
+- context
+    - member not found

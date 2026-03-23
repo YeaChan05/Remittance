@@ -1,64 +1,79 @@
-# 인증 필터
+# 인증 / 보안 구조
 
-## 목표
+## 현재 aggregate 기준 개요
 
-- 도메인별 API에서 인증 정책을 정의하고, 인증 검증 로직은 공통화한다.
-- 도메인 간 의존 규칙을 유지하면서 MSA 확장성을 확보한다.
+현재 aggregate 애플리케이션은 아래 보안 구조를 사용한다.
 
-## 핵심 원칙
+- 공개 로그인 엔드포인트: `POST /login`
+- 공개 회원가입 엔드포인트: `POST /members`
+- 토큰 검증/파싱/필터: `common:security`
+- 경로별 인가 정책: 각 모듈의 `AuthorizeHttpRequestsCustomizer`
 
-- 토큰 발급은 `auth:service`의 책임이다.
-- 회원 자격 검증은 `member:service`가 담당하고 `member:api-internal`로 제공한다.
-- 토큰 검증/파싱은 공통 모듈로 이동한다.
-- 공통 인증 설정은 `common:security`에 둔다.
-- 각 도메인 `api` 모듈에서 `AuthorizeHttpRequestsCustomizer` 빈으로 경로별 인증 정책을 지정한다.
+## 현재 로그인 경로
 
-## 역할 분리
+aggregate에서 실제로 노출되는 로그인 경로는 `member:api` 쪽이다.
 
-- `auth:service`
-    - 로그인 유스케이스에서 토큰 발급
-    - `TokenGenerator` 사용
-    - `MemberInternalApi`로 자격 검증 요청
-- `member:service`
-    - 자격 검증 유스케이스(`MemberAuthQueryUseCase`) 제공
-- `member:api-internal`
-    - 내부 계약(`LoginVerifyRequest`/`LoginVerifyResponse`) 제공
-    - `MemberInternalApi` 인바운드 어댑터 제공
-- `common` (예: `common:security`)
-    - `TokenVerifier`/`TokenParser` 제공
-    - 공통 인증 필터(`OncePerRequestFilter`) 제공
-    - 공통 보안 설정(예: 필터 빈, 기본 인증/인가 핸들러)
-- 각 `{domain}:api`
-    - `AuthorizeHttpRequestsCustomizer`로 인증/인가 경로 정의
+1. `member:api/AuthController`가 `POST /login` 을 받는다.
+2. `member:service/MemberQueryUseCase`가 이메일/비밀번호를 검증한다.
+3. 같은 서비스에서 `TokenGenerator`로 토큰을 발급한다.
 
-### 공통 모듈 구성 예시
+즉, 현재 aggregate 기준 로그인 요청은 `member:api -> member:service -> common:security` 흐름을 탄다.
 
-- `CommonSecurityAutoConfiguration`
-    - `JwtAuthenticationFilter`, `AuthenticationEntryPoint`, `AccessDeniedHandler` 빈 제공
-    - `TokenParser`/`TokenVerifier` 빈 제공
-    - `SecurityFilterChain` 기본 구성 제공
-- `AuthorizeHttpRequestsCustomizer`
-    - 도메인별 `authorizeHttpRequests` 정책을 분리하기 위한 인터페이스
-    - 기본 구현은 모든 요청 인증
+## auth 모듈에 대한 현재 상태
 
-### 도메인별 구성 예시
+`auth` 모듈도 별도의 로그인 서비스와 API를 가지고 있다.
 
-```java
-@Configuration
-public class DomainSecurityConfiguration {
-  @Bean(name = "authorizeHttpRequestsCustomizer")
-  AuthorizeHttpRequestsCustomizer authorizeHttpRequestsCustomizer() {
-    return registry -> registry
-        .requestMatchers(HttpMethod.POST, "/path").permitAll()
-        .anyRequest().authenticated();
-  }
-}
+- `auth:service`는 `MemberAuthClient` + `TokenGenerator` 조합으로 로그인 로직을 가진다.
+- `auth:api`는 `/login` 컨트롤러와 보안 customizer를 가진다.
+
+하지만 현재 aggregate의 의존성 조합에는 `auth:api`가 포함되지 않는다.
+따라서 aggregate에서 실제로 사용되는 공개 `/login` 엔드포인트는 `member:api` 쪽 구현이다.
+
+## member:api-internal 의 역할
+
+`member:api-internal`은 내부 인증 계약을 제공한다.
+
+- 계약: `LoginVerifyRequest`, `LoginVerifyResponse`
+- 포트: `MemberInternalApi`
+- 어댑터: `MemberInternalAdapter`
+
+이 경로는 현재 `auth:service`가 재사용 가능한 내부 인증 호출을 할 때 사용할 수 있는 구조다.
+
+## common:security 의 역할
+
+`common:security`는 공통 보안 기술 구현을 제공한다.
+
+- `TokenParser`, `TokenVerifier`, `TokenGenerator`
+- `JwtAuthenticationFilter`
+- `AuthenticationEntryPoint`, `AccessDeniedHandler`
+- 기본 `SecurityFilterChain`
+- 기본 `AuthorizeHttpRequestsCustomizer`
+
+각 API 모듈은 자신만의 `AuthorizeHttpRequestsCustomizer`를 추가 등록해 공개 경로를 선언한다.
+
+## 경로 정책
+
+현재 aggregate에서 중요한 공개 경로는 아래와 같다.
+
+- `POST /login`
+- `POST /members`
+- Swagger / OpenAPI 관련 경로
+
+그 외 요청은 기본적으로 인증 대상이다.
+
+## 관리 엔드포인트 처리
+
+현재 aggregate는 Actuator 보안 체인 충돌을 피하기 위해 아래 설정을 사용한다.
+
+```yaml
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.security.autoconfigure.actuate.web.servlet.ManagementWebSecurityAutoConfiguration
 ```
 
 ## 설정 공유
 
-- 토큰 검증에 필요한 `salt`와 만료 시간은 각 서비스 `application.yml`에서 동일한 키로 제공한다.
-- 예시
+토큰 관련 설정은 aggregate `application.yml` 기준으로 아래 키를 사용한다.
 
 ```yaml
 auth:
@@ -68,51 +83,8 @@ auth:
     refresh-expires-in: ${AUTH_TOKEN_REFRESH_EXPIRES_IN:604800}
 ```
 
-## 도메인 의존성 고려
+## 구현 메모
 
-- `account:api`가 `member:service`에 의존하면 도메인 간 직접 의존이 발생한다.
-- 인증 필터가 필요한 토큰 검증 기능은 공통 모듈로 이동해야 한다.
-
-## 권장 흐름
-
-1. `member:service`에서 자격 검증 유스케이스 제공
-2. `member:api-internal`에서 내부 인증 계약/어댑터 제공
-3. `auth:service`에서 로그인 처리 및 토큰 발급
-4. `common`에 인증 필터 및 토큰 검증/파싱 구성
-5. 각 도메인 `api`에서 `AuthorizeHttpRequestsCustomizer`로 경로 정책 정의
-
-## 관리 엔드포인트 처리
-
-- `common:security`가 기본 `SecurityFilterChain`을 제공할 경우, Actuator 보안 체인과 충돌할 수 있다.
-- 현재 구성에서는 각 애플리케이션에서 다음 설정으로 관리 체인을 제외한다.
-
-```yaml
-spring:
-  autoconfigure:
-    exclude: org.springframework.boot.security.autoconfigure.actuate.web.servlet.ManagementWebSecurityAutoConfiguration
-```
-
-## Aggregate 정책 합집합
-
-- `aggregate`는 여러 도메인을 조합한 API를 제공하므로, 각 도메인의 `permitAll`/`authenticated` 규칙 합집합으로 구성한다.
-- 예시
-
-```java
-@Configuration
-public class AggregateSecurityConfiguration {
-  @Bean(name = "authorizeHttpRequestsCustomizer")
-  AuthorizeHttpRequestsCustomizer authorizeHttpRequestsCustomizer() {
-    return registry -> registry
-        .requestMatchers(HttpMethod.POST, "/login", "/members").permitAll()
-        .anyRequest().authenticated();
-  }
-}
-```
-
-## 결론
-
-- 발급은 `auth` 책임
-- 자격 검증은 `member` 책임
-- 토큰 검증은 `common` 책임
-- 공통 설정은 `common:security` 책임
-- 정책은 각 도메인 `api` 책임
+- 현재 aggregate는 `auth:api`를 조립하지 않는다.
+- `/login` 책임을 문서화할 때는 현재 aggregate 기준과 향후 분리 가능 구조를 혼동하지 않는다.
+- 인증 정책 문서를 수정할 때는 `AggregateSecurityConfiguration`, `CommonSecurityAutoConfiguration`, `member:api/AuthController`를 함께 확인한다.

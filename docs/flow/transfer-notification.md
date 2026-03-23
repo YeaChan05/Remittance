@@ -6,157 +6,107 @@
 
 ---
 
-## 0. 데이터 모델 전제
+## 0. 현재 구현 범위
 
-- 도메인 데이터는 `core`
-- 이벤트/처리 이력은 `integration`
-- SSE 연결 상태는 메모리 관리
+- 알림 대상은 `TRANSFER_COMPLETED` 이벤트다.
+- 이벤트 발행은 `transfer` 도메인의 outbox publisher가 담당한다.
+- 이벤트 소비와 중복 방지는 `account:mq-rabbitmq` + `processed_events`가 담당한다.
+- 실시간 전송은 `account:api`의 SSE 세션 레지스트리가 담당한다.
 
-### `integration.outbox_events`
+---
 
-- 송금 완료 시 이미 생성됨
-- `event_type = TRANSFER_COMPLETED`
-- payload에 수신자 식별 정보 포함
+## 1. 이벤트 원본
+
+송금이 성공하면 `integration.outbox_events`에 이벤트가 저장된다.
+현재 알림 처리기가 기대하는 payload 필드는 아래와 같다.
 
 ```json
 {
-  "transferId": "...",
-  "fromAccountId": 1,
+  "transferId": 1,
   "toAccountId": 2,
+  "fromAccountId": 3,
   "amount": 10000,
-  "completedAt": "..."
+  "completedAt": "2026-01-01T10:00:00"
 }
 ```
 
----
+컨슈머는 RabbitMQ 헤더에서도 아래 값을 기대한다.
 
-### `integration.processed_events` (컨슈머 멱등)
-
-- `event_id` UNIQUE (BIGINT)
-- `processed_at`
+- `eventId`
+- `eventType = TRANSFER_COMPLETED`
 
 ---
 
-## 1. 송금 완료(outbox 적재)
+## 2. Outbox Publisher
 
-- 송금 TX 커밋 시 outbox에 `TRANSFER_COMPLETED` 이벤트 저장
-- 알림과 직접적인 연계 없음
-- 이 시점까지가 송금의 책임 범위
-
----
-
-## 2. outbox publisher (transfer.infrastructure)
+`transfer:mq-rabbitmq`의 publisher는 스케줄 기반으로 `NEW` outbox를 발행한다.
 
 1. `status = NEW` 이벤트 조회
 2. RabbitMQ로 publish
 3. 성공 시 `status = SENT`
-4. 실패 시 재시도(backoff)
+4. 실패 시 상태 유지 후 다음 스케줄에서 재시도
 
-> 중복 publish 가능 (정상 케이스)
-
----
-
-## 3. RabbitMQ consumer (account.mq-rabbitmq)
-
-1. `TRANSFER_COMPLETED` 이벤트 수신
-2. `event_id` 기준 처리 이력 조회
-
-### 이미 처리된 경우
-
-- ACK 후 종료
-
-### 최초 처리인 경우
-
-- 알림 처리 단계로 진행
+중복 publish 가능성은 허용한다.
 
 ---
 
-## 4. 알림 처리(account.infrastructure)
+## 3. Consumer 멱등 처리
 
-1. payload에서 `toAccountId` 추출
-2. 계좌 -> 사용자(member) 식별
-3. 알림 메시지 구성
+`account:mq-rabbitmq`의 컨슈머는 아래 순서로 동작한다.
+
+1. 헤더의 `eventId`, `eventType`를 확인한다.
+2. `eventType != TRANSFER_COMPLETED` 이거나 `eventId == null` 이면 무시한다.
+3. `processed_events`에서 동일 `eventId` 처리 여부를 확인한다.
+4. 이미 처리된 이벤트면 종료한다.
+5. 최초 처리 이벤트면 payload를 파싱해 알림 처리로 넘긴다.
+
+---
+
+## 4. 알림 처리
+
+실제 알림 로직은 `account:service`의 `TransferNotificationService`가 수행한다.
+
+1. payload에서 `toAccountId`를 읽는다.
+2. 계좌를 조회해 수신 회원 `memberId`를 찾는다.
+3. 아래 형태의 메시지를 만든다.
 
 ```json
 {
   "type": "TRANSFER_RECEIVED",
-  "transferId": "...",
+  "transferId": 1,
   "amount": 10000,
-  "fromAccountId": 1,
-  "occurredAt": "..."
+  "fromAccountId": 3,
+  "occurredAt": "2026-01-01T10:00:00"
 }
 ```
 
-4. `NotificationPushPort` 호출
+4. `NotificationPushPort`로 push를 시도한다.
+
+push 중 예외가 발생해도 송금 성공은 유지된다.
+현재 구현은 push 실패 후에도 해당 이벤트를 `processed_events`에 기록하므로 자동 재시도하지 않는다.
 
 ---
 
-## 5. SSE 전송(account.api)
+## 5. SSE 연결과 전송
 
-### 5-1. SSE 연결
+현재 SSE 엔드포인트는 아래와 같다.
 
-- `GET /sse`
-- 로그인 사용자 기준으로 연결 등록
-- `Map<memberId, SseEmitter>` 형태로 관리
+- `GET /notification/subscribe`
+- 인증된 사용자만 연결 가능
 
----
+세션은 메모리의 `Map<memberId, SseEmitter>`로 관리한다.
 
-### 5-2. 알림 push
-
-- 해당 사용자 SSE 세션 존재 시
-
-    - 즉시 전송
-- 세션 없음
-
-    - 무시 (또는 저장형 알림으로 확장 가능)
+- 세션이 있으면 즉시 전송 시도
+- 세션이 없으면 push는 무시
+- `completion`, `timeout`, `error` 시 세션 정리
 
 ---
 
-### 5-3. 전송 실패
+## 6. 장애/운영 특성
 
-- 연결 종료 시 세션 정리
-- 재시도 없음 (실시간 알림 특성상 허용)
-
----
-
-## 6. 컨슈머 처리 완료
-
-1. `processed_events`에 `event_id` 기록
-2. ACK
-3. 동일 이벤트 재수신 시 멱등 흡수
-
----
-
-## 7. 장애/엣지 케이스
-
-- RabbitMQ 장애 -> outbox 적체 후 복구
-- consumer 크래시 -> 재전달 + 멱등 처리
-- SSE 미연결 -> 알림 유실 허용
-- 중복 이벤트 -> `processed_events`로 차단
-
----
-
-## 8. observability
-
-### 로그 키
-
-- `transferId`
-- `event_id`
-- `memberId`
-
-### 메트릭
-
-- 알림 전송 성공/실패 수
-- 처리 지연 시간
-- SSE 연결 수
-
----
-
-## 핵심 특성
-
-- 송금 성공과 알림은 강하게 분리
-- 알림은 최소 한 번 시도
-- 중복/지연/유실은 시스템적으로 허용
-- 사용자 UX 개선용 부가 기능
+- RabbitMQ 장애 시 outbox는 `NEW` 상태로 남고 이후 스케줄에서 재시도한다.
+- consumer 중복 수신은 `processed_events`로 흡수한다.
+- SSE 미연결 또는 push 실패는 유실 허용이다.
+- 알림은 사용자 UX 개선용 부가 기능이며, 송금 성공 여부를 되돌리지 않는다.
 
 ---
