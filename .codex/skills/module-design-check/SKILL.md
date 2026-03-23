@@ -1,73 +1,53 @@
 ---
 name: module-design-check
-description: 리미턴스 모듈 설계만 점검한다(Driving/Core/Driven/Assembly 경계, 모듈 레이아웃, Gradle 의존 방향). 모듈 구조 변경, 신규 모듈 추가, 의존성 wiring 리뷰에 사용한다.
+description: Execute the Remittance module-boundary checklist against specified modules or changed files. Use when verifying module layout, Gradle dependency direction, aggregate purity, and api-internal exposure.
 ---
 
-# 모듈 설계 점검 (집중형)
+# Module Design Check
 
 ## Language
 
-모든 응답은 한국어로 작성합니다.
+모든 응답은 한국어로 작성한다.
 
-이 스킬은 모듈 설계 적합성(구조 + 의존 방향)만 점검한다. API 계약, 비즈니스 로직, 구현 상세는 다루지 않는다.
+## 수행 규칙
 
-## 빠른 절차
+- 코드를 수정하지 않는다.
+- API 계약, 비즈니스 로직, 스타일 평가는 하지 않는다.
+- 지정된 범위가 없으면 변경된 `build.gradle.kts`, `settings.gradle.kts`, 해당 모듈 디렉터리를 본다.
 
-1) 범위 식별
-- 변경 맥락과 `settings.gradle.kts`를 확인한다.
-- 도메인이 지정되면 해당 도메인 모듈 그래프만 점검한다.
+## 먼저 읽을 파일
 
-2) 모듈 구조 점검(트리 수준)
-- 도메인 기대 트리:
-  `{domain}/model`, `{domain}/infrastructure`, `{domain}/service`, `{domain}/exception`,
-  `{domain}/api` + 선택 `{domain}/api-internal`, `{domain}/repository-jpa`,
-  `{domain}/schema`, `{domain}/mq-rabbitmq`.
-- `aggregate`는 조립 전용이며 비즈니스 로직 금지.
-- 허용 예시: `transfer/service`, `transfer/repository-jpa`, `transfer/schema`.
-- 금지 예시: `transfer/web`, `transfer/jpa`, `transfer/infra-impl` 같은 비표준 모듈.
+- `AGENTS.md`
+- `docs/rule/module.md`
+- `docs/rule/dependencies.md`
+- `docs/rule/code_convention.md`
+- `settings.gradle.kts`
+- 영향받는 모듈의 `build.gradle.kts`
 
-3) 의존 방향 점검(Gradle/모듈 wiring)
-- 허용 방향: Driving -> Core -> Driven만.
-- Core는 어댑터/구현 기술에 의존하면 안 됨.
-- 도메인 간 직접 의존은 `model -> model`만 허용.
-- `api`는 `service`와 `exception`만 의존.
-- `repository-{type}`는 `{domain}:infrastructure`와 `common:repository-{type}`만 의존.
-- `aggregate`는 `common:security` + 각 도메인 adapter(api/repository/schema/mq)만 의존.
-- `api`는 계약 노출만, `implementation`은 내부 구현에만 사용.
-- 허용 예시:
-  - `transfer:api -> transfer:service`
-  - `transfer:service -> transfer:infrastructure`
-  - `transfer:repository-jpa -> transfer:infrastructure`
-- 금지 예시:
-  - `transfer:service -> transfer:repository-jpa`
-  - `account:api -> account:repository-jpa`
-  - `member:service -> auth:api` (도메인 간 직접 의존)
+## 체크리스트
 
-4) 결과 보고
-- 심각도 순으로 이슈를 파일 경로와 함께 정리한다.
-- 문제가 없으면 “문제 없음”과 가정/누락을 적는다.
+1. 모듈 트리를 확인한다.
+- 기대 구조: `{domain}/model`, `infrastructure`, `service`, `exception`, `api`
+- 선택 구조: `api-internal`, `repository-jpa`, `schema`, `mq-rabbitmq`
+- 비표준 디렉터리를 표시한다.
 
-5) 의존 변화 비교(해당 시)
-- Gradle 수정이 있으면 모듈 간 연결 추가/삭제를 요약한다.
-- 새로 추가된 cross-domain 의존을 강조한다.
+2. Gradle 의존 방향을 확인한다.
+- `model`은 구현 모듈에 의존하지 않아야 한다.
+- `infrastructure`는 `{domain}:model`만 본다.
+- `service`는 `{domain}:model`, `infrastructure`, `exception` 중심이어야 한다.
+- `api`는 `service`, `exception`, `common:api`만 본다.
+- `repository-jpa`는 `{domain}:infrastructure`, `common:repository-jpa`만 본다.
+- `aggregate`는 조립 전용이어야 한다.
 
-## 출력 템플릿
+3. cross-domain 노출을 확인한다.
+- 직접 의존은 `model -> model` 또는 명시된 `api-internal` 계약만 본다.
+- 상대 도메인의 `service`, `repository-jpa`, `api` 직접 참조를 표시한다.
 
-다음 구조로 결과를 작성한다:
+4. 네이밍 흔들림을 확인한다.
+- 기술 이름이 클래스 책임을 덮는 경우만 표시한다.
 
-- 모듈 그래프 요약:
-    - <domain>: <Driving/Core/Driven 모듈 구성 및 누락/초과>
-- 발견 사항:
-    - [severity] path:line - 이슈 요약 및 규칙 근거
-- 의존 변화:
-    - + <from> -> <to> (이유)
-    - - <from> -> <to>
-- 가정:
-    - ...
-- 누락/후속 확인:
-    - ...
+## 결과 작성
 
-## 비고
-
-- `rg`로 파일을 찾고 Gradle 파일을 우선 확인한다.
-- 코드는 수정하지 않고 설계 점검만 수행한다.
+- 위 체크리스트에서 어긋난 항목만 적는다.
+- 각 항목에 파일 경로와 깨진 규칙을 같이 적는다.
+- 문제가 없으면 `문제 없음`과 확인한 범위만 적는다.

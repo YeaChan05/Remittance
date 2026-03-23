@@ -1,129 +1,69 @@
 ---
 name: test
-description: 코드베이스에서 TDD 방식으로 단위 테스트와 통합 테스트를 설계, 작성, 검증할 때 사용한다. 테스트 분류, 위치, 실패 조건, 최소 구현/리팩터링 순서, 그리고 `./gradlew test` 및 `./gradlew integrationTest` 실행 기준을 안내한다.
+description: Write repo-style unit or integration tests, place them in the correct source set, and run the smallest relevant Gradle test task. Use when adding or updating tests for service, API, JPA, security, MQ, BeanRegistrarDsl wiring, or aggregate flows.
 ---
 
-# TDD 가이드
+# Test
 
 ## Language
 
 모든 응답은 한국어로 작성한다.
 
-## 목적
+## 수행 규칙
 
-- TDD 흐름을 따른다: 실패하는 테스트 작성, 최소 구현, 리팩터링.
-- 단위 테스트와 통합 테스트의 책임을 분리한다.
-- 코드베이스의 기존 테스트 위치와 스타일을 따른다.
-- 변경 후에는 Gradle 테스트 태스크까지 실제로 실행해 검증을 닫는다.
+- 가장 가까운 기존 테스트를 복제한다.
+- 테스트 위치와 source set을 먼저 정한다.
+- 실행하지 않은 테스트는 실행했다고 적지 않는다.
 
-## 기본 절차
+## 참고 코드 사용 규칙
 
-1. 변경 범위를 먼저 식별한다.
-- 어떤 모듈, 유스케이스, 어댑터가 영향을 받는지 좁힌다.
+- 테스트 패턴으로 언급하는 소스 경로는 현재 시점의 참고 예시다.
+- 예시 파일은 언제든 이동하거나 바뀔 수 있으므로, 고정 템플릿처럼 사용하지 않는다.
+- 항상 작업 시점의 실제 테스트 코드에서 가장 가까운 예시를 다시 찾는다.
 
-2. 테스트 종류를 결정한다.
-- 순수 비즈니스 로직, 계산, 예외 분기는 단위 테스트로 둔다.
-- Spring 컨텍스트, MVC, JPA, DB, MQ, Testcontainers가 필요하면 통합 테스트로 둔다.
+## source set 선택
 
+- `src/test`
+  - 순수 비즈니스 로직
+  - 계산
+  - 예외 분기
+  - Spring 없이 직접 생성 가능한 대상
+
+- `src/integrationTest`
+  - Spring MVC
+  - Security
+  - JPA / DB
+  - MQ
+  - Testcontainers
+  - BeanRegistrarDsl wiring
+  - 직렬화 / 설정 / 전체 흐름
+
+## 절차
+
+1. 가장 가까운 기존 테스트 파일을 찾는다.
+2. 같은 패키지, fixture, 메서드 스타일을 복제한다.
 3. 실패하는 테스트를 먼저 작성한다.
-- 기대 동작과 실패 조건을 먼저 고정한다.
-- 테스트가 실제로 실패하는지 확인한다.
+4. 필요한 경우 최소 구현 변경과 함께 유지한다.
+5. 가장 좁은 Gradle 태스크를 실행한다.
 
-4. 최소 구현으로 테스트를 통과시킨다.
-- 테스트를 녹색으로 만드는 최소 변경만 반영한다.
+## 실행 규칙
 
-5. 리팩터링한다.
-- 중복 제거, 이름 정리, fixture 정리, 헬퍼 추출을 수행한다.
-- 테스트는 계속 통과해야 한다.
+- 단위 테스트는 대상 모듈 `test`를 우선 실행한다.
+- 통합 테스트는 대상 모듈 `integrationTest`를 우선 실행한다.
+- 예:
+  - `./gradlew :member:service:test`
+  - `./gradlew :transfer:repository-jpa:integrationTest`
+  - `./gradlew :aggregate:integrationTest`
 
-6. Gradle 태스크로 검증을 닫는다.
-- 단위 테스트 변경이면 최소 `./gradlew test`를 실행한다.
-- 통합 테스트를 추가했거나 Spring/JPA/MQ/Testcontainers 경로를 건드렸다면 `./gradlew integrationTest`도 실행한다.
-- 범위가 분명하면 전체 대신 대상 모듈 태스크를 우선 실행한다.
-  예: `./gradlew :member:service:test`, `./gradlew :transfer:repository-jpa:integrationTest`
+## 빠른 패턴
 
-## 코드베이스 규칙
+- 테스트 메서드명은 백틱으로 감싼 한국어 설명을 사용한다.
+- 단위 테스트는 Spring 없이 fake, stub, fixture를 우선 사용한다.
+- 통합 테스트는 repository, MVC, security, 전체 흐름 검증에만 사용한다.
+- aggregate API 흐름은 `aggregate/src/integrationTest` 패턴을 우선 복제한다.
 
-### 단위 테스트
+## 최소 보고
 
-- 위치는 `src/test/java` 또는 `src/test/kotlin`을 사용한다.
-- Spring 없이 직접 인스턴스를 생성한다.
-- fake, stub, fixture로 의존성을 대체한다.
-- 빠르고 독립적으로 실행되어야 한다.
-
-### 통합 테스트
-
-- 위치는 `src/integrationTest/java` 또는 `src/integrationTest/kotlin`을 사용한다.
-- JPA 검증은 `@DataJpaTest` 또는 repository 중심 통합 테스트를 우선한다.
-- 전체 애플리케이션 흐름 검증은 `@SpringBootTest`를 사용한다.
-- 외부 인프라가 필요하면 Testcontainers를 사용한다.
-
-### 분류 원칙
-
-- 단위 테스트에 Spring 컨텍스트 로딩을 넣지 않는다.
-- 단위 성격 테스트를 integrationTest로 올리지 않는다.
-- 통합 테스트는 실제 wiring, persistence, serialization, messaging 검증에만 사용한다.
-
-### 테스트 메서드 네이밍
-
-- 테스트 메서드명은 백틱으로 감싼 한국어 설명으로 작성한다.
-- 설명은 짧고 바로 의미가 드러나게 쓴다.
-- 기대 결과 또는 조건이 한눈에 보이도록 작성한다.
-- 예: `` `올바른 요청은 200 SUCCESS를 반환한다` ``, `` `존재하지 않는 회원은 조회되지 않는다` ``
-
-## 실행 기준
-
-### 언제 `./gradlew test`를 실행할지
-
-- 단위 테스트를 추가하거나 수정했을 때
-- 프로덕션 로직을 바꿨지만 통합 테스트까지는 필요 없을 때
-- 최소 회귀 확인이 필요할 때
-
-### 언제 `./gradlew integrationTest`를 실행할지
-
-- `src/integrationTest`를 추가하거나 수정했을 때
-- Spring MVC, Security, JPA, DB, MQ, Testcontainers 관련 변경이 있을 때
-- 어댑터 wiring, 설정, 직렬화, 영속성 경계가 바뀌었을 때
-
-### 실행 방식
-
-- 가능하면 대상 모듈 태스크부터 실행한다.
-- 변경 범위가 넓거나 영향 모듈이 여러 개면 루트 `test`, `integrationTest`로 확대한다.
-- 최종 보고에는 실제 실행한 태스크와 결과를 반드시 남긴다.
-
-## 체크리스트
-
-### 단위 테스트 체크리스트
-
-- 테스트 대상이 순수 로직 중심인가
-- 의존성을 fake 또는 stub으로 대체했는가
-- 실패 조건과 예외 메시지를 검증하는가
-- 테스트가 빠르고 독립적인가
-
-### 통합 테스트 체크리스트
-
-- Spring 또는 실제 인프라 연동이 정말 필요한가
-- 검증 시나리오가 최소 범위로 유지되는가
-- 컨테이너, DB, 메시지 브로커 설정이 테스트 의도와 맞는가
-- 실행 비용이 큰 테스트를 불필요하게 늘리지 않았는가
-
-## 출력 형식
-
-- 테스트 계획:
-  - 단위 테스트: <검증 포인트>
-  - 통합 테스트: <검증 포인트>
-- 실패 조건:
-  - <실패 케이스 목록>
-- 구현 단계:
-  - 1) 실패 테스트 작성
-  - 2) 최소 구현
-  - 3) 리팩터링
-- 검증:
-  - <실행한 Gradle test/integrationTest 태스크와 결과>
-
-## 주의사항
-
-- 테스트 위치와 모듈 경계를 엄격히 지킨다.
-- 테스트를 먼저 쓰지 못할 이유가 명확하지 않다면 TDD 순서를 유지한다.
-- 실행하지 않은 테스트는 실행한 것처럼 말하지 않는다.
-- Docker, Testcontainers, 외부 서비스 제약이 있으면 최종 보고에 명시한다.
+- 추가 또는 수정한 테스트 파일
+- 실행한 Gradle 명령
+- 실패한 assertion 또는 미실행 항목
