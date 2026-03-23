@@ -24,11 +24,13 @@ class TransferOutboxBeanRegistrar :
                 )
             }
 
-            registerBean<TransferOutboxPublisher> {
-                TransferOutboxPublisher(
-                    bean(),
-                    bean<TransferOutboxProperties>(),
-                )
+            whenPropertyEnabled("transfer.outbox.publisher", "enabled", matchIfMissing = true) {
+                registerBean<TransferOutboxPublisher> {
+                    TransferOutboxPublisher(
+                        bean(),
+                        bean<TransferOutboxProperties>(),
+                    )
+                }
             }
         }
     })
