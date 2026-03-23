@@ -3,22 +3,18 @@ package org.yechan.remittance.transfer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.transaction.annotation.Transactional
 import org.yechan.remittance.account.AccountIdentifier
-import org.yechan.remittance.account.AccountModel
-import org.yechan.remittance.account.AccountRepository
-import org.yechan.remittance.member.MemberIdentifier
-import org.yechan.remittance.member.MemberRepository
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
 private val log = KotlinLogging.logger {}
 
 open class TransferProcessService(
-    private val accountRepository: AccountRepository,
+    private val transferAccountClient: TransferAccountClient,
     private val transferRepository: TransferRepository,
     private val outboxEventRepository: OutboxEventRepository,
     private val idempotencyKeyRepository: IdempotencyKeyRepository,
     private val dailyLimitUsageRepository: DailyLimitUsageRepository,
-    private val memberRepository: MemberRepository,
+    private val transferMemberClient: TransferMemberClient,
     private val transferSnapshotUtil: TransferSnapshotUtil,
 ) {
     @Transactional
@@ -29,96 +25,117 @@ open class TransferProcessService(
         now: LocalDateTime,
     ): TransferResult {
         log.info { "transfer.process.start memberId=$memberId scope=${props.scope}" }
+        validateTransferRequest(props)
         val accounts = lockAccounts(props)
         validateOwner(memberId, accounts)
         validateDailyLimit(props, now)
-        validateBalance(props, accounts)
-        updateBalances(props, accounts)
+        val balanceChange = calculateBalanceChange(props, accounts)
+        transferAccountClient.applyBalanceChange(balanceChange)
         return persistTransfer(memberId, idempotencyKey, props, now)
     }
 
-    private fun lockAccounts(props: TransferRequestProps): AccountPair {
-        val fromAccountId = props.fromAccountId
-        val toAccountId = props.toAccountId
-        if (props.scope == TransferProps.TransferScopeValue.WITHDRAW ||
-            props.scope == TransferProps.TransferScopeValue.DEPOSIT
+    private fun validateTransferRequest(props: TransferRequestProps) {
+        if (props.scope == TransferProps.TransferScopeValue.TRANSFER &&
+            props.fromAccountId == props.toAccountId
         ) {
-            val fromAccount = getAccountForUpdate(fromAccountId)
-            return AccountPair(fromAccount, fromAccount)
-        }
-        if (fromAccountId == toAccountId) {
-            log.warn { "transfer.process.same_account fromAccountId=$fromAccountId" }
+            log.warn { "transfer.process.same_account fromAccountId=${props.fromAccountId}" }
             throw TransferFailedException(TransferFailureCode.INVALID_REQUEST, "Same account")
         }
-
-        val firstAccount = getAccountForUpdate(minOf(fromAccountId, toAccountId))
-        val secondAccount = getAccountForUpdate(maxOf(fromAccountId, toAccountId))
-        val fromAccount = if (fromAccountId == firstAccount.accountId) firstAccount else secondAccount
-        val toAccount = if (toAccountId == firstAccount.accountId) firstAccount else secondAccount
-
-        return AccountPair(fromAccount, toAccount)
     }
 
-    private fun getAccountForUpdate(accountId: Long): AccountModel = accountRepository.findByIdForUpdate(AccountId(accountId))
-        ?: run {
-            log.warn { "transfer.process.account_not_found accountId=$accountId" }
-            throw TransferFailedException(TransferFailureCode.ACCOUNT_NOT_FOUND, "Account not found")
-        }
+    private fun lockAccounts(props: TransferRequestProps): AccountPair = transferAccountClient.lock(
+        TransferAccountLockCommand(
+            fromAccountId = props.fromAccountId,
+            toAccountId = props.toAccountId,
+        ),
+    )?.let {
+        AccountPair(it.fromAccount, it.toAccount)
+    } ?: run {
+        log.warn { "transfer.process.account_not_found fromAccountId=${props.fromAccountId} toAccountId=${props.toAccountId}" }
+        throw TransferFailedException(TransferFailureCode.ACCOUNT_NOT_FOUND, "Account not found")
+    }
 
     private fun validateOwner(memberId: Long, accounts: AccountPair) {
-        val fromMemberId = requireNotNull(accounts.fromAccount.memberId)
-        val toMemberId = requireNotNull(accounts.toAccount.memberId)
-        memberRepository.findById(MemberId(fromMemberId))
-            ?: run {
-                log.warn { "transfer.process.owner_not_found fromMemberId=$fromMemberId" }
-                throw TransferFailedException(TransferFailureCode.OWNER_NOT_FOUND, "Owner not found")
-            }
-        memberRepository.findById(MemberId(toMemberId))
-            ?: run {
-                log.warn { "transfer.process.receiver_member_not_found toMemberId=$toMemberId" }
-                throw TransferFailedException(TransferFailureCode.MEMBER_NOT_FOUND, "Sending account's member not found")
-            }
+        val fromMemberId = accounts.fromAccount.memberId
+        val toMemberId = accounts.toAccount.memberId
+        if (!transferMemberClient.exists(fromMemberId)) {
+            log.warn { "transfer.process.owner_not_found fromMemberId=$fromMemberId" }
+            throw TransferFailedException(TransferFailureCode.OWNER_NOT_FOUND, "Owner not found")
+        }
+        if (!transferMemberClient.exists(toMemberId)) {
+            log.warn { "transfer.process.receiver_member_not_found toMemberId=$toMemberId" }
+            throw TransferFailedException(
+                TransferFailureCode.MEMBER_NOT_FOUND,
+                "Sending account's member not found",
+            )
+        }
         if (memberId != fromMemberId) {
             log.warn { "transfer.process.owner_mismatch memberId=$memberId fromMemberId=$fromMemberId" }
-            throw TransferFailedException(TransferFailureCode.INVALID_REQUEST, "Account owner mismatch")
+            throw TransferFailedException(
+                TransferFailureCode.INVALID_REQUEST,
+                "Account owner mismatch",
+            )
         }
     }
 
-    private fun validateBalance(props: TransferRequestProps, accounts: AccountPair) {
+    private fun calculateBalanceChange(
+        props: TransferRequestProps,
+        accounts: AccountPair,
+    ): TransferBalanceChangeCommand {
         if (props.scope == TransferProps.TransferScopeValue.DEPOSIT) {
-            return
+            val balance = accounts.toAccount.balance.add(props.amount)
+            return TransferBalanceChangeCommand(
+                fromAccountId = accounts.fromAccount.accountId,
+                toAccountId = accounts.toAccount.accountId,
+                fromBalance = balance,
+                toBalance = balance,
+            )
         }
         if (accounts.isInsufficient(props.debit())) {
             log.warn { "transfer.process.insufficient_balance fromAccountId=${accounts.fromAccount.accountId}" }
-            throw TransferFailedException(TransferFailureCode.INSUFFICIENT_BALANCE, "Insufficient balance")
+            throw TransferFailedException(
+                TransferFailureCode.INSUFFICIENT_BALANCE,
+                "Insufficient balance",
+            )
         }
+        val debit = props.debit()
+        if (props.scope == TransferProps.TransferScopeValue.WITHDRAW) {
+            val balance = accounts.fromAccount.balance.subtract(debit)
+            return TransferBalanceChangeCommand(
+                fromAccountId = accounts.fromAccount.accountId,
+                toAccountId = accounts.toAccount.accountId,
+                fromBalance = balance,
+                toBalance = balance,
+            )
+        }
+        return TransferBalanceChangeCommand(
+            fromAccountId = accounts.fromAccount.accountId,
+            toAccountId = accounts.toAccount.accountId,
+            fromBalance = accounts.fromAccount.balance.subtract(debit),
+            toBalance = accounts.toAccount.balance.add(props.amount),
+        )
     }
 
     private fun validateDailyLimit(props: TransferRequestProps, now: LocalDateTime) {
         if (props.scope == TransferProps.TransferScopeValue.DEPOSIT) {
             return
         }
-        val usage = dailyLimitUsageRepository.findOrCreateForUpdate(AccountId(props.fromAccountId), props.scope, now.toLocalDate())
-        val limit = if (props.scope == TransferProps.TransferScopeValue.WITHDRAW) WITHDRAW_DAILY_LIMIT else TRANSFER_DAILY_LIMIT
+        val usage = dailyLimitUsageRepository.findOrCreateForUpdate(
+            AccountId(props.fromAccountId),
+            props.scope,
+            now.toLocalDate(),
+        )
+        val limit =
+            if (props.scope == TransferProps.TransferScopeValue.WITHDRAW) WITHDRAW_DAILY_LIMIT else TRANSFER_DAILY_LIMIT
         val nextUsed = usage.usedAmount.add(props.amount)
-        if (nextUsed.compareTo(limit) > 0) {
+        if (nextUsed > limit) {
             log.warn { "transfer.process.daily_limit_exceeded fromAccountId=${props.fromAccountId} scope=${props.scope}" }
-            throw TransferFailedException(TransferFailureCode.DAILY_LIMIT_EXCEEDED, "Daily limit exceeded")
+            throw TransferFailedException(
+                TransferFailureCode.DAILY_LIMIT_EXCEEDED,
+                "Daily limit exceeded",
+            )
         }
         usage.updateUsedAmount(nextUsed)
-    }
-
-    private fun updateBalances(props: TransferRequestProps, accounts: AccountPair) {
-        if (props.scope == TransferProps.TransferScopeValue.DEPOSIT) {
-            accounts.toAccount.updateBalance(accounts.toAccount.balance.add(props.amount))
-            return
-        }
-        val debit = props.debit()
-        accounts.fromAccount.updateBalance(accounts.fromAccount.balance.subtract(debit))
-        if (props.scope == TransferProps.TransferScopeValue.WITHDRAW) {
-            return
-        }
-        accounts.toAccount.updateBalance(accounts.toAccount.balance.add(props.amount))
     }
 
     private fun persistTransfer(
@@ -156,13 +173,14 @@ open class TransferProcessService(
             OutboxEventProps.OutboxEventStatusValue.NEW
     }
 
-    private data class AccountPair(val fromAccount: AccountModel, val toAccount: AccountModel) {
+    private data class AccountPair(
+        val fromAccount: TransferAccountSnapshot,
+        val toAccount: TransferAccountSnapshot,
+    ) {
         fun isInsufficient(debit: BigDecimal): Boolean = fromAccount.balance.compareTo(debit) < 0
     }
 
     private data class AccountId(override val accountId: Long?) : AccountIdentifier
-
-    private data class MemberId(override val memberId: Long?) : MemberIdentifier
 
     private companion object {
         val WITHDRAW_DAILY_LIMIT: BigDecimal = BigDecimal.valueOf(1_000_000)

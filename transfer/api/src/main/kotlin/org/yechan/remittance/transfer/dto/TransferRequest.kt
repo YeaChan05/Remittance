@@ -1,6 +1,5 @@
 package org.yechan.remittance.transfer.dto
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import org.yechan.remittance.transfer.TransferFailedException
 import org.yechan.remittance.transfer.TransferFailureCode
 import org.yechan.remittance.transfer.TransferProps
@@ -9,12 +8,16 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 class TransferRequest(
-    @param:JsonProperty("fromAccountId") private val fromAccountIdRaw: Long?,
-    @param:JsonProperty("toAccountId") private val toAccountIdRaw: Long?,
-    @param:JsonProperty("amount") private val amountRaw: BigDecimal?,
+    fromAccountId: Long?,
+    toAccountId: Long?,
+    amount: BigDecimal?,
 ) : TransferRequestProps {
+    private val fromAccountIdRaw = fromAccountId
+    private val toAccountIdRaw = toAccountId
+    private val amountRaw = amount
+
     init {
-        if (amountRaw == null || amountRaw.compareTo(BigDecimal.ZERO) <= 0) {
+        if (amountRaw == null || amountRaw <= BigDecimal.ZERO) {
             throw TransferFailedException(TransferFailureCode.INVALID_REQUEST, "Invalid amount")
         }
         if (fromAccountIdRaw == null || toAccountIdRaw == null) {

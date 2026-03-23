@@ -3,8 +3,6 @@ package org.yechan.remittance.transfer
 import org.springframework.beans.factory.BeanRegistrarDsl
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.context.annotation.Import
-import org.yechan.remittance.account.AccountRepository
-import org.yechan.remittance.member.MemberRepository
 import java.time.Clock
 
 @Import(TransferBeanRegistrar::class)
@@ -22,12 +20,12 @@ class TransferBeanRegistrar :
 
         registerBean<TransferProcessService> {
             TransferProcessService(
-                bean<AccountRepository>(),
-                bean<TransferRepository>(),
                 bean(),
                 bean(),
                 bean(),
-                bean<MemberRepository>(),
+                bean(),
+                bean(),
+                bean(),
                 bean(),
             )
         }
@@ -38,8 +36,8 @@ class TransferBeanRegistrar :
 
         registerBean<TransferQueryUseCase> {
             TransferQueryService(
-                bean<AccountRepository>(),
-                bean<TransferRepository>(),
+                bean(),
+                bean(),
             )
         }
 
