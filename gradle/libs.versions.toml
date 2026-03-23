@@ -2,6 +2,7 @@
 jspecify = "1.0.0"
 jjwt = "0.13.0"
 kotlin = "2.2.0"
+ktlint = "14.2.0"
 kotlin-logging = "7.0.3"
 mysql-connector = "9.5.0"
 testcontainers = "2.0.3"
@@ -9,7 +10,7 @@ testcontainers = "2.0.3"
 [plugins]
 build-recipe = { id = "com.linecorp.build-recipe-plugin", version = "1.1.1" }
 spring-boot = { id = "org.springframework.boot", version = "4.0.1" }
-ktlint = { id = "org.jlleitschuh.gradle.ktlint", version = "14.2.0" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
 kotlin-jpa = { id = "org.jetbrains.kotlin.plugin.jpa", version.ref = "kotlin" }
