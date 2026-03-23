@@ -19,6 +19,6 @@ class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidationException(e: MethodArgumentNotValidException): ResponseEntity<Any> {
         log.error(e) { e.stackTraceToString() }
-        return ResponseEntity.badRequest().body(e.message ?: "")
+        return ResponseEntity.badRequest().body(e.message)
     }
 }
