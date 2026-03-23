@@ -18,6 +18,14 @@ class AccountBeanRegistrar :
             AccountDeleteService(bean())
         }
 
+        registerBean<AccountInternalQueryUseCase> {
+            AccountInternalQueryService(bean())
+        }
+
+        registerBean<AccountInternalUpdateUseCase> {
+            AccountInternalUpdateService(bean())
+        }
+
         registerBean<TransferNotificationUseCase> {
             TransferNotificationService(
                 bean(),

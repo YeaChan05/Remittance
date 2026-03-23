@@ -21,6 +21,7 @@ dependencyResolutionManagement {
 }
 
 include(":account:api")
+include(":account:api-internal")
 include(":account:model")
 include(":account:service")
 include(":account:exception")
