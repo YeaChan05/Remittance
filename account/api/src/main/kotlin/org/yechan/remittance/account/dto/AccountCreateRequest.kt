@@ -8,5 +8,5 @@ data class AccountCreateRequest(
     @field:NotBlank(message = "Invalid account number")
     val accountNumber: String,
     @field:NotBlank(message = "Invalid account name")
-    val accountName: String
+    val accountName: String,
 )

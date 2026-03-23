@@ -7,13 +7,13 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.security.SecurityScheme
 
 @OpenAPIDefinition(
-    security = [SecurityRequirement(name = "bearerAuth")]
+    security = [SecurityRequirement(name = "bearerAuth")],
 )
 @SecurityScheme(
     name = "bearerAuth",
     type = SecuritySchemeType.HTTP,
     scheme = "bearer",
     bearerFormat = "JWT",
-    `in` = SecuritySchemeIn.HEADER
+    `in` = SecuritySchemeIn.HEADER,
 )
 class OpenApiConfiguration

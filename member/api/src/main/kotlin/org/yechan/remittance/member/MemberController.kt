@@ -12,11 +12,11 @@ import org.yechan.remittance.member.dto.MemberRegisterResponse
 @RestController
 @RequestMapping("/members")
 class MemberController(
-    private val memberCreateUseCase: MemberCreateUseCase
+    private val memberCreateUseCase: MemberCreateUseCase,
 ) : MemberApi {
     @PostMapping
     override fun register(
-        @RequestBody @Valid request: MemberRegisterRequest
+        @RequestBody @Valid request: MemberRegisterRequest,
     ): ResponseEntity<MemberRegisterResponse> {
         val model = memberCreateUseCase.register(request)
         return ResponseEntity.ok(MemberRegisterResponse(model.name))

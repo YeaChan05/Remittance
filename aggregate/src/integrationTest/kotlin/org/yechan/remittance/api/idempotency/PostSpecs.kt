@@ -1,7 +1,5 @@
 package org.yechan.remittance.api.idempotency
 
-import java.time.LocalDateTime
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,13 +9,15 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.web.servlet.client.RestTestClient
 import org.yechan.remittance.AggregateApplication
 import org.yechan.remittance.EmailGenerator
-import org.yechan.remittance.PasswordGenerator
 import org.yechan.remittance.IntegrationTestEnvironmentSetup
+import org.yechan.remittance.PasswordGenerator
 import org.yechan.remittance.TokenVerifier
 import org.yechan.remittance.member.dto.MemberLoginRequest
 import org.yechan.remittance.member.dto.MemberLoginResponse
 import org.yechan.remittance.member.dto.MemberRegisterRequest
 import org.yechan.remittance.transfer.dto.IdempotencyKeyCreateResponse
+import java.time.LocalDateTime
+import java.util.UUID
 
 @SpringBootTest(classes = [AggregateApplication::class])
 class PostSpecs : IntegrationTestEnvironmentSetup() {

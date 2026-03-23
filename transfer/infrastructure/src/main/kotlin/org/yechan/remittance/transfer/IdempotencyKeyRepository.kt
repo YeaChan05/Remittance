@@ -8,7 +8,7 @@ interface IdempotencyKeyRepository {
     fun findByKey(
         memberId: Long,
         scope: IdempotencyKeyProps.IdempotencyScopeValue,
-        idempotencyKey: String
+        idempotencyKey: String,
     ): IdempotencyKeyModel?
 
     fun tryMarkInProgress(
@@ -16,7 +16,7 @@ interface IdempotencyKeyRepository {
         scope: IdempotencyKeyProps.IdempotencyScopeValue,
         idempotencyKey: String,
         requestHash: String,
-        startedAt: LocalDateTime
+        startedAt: LocalDateTime,
     ): Boolean
 
     fun markSucceeded(
@@ -24,7 +24,7 @@ interface IdempotencyKeyRepository {
         scope: IdempotencyKeyProps.IdempotencyScopeValue,
         idempotencyKey: String,
         responseSnapshot: String,
-        completedAt: LocalDateTime
+        completedAt: LocalDateTime,
     ): IdempotencyKeyModel
 
     fun markFailed(
@@ -32,11 +32,11 @@ interface IdempotencyKeyRepository {
         scope: IdempotencyKeyProps.IdempotencyScopeValue,
         idempotencyKey: String,
         responseSnapshot: String,
-        completedAt: LocalDateTime
+        completedAt: LocalDateTime,
     ): IdempotencyKeyModel
 
     fun markTimeoutBefore(
         cutoff: LocalDateTime,
-        responseSnapshot: String
+        responseSnapshot: String,
     ): Int
 }

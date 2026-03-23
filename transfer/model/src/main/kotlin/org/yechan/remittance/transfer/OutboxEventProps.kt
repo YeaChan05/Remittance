@@ -9,6 +9,6 @@ interface OutboxEventProps {
 
     enum class OutboxEventStatusValue {
         NEW,
-        SENT
+        SENT,
     }
 }

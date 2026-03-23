@@ -10,7 +10,7 @@ interface AccountJpaRepository : JpaRepository<AccountEntity, Long> {
     fun findByMemberIdAndBankCodeAndAccountNumber(
         memberId: Long,
         bankCode: String,
-        accountNumber: String
+        accountNumber: String,
     ): AccountEntity?
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -18,9 +18,9 @@ interface AccountJpaRepository : JpaRepository<AccountEntity, Long> {
         """
         select a from AccountEntity a
         where a.id = :accountId
-        """
+        """,
     )
     fun findByIdForUpdate(
-        @Param("accountId") accountId: Long
+        @Param("accountId") accountId: Long,
     ): AccountEntity?
 }

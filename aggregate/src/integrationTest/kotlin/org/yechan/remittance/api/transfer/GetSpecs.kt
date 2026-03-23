@@ -1,10 +1,6 @@
 package org.yechan.remittance.api.transfer
 
 import jakarta.persistence.EntityManager
-import java.math.BigDecimal
-import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
-import java.util.Optional
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -23,6 +19,10 @@ import org.yechan.remittance.TransferTestFixturesConfig
 import org.yechan.remittance.transfer.dto.IdempotencyKeyCreateResponse
 import org.yechan.remittance.transfer.dto.TransferQueryResponse
 import org.yechan.remittance.transfer.dto.TransferRequest
+import java.math.BigDecimal
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
+import java.util.Optional
 
 @SpringBootTest(classes = [AggregateApplication::class])
 @Import(TransferTestFixturesConfig::class)
@@ -62,7 +62,7 @@ class GetSpecs : IntegrationTestEnvironmentSetup() {
             firstKey,
             fromAccount.accountId,
             toAccount.accountId,
-            BigDecimal.valueOf(100_000L)
+            BigDecimal.valueOf(100_000L),
         )
 
         val secondKey = issueIdempotencyKey(result.auth.accessToken)
@@ -71,7 +71,7 @@ class GetSpecs : IntegrationTestEnvironmentSetup() {
             secondKey,
             fromAccount.accountId,
             toAccount.accountId,
-            BigDecimal.valueOf(200_000L)
+            BigDecimal.valueOf(200_000L),
         )
 
         val older = LocalDateTime.now().minusHours(2).truncatedTo(ChronoUnit.MICROS)
@@ -100,7 +100,7 @@ class GetSpecs : IntegrationTestEnvironmentSetup() {
             key,
             fromAccount.accountId,
             toAccount.accountId,
-            BigDecimal.valueOf(100_000L)
+            BigDecimal.valueOf(100_000L),
         )
 
         val queryResponse = query(result.auth.accessToken, toAccount.accountId, null, null, null)
@@ -124,7 +124,7 @@ class GetSpecs : IntegrationTestEnvironmentSetup() {
             firstKey,
             fromAccount.accountId,
             toAccount.accountId,
-            BigDecimal.valueOf(100_000L)
+            BigDecimal.valueOf(100_000L),
         )
 
         val secondKey = issueIdempotencyKey(result.auth.accessToken)
@@ -133,7 +133,7 @@ class GetSpecs : IntegrationTestEnvironmentSetup() {
             secondKey,
             fromAccount.accountId,
             toAccount.accountId,
-            BigDecimal.valueOf(200_000L)
+            BigDecimal.valueOf(200_000L),
         )
 
         val response = query(result.auth.accessToken, fromAccount.accountId, null, null, 1)
@@ -145,42 +145,38 @@ class GetSpecs : IntegrationTestEnvironmentSetup() {
         accountId: Long,
         from: LocalDateTime?,
         to: LocalDateTime?,
-        limit: Int?
-    ): TransferQueryResponse {
-        return restTestClient.get()
-            .uri { uriBuilder ->
-                uriBuilder.path("/transfers")
-                    .queryParam("accountId", accountId)
-                    .queryParamIfPresent("from", Optional.ofNullable(from))
-                    .queryParamIfPresent("to", Optional.ofNullable(to))
-                    .queryParamIfPresent("limit", Optional.ofNullable(limit))
-                    .build()
-            }
-            .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
-            .exchange()
-            .expectStatus().isOk
-            .expectBody(TransferQueryResponse::class.java)
-            .returnResult()
-            .responseBody ?: throw IllegalStateException("Transfer query response is null")
-    }
+        limit: Int?,
+    ): TransferQueryResponse = restTestClient.get()
+        .uri { uriBuilder ->
+            uriBuilder.path("/transfers")
+                .queryParam("accountId", accountId)
+                .queryParamIfPresent("from", Optional.ofNullable(from))
+                .queryParamIfPresent("to", Optional.ofNullable(to))
+                .queryParamIfPresent("limit", Optional.ofNullable(limit))
+                .build()
+        }
+        .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+        .exchange()
+        .expectStatus().isOk
+        .expectBody(TransferQueryResponse::class.java)
+        .returnResult()
+        .responseBody ?: throw IllegalStateException("Transfer query response is null")
 
     private fun transfer(
         accessToken: String,
         idempotencyKey: String,
         fromAccountId: Long,
         toAccountId: Long,
-        amount: BigDecimal
-    ): TransferResponse {
-        return restTestClient.post()
-            .uri { uriBuilder -> uriBuilder.path("/transfers/$idempotencyKey").build() }
-            .body(TransferRequest(fromAccountId, toAccountId, amount))
-            .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
-            .exchange()
-            .expectStatus().isOk
-            .expectBody(TransferResponse::class.java)
-            .returnResult()
-            .responseBody ?: throw IllegalStateException("Transfer response is null")
-    }
+        amount: BigDecimal,
+    ): TransferResponse = restTestClient.post()
+        .uri { uriBuilder -> uriBuilder.path("/transfers/$idempotencyKey").build() }
+        .body(TransferRequest(fromAccountId, toAccountId, amount))
+        .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+        .exchange()
+        .expectStatus().isOk
+        .expectBody(TransferResponse::class.java)
+        .returnResult()
+        .responseBody ?: throw IllegalStateException("Transfer response is null")
 
     private fun issueIdempotencyKey(accessToken: String): String {
         val response = restTestClient.post()
@@ -197,7 +193,7 @@ class GetSpecs : IntegrationTestEnvironmentSetup() {
 
     private fun updateCompletedAt(
         transferId: Long,
-        completedAt: LocalDateTime
+        completedAt: LocalDateTime,
     ) {
         transactionTemplate.executeWithoutResult {
             entityManager.createQuery(
@@ -205,7 +201,7 @@ class GetSpecs : IntegrationTestEnvironmentSetup() {
                     update TransferEntity t
                        set t.completedAt = :completedAt
                      where t.id = :transferId
-                """.trimIndent()
+                """.trimIndent(),
             )
                 .setParameter("completedAt", completedAt)
                 .setParameter("transferId", transferId)
@@ -217,6 +213,6 @@ class GetSpecs : IntegrationTestEnvironmentSetup() {
     data class TransferResponse(
         val status: String,
         val transferId: Long?,
-        val errorCode: String?
+        val errorCode: String?,
     )
 }

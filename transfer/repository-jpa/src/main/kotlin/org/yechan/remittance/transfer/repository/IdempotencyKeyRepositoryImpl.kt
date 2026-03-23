@@ -1,31 +1,27 @@
 package org.yechan.remittance.transfer.repository
 
-import java.time.LocalDateTime
 import org.yechan.remittance.transfer.IdempotencyKeyModel
 import org.yechan.remittance.transfer.IdempotencyKeyProps
 import org.yechan.remittance.transfer.IdempotencyKeyRepository
+import java.time.LocalDateTime
 
 class IdempotencyKeyRepositoryImpl(
-    private val repository: IdempotencyKeyJpaRepository
+    private val repository: IdempotencyKeyJpaRepository,
 ) : IdempotencyKeyRepository {
-    override fun save(props: IdempotencyKeyProps): IdempotencyKeyModel {
-        return repository.save(IdempotencyKeyEntity.create(props))
-    }
+    override fun save(props: IdempotencyKeyProps): IdempotencyKeyModel = repository.save(IdempotencyKeyEntity.create(props))
 
     override fun findByKey(
         memberId: Long,
         scope: IdempotencyKeyProps.IdempotencyScopeValue,
-        idempotencyKey: String
-    ): IdempotencyKeyModel? {
-        return repository.findByMemberIdAndScopeAndIdempotencyKey(memberId, scope, idempotencyKey)
-    }
+        idempotencyKey: String,
+    ): IdempotencyKeyModel? = repository.findByMemberIdAndScopeAndIdempotencyKey(memberId, scope, idempotencyKey)
 
     override fun tryMarkInProgress(
         memberId: Long,
         scope: IdempotencyKeyProps.IdempotencyScopeValue,
         idempotencyKey: String,
         requestHash: String,
-        startedAt: LocalDateTime
+        startedAt: LocalDateTime,
     ): Boolean {
         val found = repository.findByMemberIdAndScopeAndIdempotencyKey(memberId, scope, idempotencyKey)
         if (found == null) {
@@ -44,7 +40,7 @@ class IdempotencyKeyRepositoryImpl(
         scope: IdempotencyKeyProps.IdempotencyScopeValue,
         idempotencyKey: String,
         responseSnapshot: String,
-        completedAt: LocalDateTime
+        completedAt: LocalDateTime,
     ): IdempotencyKeyModel {
         val entity =
             repository.findByMemberIdAndScopeAndIdempotencyKey(memberId, scope, idempotencyKey)
@@ -58,7 +54,7 @@ class IdempotencyKeyRepositoryImpl(
         scope: IdempotencyKeyProps.IdempotencyScopeValue,
         idempotencyKey: String,
         responseSnapshot: String,
-        completedAt: LocalDateTime
+        completedAt: LocalDateTime,
     ): IdempotencyKeyModel {
         val entity =
             repository.findByMemberIdAndScopeAndIdempotencyKey(memberId, scope, idempotencyKey)
@@ -71,7 +67,7 @@ class IdempotencyKeyRepositoryImpl(
         val completedAt = LocalDateTime.now()
         val candidates = repository.findByStatusAndStartedAtBefore(
             IdempotencyKeyProps.IdempotencyKeyStatusValue.IN_PROGRESS,
-            cutoff
+            cutoff,
         )
         val updated = candidates.count { it.markTimeoutIfBefore(cutoff, responseSnapshot, completedAt) }
         repository.saveAll(candidates)

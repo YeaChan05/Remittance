@@ -1,7 +1,6 @@
 package org.yechan.remittance.transfer.repository
 
 import jakarta.persistence.EntityManager
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,6 +12,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.TestConstructor
 import org.yechan.remittance.transfer.OutboxEventProps
+import java.util.UUID
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -21,7 +21,7 @@ import org.yechan.remittance.transfer.OutboxEventProps
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class OutboxEventJpaRepositoryTest @Autowired constructor(
     private val repository: OutboxEventJpaRepository,
-    private val entityManager: EntityManager
+    private val entityManager: EntityManager,
 ) {
     @Test
     fun `NEW 상태 아웃박스 이벤트만 생성 순으로 조회한다`() {
@@ -33,7 +33,7 @@ class OutboxEventJpaRepositoryTest @Autowired constructor(
         val results = repository.findNewForPublish(
             OutboxEventProps.OutboxEventStatusValue.NEW,
             null,
-            Pageable.unpaged()
+            Pageable.unpaged(),
         )
 
         assertThat(results.map { it.eventId }).containsExactly(first.eventId, third.eventId)
@@ -48,7 +48,7 @@ class OutboxEventJpaRepositoryTest @Autowired constructor(
         val results = repository.findNewForPublish(
             OutboxEventProps.OutboxEventStatusValue.NEW,
             null,
-            PageRequest.of(0, 1)
+            PageRequest.of(0, 1),
         )
 
         assertThat(results.map { it.eventId }).containsExactly(first.eventId)
@@ -68,9 +68,7 @@ class OutboxEventJpaRepositoryTest @Autowired constructor(
         assertThat(found.get().status).isEqualTo(OutboxEventProps.OutboxEventStatusValue.SENT)
     }
 
-    private fun saveOutboxEvent(status: OutboxEventProps.OutboxEventStatusValue): OutboxEventEntity {
-        return repository.save(OutboxEventEntity.create(TestOutboxEventProps(status)))
-    }
+    private fun saveOutboxEvent(status: OutboxEventProps.OutboxEventStatusValue): OutboxEventEntity = repository.save(OutboxEventEntity.create(TestOutboxEventProps(status)))
 
     private fun flushClear() {
         entityManager.flush()
@@ -78,7 +76,7 @@ class OutboxEventJpaRepositoryTest @Autowired constructor(
     }
 
     private data class TestOutboxEventProps(
-        override val status: OutboxEventProps.OutboxEventStatusValue
+        override val status: OutboxEventProps.OutboxEventStatusValue,
     ) : OutboxEventProps {
         override val aggregateType: String = "TRANSFER"
         override val aggregateId: String = UUID.randomUUID().toString()

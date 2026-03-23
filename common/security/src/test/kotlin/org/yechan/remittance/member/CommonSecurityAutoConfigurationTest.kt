@@ -24,15 +24,15 @@ import org.yechan.remittance.TokenGenerator
 @SpringBootTest(
     classes = [
         CommonSecurityAutoConfigurationTest.TestApplication::class,
-        CommonSecurityAutoConfigurationTest.RestTestClientConfiguration::class
-    ]
+        CommonSecurityAutoConfigurationTest.RestTestClientConfiguration::class,
+    ],
 )
 @TestPropertySource(
     properties = [
         "auth.token.salt=test-salt",
         "auth.token.access-expires-in=3600",
-        "auth.token.refresh-expires-in=7200"
-    ]
+        "auth.token.refresh-expires-in=7200",
+    ],
 )
 class CommonSecurityAutoConfigurationTest {
     @Autowired
@@ -92,14 +92,10 @@ class CommonSecurityAutoConfigurationTest {
         @RestController
         class TestController {
             @GetMapping("/open")
-            fun open(): String {
-                return "open"
-            }
+            fun open(): String = "open"
 
             @GetMapping("/secure")
-            fun secure(authentication: Authentication): String {
-                return authentication.name
-            }
+            fun secure(authentication: Authentication): String = authentication.name
         }
     }
 
@@ -115,10 +111,8 @@ class CommonSecurityAutoConfigurationTest {
         }
 
         @Bean
-        fun openEndpointCustomizer(): AuthorizeHttpRequestsCustomizer {
-            return PrioritizedAuthorizeHttpRequestsCustomizer(
-                0
-            ) { registry -> registry.requestMatchers("/open").permitAll() }
-        }
+        fun openEndpointCustomizer(): AuthorizeHttpRequestsCustomizer = PrioritizedAuthorizeHttpRequestsCustomizer(
+            0,
+        ) { registry -> registry.requestMatchers("/open").permitAll() }
     }
 }

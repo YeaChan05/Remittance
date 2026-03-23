@@ -5,7 +5,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate
 
 class TransferEventPublisherImpl(
     private val rabbitTemplate: RabbitTemplate,
-    private val properties: TransferEventPublisherProperties
+    private val properties: TransferEventPublisherProperties,
 ) : TransferEventPublisher {
     override fun publish(event: OutboxEventModel) {
         val processor = MessagePostProcessor { message ->
@@ -18,7 +18,7 @@ class TransferEventPublisherImpl(
             properties.exchange,
             properties.routingKey,
             event.payload,
-            processor
+            processor,
         )
     }
 }

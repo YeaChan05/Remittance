@@ -1,8 +1,6 @@
 package org.yechan.remittance.transfer.repository
 
 import jakarta.persistence.EntityManager
-import java.time.Duration
-import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -14,6 +12,8 @@ import org.springframework.test.context.TestConstructor
 import org.yechan.remittance.transfer.IdempotencyKeyModel
 import org.yechan.remittance.transfer.IdempotencyKeyProps
 import org.yechan.remittance.transfer.IdempotencyKeyRepository
+import java.time.Duration
+import java.time.LocalDateTime
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -22,7 +22,7 @@ import org.yechan.remittance.transfer.IdempotencyKeyRepository
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class IdempotencyKeyJpaRepositoryTest @Autowired constructor(
     private val repository: IdempotencyKeyRepository,
-    private val entityManager: EntityManager
+    private val entityManager: EntityManager,
 ) {
     @Test
     fun `BEFORE_START 상태일 때만 IN_PROGRESS로 갱신한다`() {
@@ -35,7 +35,7 @@ class IdempotencyKeyJpaRepositoryTest @Autowired constructor(
             IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
             saved.idempotencyKey,
             "hash",
-            now
+            now,
         )
         flushClear()
 
@@ -43,7 +43,7 @@ class IdempotencyKeyJpaRepositoryTest @Autowired constructor(
         val found = repository.findByKey(
             saved.memberId,
             IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
-            saved.idempotencyKey
+            saved.idempotencyKey,
         )
         assertThat(found).isNotNull()
         assertThat(found?.status).isEqualTo(IdempotencyKeyProps.IdempotencyKeyStatusValue.IN_PROGRESS)
@@ -55,7 +55,7 @@ class IdempotencyKeyJpaRepositoryTest @Autowired constructor(
             IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
             saved.idempotencyKey,
             "hash-2",
-            now.plusSeconds(30)
+            now.plusSeconds(30),
         )
         assertThat(secondUpdate).isFalse()
     }
@@ -71,21 +71,21 @@ class IdempotencyKeyJpaRepositoryTest @Autowired constructor(
             IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
             saved.idempotencyKey,
             "hash",
-            now
+            now,
         )
         repository.markSucceeded(
             saved.memberId,
             IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
             saved.idempotencyKey,
             "{\"status\":\"SUCCEEDED\"}",
-            now.plusSeconds(30)
+            now.plusSeconds(30),
         )
         flushClear()
 
         val found = repository.findByKey(
             saved.memberId,
             IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
-            saved.idempotencyKey
+            saved.idempotencyKey,
         )
         assertThat(found).isNotNull()
         assertThat(found?.status).isEqualTo(IdempotencyKeyProps.IdempotencyKeyStatusValue.SUCCEEDED)
@@ -104,21 +104,21 @@ class IdempotencyKeyJpaRepositoryTest @Autowired constructor(
             IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
             saved.idempotencyKey,
             "hash",
-            now
+            now,
         )
         repository.markFailed(
             saved.memberId,
             IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
             saved.idempotencyKey,
             "{\"status\":\"FAILED\"}",
-            now.plusSeconds(10)
+            now.plusSeconds(10),
         )
         flushClear()
 
         val found = repository.findByKey(
             saved.memberId,
             IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
-            saved.idempotencyKey
+            saved.idempotencyKey,
         )
         assertThat(found).isNotNull()
         assertThat(found?.status).isEqualTo(IdempotencyKeyProps.IdempotencyKeyStatusValue.FAILED)
@@ -137,13 +137,13 @@ class IdempotencyKeyJpaRepositoryTest @Autowired constructor(
             IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
             saved.idempotencyKey,
             "hash",
-            now.minus(Duration.ofMinutes(10))
+            now.minus(Duration.ofMinutes(10)),
         )
         flushClear()
 
         val updated = repository.markTimeoutBefore(
             now.minus(Duration.ofMinutes(5)),
-            "{\"status\":\"FAILED\",\"error_code\":\"TIMEOUT\"}"
+            "{\"status\":\"FAILED\",\"error_code\":\"TIMEOUT\"}",
         )
         flushClear()
 
@@ -151,7 +151,7 @@ class IdempotencyKeyJpaRepositoryTest @Autowired constructor(
         val found = repository.findByKey(
             saved.memberId,
             IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
-            saved.idempotencyKey
+            saved.idempotencyKey,
         )
         assertThat(found).isNotNull()
         assertThat(found?.status).isEqualTo(IdempotencyKeyProps.IdempotencyKeyStatusValue.TIMEOUT)
@@ -166,15 +166,13 @@ class IdempotencyKeyJpaRepositoryTest @Autowired constructor(
     private fun saveIdempotencyKey(
         now: LocalDateTime,
         memberId: Long,
-        idempotencyKey: String
-    ): IdempotencyKeyModel {
-        return repository.save(TestIdempotencyKeyProps(memberId, idempotencyKey, now))
-    }
+        idempotencyKey: String,
+    ): IdempotencyKeyModel = repository.save(TestIdempotencyKeyProps(memberId, idempotencyKey, now))
 
     private data class TestIdempotencyKeyProps(
         override val memberId: Long,
         override val idempotencyKey: String,
-        private val now: LocalDateTime
+        private val now: LocalDateTime,
     ) : IdempotencyKeyProps {
         override val expiresAt: LocalDateTime
             get() = now.plus(Duration.ofMinutes(20))

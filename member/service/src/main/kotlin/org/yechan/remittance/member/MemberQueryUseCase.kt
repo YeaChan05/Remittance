@@ -14,7 +14,7 @@ private val log = KotlinLogging.logger {}
 class MemberQueryService(
     private val memberRepository: MemberRepository,
     private val passwordHashEncoder: PasswordHashEncoder,
-    private val tokenGenerator: TokenGenerator
+    private val tokenGenerator: TokenGenerator,
 ) : MemberQueryUseCase {
     override fun login(props: MemberLoginProps): MemberTokenValue {
         log.info { "member.login.start" }

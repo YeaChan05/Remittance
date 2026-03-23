@@ -23,7 +23,7 @@ class AuthAutoConfigurationTest {
             object : AuthLoginProps {
                 override val email: String = "user@example.com"
                 override val password: String = "password!1"
-            }
+            },
         )
 
         assertThat(token.accessToken).isEqualTo("token")

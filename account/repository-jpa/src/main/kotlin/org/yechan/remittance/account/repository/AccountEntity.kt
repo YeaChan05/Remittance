@@ -3,14 +3,16 @@ package org.yechan.remittance.account.repository
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
-import java.math.BigDecimal
 import org.yechan.remittance.BaseEntity
 import org.yechan.remittance.account.AccountModel
 import org.yechan.remittance.account.AccountProps
+import java.math.BigDecimal
 
 @Entity
 @Table(name = "account", catalog = "core")
-class AccountEntity protected constructor() : BaseEntity(), AccountModel {
+class AccountEntity protected constructor() :
+    BaseEntity(),
+    AccountModel {
     @field:Column(nullable = false)
     override var memberId: Long? = null
         protected set
@@ -36,7 +38,7 @@ class AccountEntity protected constructor() : BaseEntity(), AccountModel {
         bankCode: String,
         accountNumber: String,
         accountName: String,
-        balance: BigDecimal
+        balance: BigDecimal,
     ) : this() {
         this.memberId = memberId
         this.bankCode = bankCode
@@ -53,14 +55,12 @@ class AccountEntity protected constructor() : BaseEntity(), AccountModel {
     }
 
     companion object {
-        fun create(props: AccountProps): AccountEntity {
-            return AccountEntity(
-                props.memberId,
-                props.bankCode,
-                props.accountNumber,
-                props.accountName,
-                props.balance
-            )
-        }
+        fun create(props: AccountProps): AccountEntity = AccountEntity(
+            props.memberId,
+            props.bankCode,
+            props.accountNumber,
+            props.accountName,
+            props.balance,
+        )
     }
 }

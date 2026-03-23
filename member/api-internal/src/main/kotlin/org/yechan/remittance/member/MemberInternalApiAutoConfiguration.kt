@@ -8,8 +8,9 @@ import org.springframework.context.annotation.Import
 @AutoConfiguration
 class MemberInternalApiAutoConfiguration
 
-class MemberInternalApiBeanRegistrar : BeanRegistrarDsl({
-    registerBean<MemberInternalApi> {
-        MemberInternalAdapter(bean())
-    }
-})
+class MemberInternalApiBeanRegistrar :
+    BeanRegistrarDsl({
+        registerBean<MemberInternalApi> {
+            MemberInternalAdapter(bean())
+        }
+    })

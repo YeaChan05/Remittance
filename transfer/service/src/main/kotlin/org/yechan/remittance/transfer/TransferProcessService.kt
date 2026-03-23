@@ -1,14 +1,14 @@
 package org.yechan.remittance.transfer
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.math.BigDecimal
-import java.time.LocalDateTime
 import org.springframework.transaction.annotation.Transactional
 import org.yechan.remittance.account.AccountIdentifier
 import org.yechan.remittance.account.AccountModel
 import org.yechan.remittance.account.AccountRepository
 import org.yechan.remittance.member.MemberIdentifier
 import org.yechan.remittance.member.MemberRepository
+import java.math.BigDecimal
+import java.time.LocalDateTime
 
 private val log = KotlinLogging.logger {}
 
@@ -19,14 +19,14 @@ open class TransferProcessService(
     private val idempotencyKeyRepository: IdempotencyKeyRepository,
     private val dailyLimitUsageRepository: DailyLimitUsageRepository,
     private val memberRepository: MemberRepository,
-    private val transferSnapshotUtil: TransferSnapshotUtil
+    private val transferSnapshotUtil: TransferSnapshotUtil,
 ) {
     @Transactional
     open fun process(
         memberId: Long,
         idempotencyKey: String,
         props: TransferRequestProps,
-        now: LocalDateTime
+        now: LocalDateTime,
     ): TransferResult {
         log.info { "transfer.process.start memberId=$memberId scope=${props.scope}" }
         val accounts = lockAccounts(props)
@@ -59,13 +59,11 @@ open class TransferProcessService(
         return AccountPair(fromAccount, toAccount)
     }
 
-    private fun getAccountForUpdate(accountId: Long): AccountModel {
-        return accountRepository.findByIdForUpdate(AccountId(accountId))
-            ?: run {
-                log.warn { "transfer.process.account_not_found accountId=$accountId" }
-                throw TransferFailedException(TransferFailureCode.ACCOUNT_NOT_FOUND, "Account not found")
-            }
-    }
+    private fun getAccountForUpdate(accountId: Long): AccountModel = accountRepository.findByIdForUpdate(AccountId(accountId))
+        ?: run {
+            log.warn { "transfer.process.account_not_found accountId=$accountId" }
+            throw TransferFailedException(TransferFailureCode.ACCOUNT_NOT_FOUND, "Account not found")
+        }
 
     private fun validateOwner(memberId: Long, accounts: AccountPair) {
         val fromMemberId = requireNotNull(accounts.fromAccount.memberId)
@@ -127,7 +125,7 @@ open class TransferProcessService(
         memberId: Long,
         idempotencyKey: String,
         props: TransferRequestProps,
-        now: LocalDateTime
+        now: LocalDateTime,
     ): TransferResult {
         val transfer = transferRepository.save(props)
         if (props.scope == TransferProps.TransferScopeValue.TRANSFER) {
@@ -141,14 +139,14 @@ open class TransferProcessService(
             props.scope.toIdempotencyScope(),
             idempotencyKey,
             transferSnapshotUtil.toSnapshot(result),
-            now
+            now,
         )
         return result
     }
 
     private data class OutboxEventCreateCommand(
         private val transfer: TransferModel,
-        override val payload: String
+        override val payload: String,
     ) : OutboxEventProps {
         override val aggregateType: String = AGGREGATE_TYPE
         override val aggregateId: String

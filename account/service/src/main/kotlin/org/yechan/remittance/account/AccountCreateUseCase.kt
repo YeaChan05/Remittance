@@ -9,14 +9,14 @@ fun interface AccountCreateUseCase {
 private val log = KotlinLogging.logger {}
 
 class AccountService(
-    private val accountRepository: AccountRepository
+    private val accountRepository: AccountRepository,
 ) : AccountCreateUseCase {
     override fun create(props: AccountProps): AccountModel {
         log.info { "account.create.start memberId=${props.memberId} bankCode=${props.bankCode}" }
         accountRepository.findByMemberIdAndBankCodeAndAccountNumber(
             props.memberId,
             props.bankCode,
-            props.accountNumber
+            props.accountNumber,
         )?.let {
             log.warn { "account.create.duplicate memberId=${props.memberId} bankCode=${props.bankCode}" }
             throw AccountDuplicateException("Account already exists")

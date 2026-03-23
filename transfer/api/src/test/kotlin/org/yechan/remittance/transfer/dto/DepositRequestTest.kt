@@ -1,11 +1,11 @@
 package org.yechan.remittance.transfer.dto
 
-import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.yechan.remittance.transfer.TransferFailedException
 import org.yechan.remittance.transfer.TransferProps
+import java.math.BigDecimal
 
 class DepositRequestTest {
     @Test

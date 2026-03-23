@@ -12,14 +12,12 @@ import org.yechan.remittance.transfer.dto.DepositRequest
 @RestController
 @RequestMapping("/deposits")
 class DepositController(
-    private val transferCreateUseCase: TransferCreateUseCase
+    private val transferCreateUseCase: TransferCreateUseCase,
 ) {
     @PostMapping("/{idempotencyKey}")
     fun deposit(
         @LoginUserId memberId: Long,
         @PathVariable idempotencyKey: String,
-        @RequestBody @Valid request: DepositRequest
-    ): TransferResult {
-        return transferCreateUseCase.transfer(memberId, idempotencyKey, request)
-    }
+        @RequestBody @Valid request: DepositRequest,
+    ): TransferResult = transferCreateUseCase.transfer(memberId, idempotencyKey, request)
 }

@@ -5,15 +5,17 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
-import java.math.BigDecimal
-import java.time.LocalDateTime
 import org.yechan.remittance.BaseEntity
 import org.yechan.remittance.transfer.TransferModel
 import org.yechan.remittance.transfer.TransferProps
+import java.math.BigDecimal
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "transfer", catalog = "core")
-class TransferEntity protected constructor() : BaseEntity(), TransferModel {
+class TransferEntity protected constructor() :
+    BaseEntity(),
+    TransferModel {
     @field:Column(nullable = false)
     override var fromAccountId: Long = 0
         protected set
@@ -50,7 +52,7 @@ class TransferEntity protected constructor() : BaseEntity(), TransferModel {
         amount: BigDecimal,
         scope: TransferProps.TransferScopeValue,
         status: TransferProps.TransferStatusValue,
-        completedAt: LocalDateTime?
+        completedAt: LocalDateTime?,
     ) : this() {
         this.fromAccountId = fromAccountId
         this.toAccountId = toAccountId
@@ -65,15 +67,13 @@ class TransferEntity protected constructor() : BaseEntity(), TransferModel {
         get() = id
 
     companion object {
-        fun create(props: TransferProps): TransferEntity {
-            return TransferEntity(
-                props.fromAccountId,
-                props.toAccountId,
-                props.amount,
-                props.scope,
-                props.status,
-                props.completedAt
-            )
-        }
+        fun create(props: TransferProps): TransferEntity = TransferEntity(
+            props.fromAccountId,
+            props.toAccountId,
+            props.amount,
+            props.scope,
+            props.status,
+            props.completedAt,
+        )
     }
 }

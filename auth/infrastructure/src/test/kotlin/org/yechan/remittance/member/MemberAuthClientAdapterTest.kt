@@ -1,10 +1,10 @@
 package org.yechan.remittance.member
 
-import java.util.concurrent.atomic.AtomicReference
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.yechan.remittance.auth.MemberAuthClientAdapter
+import java.util.concurrent.atomic.AtomicReference
 
 class MemberAuthClientAdapterTest {
     @Test

@@ -1,9 +1,9 @@
 package org.yechan.remittance.account
 
-import java.math.BigDecimal
-import java.time.LocalDateTime
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
+import java.time.LocalDateTime
 
 class TransferNotificationPayloadParserTest {
     @Test

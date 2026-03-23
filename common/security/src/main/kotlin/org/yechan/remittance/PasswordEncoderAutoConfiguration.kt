@@ -10,12 +10,13 @@ import org.springframework.security.crypto.password.PasswordEncoder
 @AutoConfiguration
 class PasswordEncoderAutoConfiguration
 
-class PasswordEncoderBeanRegistrar : BeanRegistrarDsl({
-    registerBean<PasswordEncoder> {
-        BCryptPasswordEncoder()
-    }
+class PasswordEncoderBeanRegistrar :
+    BeanRegistrarDsl({
+        registerBean<PasswordEncoder> {
+            BCryptPasswordEncoder()
+        }
 
-    registerBean<PasswordHashEncoder> {
-        BcryptPasswordHashEncoder(bean())
-    }
-})
+        registerBean<PasswordHashEncoder> {
+            BcryptPasswordHashEncoder(bean())
+        }
+    })

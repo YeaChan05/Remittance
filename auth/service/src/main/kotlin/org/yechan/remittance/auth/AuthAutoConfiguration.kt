@@ -8,8 +8,9 @@ import org.springframework.context.annotation.Import
 @AutoConfiguration
 class AuthAutoConfiguration
 
-class AuthBeanRegistrar : BeanRegistrarDsl({
-    registerBean<AuthLoginUseCase> {
-        AuthService(bean(), bean())
-    }
-})
+class AuthBeanRegistrar :
+    BeanRegistrarDsl({
+        registerBean<AuthLoginUseCase> {
+            AuthService(bean(), bean())
+        }
+    })

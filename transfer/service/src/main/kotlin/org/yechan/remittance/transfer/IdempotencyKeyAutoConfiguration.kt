@@ -11,12 +11,13 @@ import java.time.Clock
 @EnableConfigurationProperties(IdempotencyKeyProperties::class)
 class IdempotencyKeyAutoConfiguration
 
-class IdempotencyKeyBeanRegistrar : BeanRegistrarDsl({
-    registerBean<IdempotencyKeyCreateUseCase> {
-        IdempotencyKeyService(
-            bean(),
-            bean<Clock>(),
-            bean<IdempotencyKeyProperties>().expiresIn
-        )
-    }
-})
+class IdempotencyKeyBeanRegistrar :
+    BeanRegistrarDsl({
+        registerBean<IdempotencyKeyCreateUseCase> {
+            IdempotencyKeyService(
+                bean(),
+                bean<Clock>(),
+                bean<IdempotencyKeyProperties>().expiresIn,
+            )
+        }
+    })

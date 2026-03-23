@@ -3,15 +3,15 @@ package org.yechan.remittance
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
-import java.nio.charset.StandardCharsets
-import java.util.Collections
-import javax.crypto.SecretKey
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
+import java.nio.charset.StandardCharsets
+import java.util.Collections
+import javax.crypto.SecretKey
 
 class JwtTokenVerifier(
-    salt: String
+    salt: String,
 ) : TokenVerifier {
     private val secretKey: SecretKey
 

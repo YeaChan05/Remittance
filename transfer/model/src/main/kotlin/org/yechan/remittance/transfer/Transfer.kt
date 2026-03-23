@@ -11,5 +11,5 @@ data class Transfer(
     override val scope: TransferProps.TransferScopeValue,
     override val status: TransferProps.TransferStatusValue,
     override val requestedAt: LocalDateTime,
-    override val completedAt: LocalDateTime?
+    override val completedAt: LocalDateTime?,
 ) : TransferModel

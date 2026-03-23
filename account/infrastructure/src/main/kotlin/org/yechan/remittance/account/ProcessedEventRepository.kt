@@ -7,6 +7,6 @@ interface ProcessedEventRepository {
 
     fun markProcessed(
         eventId: Long,
-        processedAt: LocalDateTime
+        processedAt: LocalDateTime,
     )
 }

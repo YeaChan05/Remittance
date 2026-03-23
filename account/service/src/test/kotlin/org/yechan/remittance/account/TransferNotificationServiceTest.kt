@@ -1,12 +1,12 @@
 package org.yechan.remittance.account
 
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Test
 
 class TransferNotificationServiceTest {
     @Test
@@ -46,27 +46,23 @@ class TransferNotificationServiceTest {
         assertNotNull(processedRepository.markedEventId.get())
     }
 
-    private fun sampleAccount(): AccountModel {
-        return Account(
-            10L,
-            99L,
-            "090",
-            "123-456",
-            "sample-account",
-            BigDecimal.ZERO
-        )
-    }
+    private fun sampleAccount(): AccountModel = Account(
+        10L,
+        99L,
+        "090",
+        "123-456",
+        "sample-account",
+        BigDecimal.ZERO,
+    )
 
-    private fun sampleProps(): TransferNotificationProps {
-        return TestTransferNotificationProps(
-            1L,
-            11L,
-            10L,
-            1L,
-            BigDecimal.valueOf(10_000L),
-            LocalDateTime.of(2025, 1, 1, 0, 0)
-        )
-    }
+    private fun sampleProps(): TransferNotificationProps = TestTransferNotificationProps(
+        1L,
+        11L,
+        10L,
+        1L,
+        BigDecimal.valueOf(10_000L),
+        LocalDateTime.of(2025, 1, 1, 0, 0),
+    )
 
     private data class TestTransferNotificationProps(
         override val eventId: Long,
@@ -74,49 +70,37 @@ class TransferNotificationServiceTest {
         override val toAccountId: Long,
         override val fromAccountId: Long,
         override val amount: BigDecimal,
-        override val occurredAt: LocalDateTime
+        override val occurredAt: LocalDateTime,
     ) : TransferNotificationProps
 
     private class TestAccountRepository(
-        private val account: AccountModel?
+        private val account: AccountModel?,
     ) : AccountRepository {
-        override fun save(props: AccountProps): AccountModel {
-            throw UnsupportedOperationException("Not used")
-        }
+        override fun save(props: AccountProps): AccountModel = throw UnsupportedOperationException("Not used")
 
-        override fun findById(identifier: AccountIdentifier): AccountModel? {
-            return account
-        }
+        override fun findById(identifier: AccountIdentifier): AccountModel? = account
 
-        override fun findByIdForUpdate(identifier: AccountIdentifier): AccountModel? {
-            throw UnsupportedOperationException("Not used")
-        }
+        override fun findByIdForUpdate(identifier: AccountIdentifier): AccountModel? = throw UnsupportedOperationException("Not used")
 
         override fun findByMemberIdAndBankCodeAndAccountNumber(
             memberId: Long?,
             bankCode: String,
-            accountNumber: String
-        ): AccountModel? {
-            throw UnsupportedOperationException("Not used")
-        }
+            accountNumber: String,
+        ): AccountModel? = throw UnsupportedOperationException("Not used")
 
-        override fun delete(identifier: AccountIdentifier) {
-            throw UnsupportedOperationException("Not used")
-        }
+        override fun delete(identifier: AccountIdentifier): Unit = throw UnsupportedOperationException("Not used")
     }
 
     private class TestProcessedEventRepository(
-        private val processed: Boolean
+        private val processed: Boolean,
     ) : ProcessedEventRepository {
         val markedEventId = AtomicReference<Long>()
 
-        override fun existsByEventId(eventId: Long): Boolean {
-            return processed
-        }
+        override fun existsByEventId(eventId: Long): Boolean = processed
 
         override fun markProcessed(
             eventId: Long,
-            processedAt: LocalDateTime
+            processedAt: LocalDateTime,
         ) {
             markedEventId.set(eventId)
         }
@@ -128,7 +112,7 @@ class TransferNotificationServiceTest {
 
         override fun push(
             memberId: Long,
-            message: TransferNotificationMessage
+            message: TransferNotificationMessage,
         ): Boolean {
             if (fail) {
                 throw IllegalStateException("fail")

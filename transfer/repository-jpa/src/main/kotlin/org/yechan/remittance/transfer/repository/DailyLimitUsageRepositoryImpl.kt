@@ -11,28 +11,26 @@ import java.math.BigDecimal
 import java.time.LocalDate
 
 open class DailyLimitUsageRepositoryImpl(
-    private val repository: DailyLimitUsageJpaRepository
+    private val repository: DailyLimitUsageJpaRepository,
 ) : DailyLimitUsageRepository {
     @Transactional
     override fun findOrCreateForUpdate(
         identifier: AccountIdentifier,
         scope: TransferProps.TransferScopeValue,
-        usageDate: LocalDate
-    ): DailyLimitUsageModel {
-        return repository.findForUpdate(requireNotNull(identifier.accountId), scope, usageDate)
-            ?: createAndLock(identifier, scope, usageDate)
-    }
+        usageDate: LocalDate,
+    ): DailyLimitUsageModel = repository.findForUpdate(requireNotNull(identifier.accountId), scope, usageDate)
+        ?: createAndLock(identifier, scope, usageDate)
 
     private fun createAndLock(
         identifier: AccountIdentifier,
         scope: TransferProps.TransferScopeValue,
-        usageDate: LocalDate
+        usageDate: LocalDate,
     ): DailyLimitUsageModel {
         try {
             repository.saveAndFlush(
                 DailyLimitUsageEntity.create(
-                    DailyLimitUsageCreateCommand(requireNotNull(identifier.accountId), scope, usageDate, BigDecimal.ZERO)
-                )
+                    DailyLimitUsageCreateCommand(requireNotNull(identifier.accountId), scope, usageDate, BigDecimal.ZERO),
+                ),
             )
         } catch (_: DataIntegrityViolationException) {
             // concurrent insert
@@ -46,6 +44,6 @@ open class DailyLimitUsageRepositoryImpl(
         override val accountId: Long,
         override val scope: TransferProps.TransferScopeValue,
         override val usageDate: LocalDate,
-        override val usedAmount: BigDecimal
+        override val usedAmount: BigDecimal,
     ) : DailyLimitUsageProps
 }

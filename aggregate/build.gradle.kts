@@ -9,7 +9,6 @@ testcontainers {
 dependencies {
     implementation(project(":common:security"))
 
-
     implementation(project(":account:api"))
     implementation(project(":account:repository-jpa"))
     implementation(project(":account:schema"))
@@ -38,7 +37,6 @@ dependencies {
     runtimeOnly("com.mysql:mysql-connector-j") {
         exclude(group = "com.google.protobuf", module = "protobuf-java")
     }
-
 
     integrationTestRuntimeOnly("com.mysql:mysql-connector-j") {
         exclude(group = "com.google.protobuf", module = "protobuf-java")

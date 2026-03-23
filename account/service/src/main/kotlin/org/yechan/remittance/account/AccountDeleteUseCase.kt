@@ -9,7 +9,7 @@ fun interface AccountDeleteUseCase {
 private val log = KotlinLogging.logger {}
 
 class AccountDeleteService(
-    private val accountRepository: AccountRepository
+    private val accountRepository: AccountRepository,
 ) : AccountDeleteUseCase {
     override fun delete(props: AccountDeleteProps): AccountModel {
         log.info { "account.delete.start memberId=${props.memberId} accountId=${props.accountId}" }
@@ -36,6 +36,6 @@ class AccountDeleteService(
     }
 
     private data class AccountId(
-        override val accountId: Long?
+        override val accountId: Long?,
     ) : AccountIdentifier
 }

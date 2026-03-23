@@ -1,7 +1,6 @@
 package org.yechan.remittance.account
 
 import jakarta.validation.Valid
-import java.math.BigDecimal
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -13,17 +12,18 @@ import org.yechan.remittance.LoginUserId
 import org.yechan.remittance.account.dto.AccountCreateRequest
 import org.yechan.remittance.account.dto.AccountCreateResponse
 import org.yechan.remittance.account.dto.AccountDeleteResponse
+import java.math.BigDecimal
 
 @RestController
 @RequestMapping("/accounts")
 class AccountController(
     private val accountCreateUseCase: AccountCreateUseCase,
-    private val accountDeleteUseCase: AccountDeleteUseCase
+    private val accountDeleteUseCase: AccountDeleteUseCase,
 ) : AccountApi {
     @PostMapping
     override fun create(
         @LoginUserId memberId: Long,
-        @RequestBody @Valid request: AccountCreateRequest
+        @RequestBody @Valid request: AccountCreateRequest,
     ): ResponseEntity<AccountCreateResponse> {
         val account =
             accountCreateUseCase.create(
@@ -31,8 +31,8 @@ class AccountController(
                     memberId,
                     request.bankCode,
                     request.accountNumber,
-                    request.accountName
-                )
+                    request.accountName,
+                ),
             )
         return ResponseEntity.ok(AccountCreateResponse(account.accountId, account.accountName))
     }
@@ -40,7 +40,7 @@ class AccountController(
     @DeleteMapping("/{accountId}")
     override fun delete(
         @LoginUserId memberId: Long,
-        @PathVariable accountId: Long
+        @PathVariable accountId: Long,
     ): ResponseEntity<AccountDeleteResponse> {
         val account = accountDeleteUseCase.delete(AccountDeleteCommand(memberId, accountId))
         return ResponseEntity.ok(AccountDeleteResponse(requireNotNull(account.accountId)))
@@ -50,13 +50,13 @@ class AccountController(
         override val memberId: Long?,
         override val bankCode: String,
         override val accountNumber: String,
-        override val accountName: String
+        override val accountName: String,
     ) : AccountProps {
         override val balance: BigDecimal = BigDecimal.ZERO
     }
 
     private data class AccountDeleteCommand(
         override val memberId: Long,
-        override val accountId: Long
+        override val accountId: Long,
     ) : AccountDeleteProps
 }

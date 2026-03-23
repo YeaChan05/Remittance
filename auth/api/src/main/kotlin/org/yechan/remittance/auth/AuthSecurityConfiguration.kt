@@ -12,12 +12,13 @@ import org.yechan.remittance.PrioritizedAuthorizeHttpRequestsCustomizer
 @Configuration
 class AuthSecurityConfiguration
 
-class AuthSecurityBeanRegistrar : BeanRegistrarDsl({
-    registerBean<AuthorizeHttpRequestsCustomizer>("authAuthorizeHttpRequestsCustomizer") {
-        PrioritizedAuthorizeHttpRequestsCustomizer(
-            Ordered.HIGHEST_PRECEDENCE + 10
-        ) { registry ->
-            registry.requestMatchers(HttpMethod.POST, "/login").permitAll()
+class AuthSecurityBeanRegistrar :
+    BeanRegistrarDsl({
+        registerBean<AuthorizeHttpRequestsCustomizer>("authAuthorizeHttpRequestsCustomizer") {
+            PrioritizedAuthorizeHttpRequestsCustomizer(
+                Ordered.HIGHEST_PRECEDENCE + 10,
+            ) { registry ->
+                registry.requestMatchers(HttpMethod.POST, "/login").permitAll()
+            }
         }
-    }
-})
+    })

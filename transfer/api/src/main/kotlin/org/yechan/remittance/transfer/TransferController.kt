@@ -1,6 +1,5 @@
 package org.yechan.remittance.transfer
 
-import java.time.LocalDateTime
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -12,21 +11,20 @@ import org.springframework.web.bind.annotation.RestController
 import org.yechan.remittance.LoginUserId
 import org.yechan.remittance.transfer.dto.TransferQueryResponse
 import org.yechan.remittance.transfer.dto.TransferRequest
+import java.time.LocalDateTime
 
 @RestController
 @RequestMapping("/transfers")
 class TransferController(
     private val transferCreateUseCase: TransferCreateUseCase,
-    private val transferQueryUseCase: TransferQueryUseCase
+    private val transferQueryUseCase: TransferQueryUseCase,
 ) : TransferApi {
     @PostMapping("/{idempotencyKey}")
     override fun transfer(
         @LoginUserId memberId: Long,
         @PathVariable idempotencyKey: String,
-        @RequestBody props: TransferRequest
-    ): TransferResult {
-        return transferCreateUseCase.transfer(memberId, idempotencyKey, props)
-    }
+        @RequestBody props: TransferRequest,
+    ): TransferResult = transferCreateUseCase.transfer(memberId, idempotencyKey, props)
 
     @GetMapping
     override fun query(
@@ -38,7 +36,7 @@ class TransferController(
         @RequestParam(required = false)
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
         to: LocalDateTime?,
-        @RequestParam(required = false) limit: Int?
+        @RequestParam(required = false) limit: Int?,
     ): TransferQueryResponse {
         val transfers = transferQueryUseCase.query(memberId, accountId, TransferQueryCondition(from, to, limit))
         return TransferQueryResponse.from(transfers)

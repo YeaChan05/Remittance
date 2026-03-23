@@ -8,7 +8,7 @@ fun interface TransferCreateUseCase {
     fun transfer(
         memberId: Long,
         idempotencyKey: String,
-        props: TransferRequestProps
+        props: TransferRequestProps,
     ): TransferResult
 }
 
@@ -19,12 +19,12 @@ class TransferService(
     private val transferProcessService: TransferProcessService,
     private val ledgerWriter: LedgerWriter,
     private val transferSnapshotUtil: TransferSnapshotUtil,
-    private val clock: Clock
+    private val clock: Clock,
 ) : TransferCreateUseCase {
     override fun transfer(
         memberId: Long,
         idempotencyKey: String,
-        props: TransferRequestProps
+        props: TransferRequestProps,
     ): TransferResult {
         log.info { "transfer.start memberId=$memberId scope=${props.scope}" }
         val now = LocalDateTime.now(clock)

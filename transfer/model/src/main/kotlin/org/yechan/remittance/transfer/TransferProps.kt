@@ -15,20 +15,19 @@ interface TransferProps {
     enum class TransferScopeValue {
         DEPOSIT,
         WITHDRAW,
-        TRANSFER;
+        TRANSFER,
+        ;
 
-        fun toIdempotencyScope(): IdempotencyKeyProps.IdempotencyScopeValue {
-            return when (this) {
-                TRANSFER -> IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
-                WITHDRAW -> IdempotencyKeyProps.IdempotencyScopeValue.WITHDRAW
-                DEPOSIT -> IdempotencyKeyProps.IdempotencyScopeValue.DEPOSIT
-            }
+        fun toIdempotencyScope(): IdempotencyKeyProps.IdempotencyScopeValue = when (this) {
+            TRANSFER -> IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
+            WITHDRAW -> IdempotencyKeyProps.IdempotencyScopeValue.WITHDRAW
+            DEPOSIT -> IdempotencyKeyProps.IdempotencyScopeValue.DEPOSIT
         }
     }
 
     enum class TransferStatusValue {
         IN_PROGRESS,
         SUCCEEDED,
-        FAILED
+        FAILED,
     }
 }

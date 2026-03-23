@@ -11,22 +11,22 @@ import org.yechan.remittance.transfer.dto.IdempotencyKeyCreateResponse
 @RestController
 @RequestMapping("/idempotency-keys")
 class IdempotencyKeyController(
-    private val idempotencyKeyCreateUseCase: IdempotencyKeyCreateUseCase
+    private val idempotencyKeyCreateUseCase: IdempotencyKeyCreateUseCase,
 ) : IdempotencyKeyApi {
     @PostMapping
     override fun create(
         @LoginUserId memberId: Long,
-        @RequestParam(required = false) scope: IdempotencyKeyProps.IdempotencyScopeValue?
+        @RequestParam(required = false) scope: IdempotencyKeyProps.IdempotencyScopeValue?,
     ): ResponseEntity<IdempotencyKeyCreateResponse> {
         val resolvedScope = scope ?: IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
         val created = idempotencyKeyCreateUseCase.create(IdempotencyKeyCreateCommand(memberId, resolvedScope))
         return ResponseEntity.ok(
-            IdempotencyKeyCreateResponse(created.idempotencyKey, requireNotNull(created.expiresAt))
+            IdempotencyKeyCreateResponse(created.idempotencyKey, requireNotNull(created.expiresAt)),
         )
     }
 
     private data class IdempotencyKeyCreateCommand(
         override val memberId: Long,
-        override val scope: IdempotencyKeyProps.IdempotencyScopeValue
+        override val scope: IdempotencyKeyProps.IdempotencyScopeValue,
     ) : IdempotencyKeyCreateProps
 }

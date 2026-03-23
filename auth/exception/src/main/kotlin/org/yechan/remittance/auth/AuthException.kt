@@ -5,5 +5,5 @@ import org.yechan.remittance.Status
 
 open class AuthException(
     status: Status,
-    message: String
+    message: String,
 ) : BusinessException(status, message)

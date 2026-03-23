@@ -2,24 +2,21 @@ package org.yechan.remittance.transfer
 
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.time.LocalDateTime
 
 class TransferSnapshotUtil(
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
 ) {
-    fun toSnapshot(result: TransferResult): String {
-        return writeJson(
-            mapOf(
-                "status" to result.status.name,
-                "transferId" to result.transferId,
-                "errorCode" to result.errorCode
-            )
-        )
-    }
+    fun toSnapshot(result: TransferResult): String = writeJson(
+        mapOf(
+            "status" to result.status.name,
+            "transferId" to result.transferId,
+            "errorCode" to result.errorCode,
+        ),
+    )
 
     fun fromSnapshot(snapshot: String): TransferResult {
         if (snapshot.isBlank()) {
@@ -52,8 +49,8 @@ class TransferSnapshotUtil(
                 linkedMapOf(
                     "fromAccountId" to props.fromAccountId,
                     "toAccountId" to props.toAccountId,
-                    "amount" to props.amount
-                )
+                    "amount" to props.amount,
+                ),
             )
         try {
             val digest = MessageDigest.getInstance("SHA-256")
@@ -67,18 +64,16 @@ class TransferSnapshotUtil(
     fun toOutboxPayload(
         transfer: TransferModel,
         props: TransferRequestProps,
-        now: LocalDateTime
-    ): String {
-        return writeJson(
-            linkedMapOf(
-                "transferId" to transfer.transferId,
-                "fromAccountId" to props.fromAccountId,
-                "toAccountId" to props.toAccountId,
-                "amount" to props.amount,
-                "completedAt" to now.toString()
-            )
-        )
-    }
+        now: LocalDateTime,
+    ): String = writeJson(
+        linkedMapOf(
+            "transferId" to transfer.transferId,
+            "fromAccountId" to props.fromAccountId,
+            "toAccountId" to props.toAccountId,
+            "amount" to props.amount,
+            "completedAt" to now.toString(),
+        ),
+    )
 
     private fun writeJson(payload: Any): String {
         try {

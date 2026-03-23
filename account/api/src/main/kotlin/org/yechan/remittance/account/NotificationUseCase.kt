@@ -1,15 +1,15 @@
 package org.yechan.remittance.account
 
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 
 fun interface NotificationUseCase {
     fun connectRegister(memberId: Long): SseEmitter
 }
 
 class NotificationSessionRegistry(
-    private val emitterSupplier: () -> SseEmitter = { SseEmitter() }
+    private val emitterSupplier: () -> SseEmitter = { SseEmitter() },
 ) : NotificationUseCase {
     private val sessions = ConcurrentHashMap<Long, SseEmitter>()
 
@@ -22,13 +22,11 @@ class NotificationSessionRegistry(
         return emitter
     }
 
-    fun find(memberId: Long): SseEmitter? {
-        return sessions[memberId]
-    }
+    fun find(memberId: Long): SseEmitter? = sessions[memberId]
 
     fun push(
         memberId: Long,
-        payload: Any
+        payload: Any,
     ): Boolean {
         val emitter = sessions[memberId] ?: return false
         return try {

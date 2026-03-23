@@ -1,21 +1,21 @@
 package org.yechan.remittance.transfer
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.math.BigDecimal
-import java.time.LocalDateTime
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
+import java.time.LocalDateTime
 
 private val log = KotlinLogging.logger {}
 
 open class LedgerWriter(
-    private val ledgerRepository: LedgerRepository
+    private val ledgerRepository: LedgerRepository,
 ) {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     open fun record(
         props: TransferRequestProps,
         result: TransferResult,
-        now: LocalDateTime
+        now: LocalDateTime,
     ) {
         if (result.transferId == null) {
             log.info { "ledger.record.skip transferId=null" }
@@ -28,7 +28,7 @@ open class LedgerWriter(
                 props.toAccountId,
                 props.amount,
                 LedgerProps.LedgerSideValue.CREDIT,
-                now
+                now,
             )
             return
         }
@@ -42,7 +42,7 @@ open class LedgerWriter(
             props.fromAccountId,
             debitAmount,
             LedgerProps.LedgerSideValue.DEBIT,
-            now
+            now,
         )
 
         if (props.scope == TransferProps.TransferScopeValue.TRANSFER) {
@@ -54,7 +54,7 @@ open class LedgerWriter(
                 props.toAccountId,
                 props.amount,
                 LedgerProps.LedgerSideValue.CREDIT,
-                now
+                now,
             )
         }
     }
@@ -64,7 +64,7 @@ open class LedgerWriter(
         accountId: Long,
         amount: BigDecimal,
         side: LedgerProps.LedgerSideValue,
-        now: LocalDateTime
+        now: LocalDateTime,
     ) {
         val resolvedTransferId = requireNotNull(transferId)
         if (ledgerRepository.existsByTransferIdAndAccountIdAndSide(resolvedTransferId, accountId, side)) {
@@ -80,6 +80,6 @@ open class LedgerWriter(
         override val accountId: Long,
         override val amount: BigDecimal,
         override val side: LedgerProps.LedgerSideValue,
-        override val createdAt: LocalDateTime?
+        override val createdAt: LocalDateTime?,
     ) : LedgerProps
 }

@@ -11,7 +11,7 @@ private val log = KotlinLogging.logger {}
 class TransferEventPublishService(
     private val outboxEventRepository: OutboxEventRepository,
     private val transferEventPublisher: TransferEventPublisher,
-    private val outboxEventStatusUpdater: OutboxEventStatusUpdater
+    private val outboxEventStatusUpdater: OutboxEventStatusUpdater,
 ) : TransferEventPublishUseCase {
     override fun publish(limit: Int?): Int {
         log.info { "transfer.event.publish.start limit=$limit" }

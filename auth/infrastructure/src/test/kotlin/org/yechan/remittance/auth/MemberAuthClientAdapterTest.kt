@@ -1,11 +1,11 @@
 package org.yechan.remittance.auth
 
-import java.util.concurrent.atomic.AtomicReference
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.yechan.remittance.member.LoginVerifyRequest
 import org.yechan.remittance.member.LoginVerifyResponse
 import org.yechan.remittance.member.MemberInternalApi
+import java.util.concurrent.atomic.AtomicReference
 
 class MemberAuthClientAdapterTest {
     @Test

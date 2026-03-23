@@ -5,7 +5,7 @@ open class BusinessException : RuntimeException {
 
     constructor(
         status: Status,
-        message: String
+        message: String,
     ) : super(message) {
         this.status = status
     }

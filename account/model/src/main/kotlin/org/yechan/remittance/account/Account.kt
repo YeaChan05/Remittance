@@ -8,5 +8,5 @@ data class Account(
     override val bankCode: String,
     override val accountNumber: String,
     override val accountName: String,
-    override var balance: BigDecimal
+    override var balance: BigDecimal,
 ) : AccountModel

@@ -8,12 +8,13 @@ import org.springframework.context.annotation.Import
 @AutoConfiguration
 class AccountApiAutoConfiguration
 
-class AccountApiBeanRegistrar : BeanRegistrarDsl({
-    registerBean<NotificationSessionRegistry> {
-        NotificationSessionRegistry()
-    }
+class AccountApiBeanRegistrar :
+    BeanRegistrarDsl({
+        registerBean<NotificationSessionRegistry> {
+            NotificationSessionRegistry()
+        }
 
-    registerBean<NotificationPushPort> {
-        NotificationPushAdapter(bean())
-    }
-})
+        registerBean<NotificationPushPort> {
+            NotificationPushAdapter(bean())
+        }
+    })

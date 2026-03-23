@@ -13,7 +13,7 @@ import org.yechan.remittance.member.dto.MemberLoginResponse
 interface AuthApi {
     @Operation(summary = "Login", description = "Authenticates a member")
     @ApiResponses(
-        ApiResponse(responseCode = "200", description = "Login succeeded", content = [Content()])
+        ApiResponse(responseCode = "200", description = "Login succeeded", content = [Content()]),
     )
     fun login(request: MemberLoginRequest): ResponseEntity<MemberLoginResponse>
 }

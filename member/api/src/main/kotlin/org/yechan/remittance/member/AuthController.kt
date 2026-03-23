@@ -10,11 +10,11 @@ import org.yechan.remittance.member.dto.MemberLoginResponse
 
 @RestController
 class AuthController(
-    private val memberQueryUseCase: MemberQueryUseCase
+    private val memberQueryUseCase: MemberQueryUseCase,
 ) : AuthApi {
     @PostMapping("/login")
     override fun login(
-        @RequestBody @Valid request: MemberLoginRequest
+        @RequestBody @Valid request: MemberLoginRequest,
     ): ResponseEntity<MemberLoginResponse> {
         val token = memberQueryUseCase.login(request)
         val response = MemberLoginResponse.from(token)
@@ -22,10 +22,8 @@ class AuthController(
     }
 }
 
-fun MemberLoginResponse.Companion.from(token: MemberTokenValue) : MemberLoginResponse{
-    return MemberLoginResponse(
-        accessToken = token.accessToken,
-        refreshToken = token.refreshToken,
-        expiresIn = token.expiresIn
-    )
-}
+fun MemberLoginResponse.Companion.from(token: MemberTokenValue): MemberLoginResponse = MemberLoginResponse(
+    accessToken = token.accessToken,
+    refreshToken = token.refreshToken,
+    expiresIn = token.expiresIn,
+)

@@ -9,7 +9,9 @@ import org.yechan.remittance.member.MemberProps
 
 @Entity
 @Table(name = "member", catalog = "core")
-class MemberEntity protected constructor() : BaseEntity(), MemberModel {
+class MemberEntity protected constructor() :
+    BaseEntity(),
+    MemberModel {
     @field:Column(nullable = false)
     override var name: String = ""
         protected set
@@ -24,7 +26,7 @@ class MemberEntity protected constructor() : BaseEntity(), MemberModel {
     private constructor(
         name: String,
         email: String,
-        passwordHash: String
+        passwordHash: String,
     ) : this() {
         this.name = name
         this.email = email
@@ -38,8 +40,6 @@ class MemberEntity protected constructor() : BaseEntity(), MemberModel {
         get() = passwordHash
 
     companion object {
-        fun create(props: MemberProps): MemberEntity {
-            return MemberEntity(props.name, props.email, props.password)
-        }
+        fun create(props: MemberProps): MemberEntity = MemberEntity(props.name, props.email, props.password)
     }
 }

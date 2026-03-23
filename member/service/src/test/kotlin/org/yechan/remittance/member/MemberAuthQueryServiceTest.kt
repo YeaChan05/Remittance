@@ -8,17 +8,11 @@ class MemberAuthQueryServiceTest {
     @Test
     fun `회원이 존재하지 않으면 유효하지 않은 인증 결과를 반환한다`() {
         val memberRepository = object : MemberRepository {
-            override fun save(props: MemberProps): MemberModel {
-                throw UnsupportedOperationException()
-            }
+            override fun save(props: MemberProps): MemberModel = throw UnsupportedOperationException()
 
-            override fun findById(identifier: MemberIdentifier): MemberModel? {
-                return null
-            }
+            override fun findById(identifier: MemberIdentifier): MemberModel? = null
 
-            override fun findByEmail(email: String): MemberModel? {
-                return null
-            }
+            override fun findByEmail(email: String): MemberModel? = null
         }
         val passwordHashEncoder = object : PasswordHashEncoder {
             override fun encode(password: String): String = "encoded"
@@ -36,17 +30,11 @@ class MemberAuthQueryServiceTest {
     @Test
     fun `비밀번호가 일치하지 않으면 유효하지 않은 인증 결과를 반환한다`() {
         val memberRepository = object : MemberRepository {
-            override fun save(props: MemberProps): MemberModel {
-                throw UnsupportedOperationException()
-            }
+            override fun save(props: MemberProps): MemberModel = throw UnsupportedOperationException()
 
-            override fun findById(identifier: MemberIdentifier): MemberModel? {
-                return null
-            }
+            override fun findById(identifier: MemberIdentifier): MemberModel? = null
 
-            override fun findByEmail(email: String): MemberModel? {
-                return TestMember(memberId = 7L, password = "hashed")
-            }
+            override fun findByEmail(email: String): MemberModel? = TestMember(memberId = 7L, password = "hashed")
         }
         val passwordHashEncoder = object : PasswordHashEncoder {
             override fun encode(password: String): String = "encoded"
@@ -64,17 +52,11 @@ class MemberAuthQueryServiceTest {
     @Test
     fun `회원이 존재하고 비밀번호가 일치하면 유효한 인증 결과를 반환한다`() {
         val memberRepository = object : MemberRepository {
-            override fun save(props: MemberProps): MemberModel {
-                throw UnsupportedOperationException()
-            }
+            override fun save(props: MemberProps): MemberModel = throw UnsupportedOperationException()
 
-            override fun findById(identifier: MemberIdentifier): MemberModel? {
-                return null
-            }
+            override fun findById(identifier: MemberIdentifier): MemberModel? = null
 
-            override fun findByEmail(email: String): MemberModel? {
-                return TestMember(memberId = 9L, password = "hashed")
-            }
+            override fun findByEmail(email: String): MemberModel? = TestMember(memberId = 9L, password = "hashed")
         }
         val passwordHashEncoder = object : PasswordHashEncoder {
             override fun encode(password: String): String = "encoded"
@@ -96,7 +78,7 @@ class MemberAuthQueryServiceTest {
 
     private data class TestMember(
         override val memberId: Long?,
-        override val password: String
+        override val password: String,
     ) : MemberModel {
         override val name: String = "name"
         override val email: String = "user@example.com"

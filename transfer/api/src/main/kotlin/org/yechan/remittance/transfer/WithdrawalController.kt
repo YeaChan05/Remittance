@@ -12,14 +12,12 @@ import org.yechan.remittance.transfer.dto.WithdrawalRequest
 @RestController
 @RequestMapping("/withdrawals")
 class WithdrawalController(
-    private val transferCreateUseCase: TransferCreateUseCase
+    private val transferCreateUseCase: TransferCreateUseCase,
 ) {
     @PostMapping("/{idempotencyKey}")
     fun withdraw(
         @LoginUserId memberId: Long,
         @PathVariable idempotencyKey: String,
-        @RequestBody @Valid request: WithdrawalRequest
-    ): TransferResult {
-        return transferCreateUseCase.transfer(memberId, idempotencyKey, request)
-    }
+        @RequestBody @Valid request: WithdrawalRequest,
+    ): TransferResult = transferCreateUseCase.transfer(memberId, idempotencyKey, request)
 }

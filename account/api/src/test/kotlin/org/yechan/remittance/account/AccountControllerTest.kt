@@ -1,10 +1,10 @@
 package org.yechan.remittance.account
 
-import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.yechan.remittance.account.dto.AccountCreateRequest
+import java.math.BigDecimal
 
 class AccountControllerTest {
     @Test
@@ -17,7 +17,7 @@ class AccountControllerTest {
                     props.bankCode,
                     props.accountNumber,
                     props.accountName,
-                    props.balance
+                    props.balance,
                 )
             }
         val deleteUseCase =
@@ -28,7 +28,7 @@ class AccountControllerTest {
                     "090",
                     "123-456",
                     "sample-account",
-                    BigDecimal.ZERO
+                    BigDecimal.ZERO,
                 )
             }
         val controller = AccountController(createUseCase, deleteUseCase)
@@ -50,7 +50,7 @@ class AccountControllerTest {
                     props.bankCode,
                     props.accountNumber,
                     props.accountName,
-                    props.balance
+                    props.balance,
                 )
             }
         val deleteUseCase =
@@ -61,7 +61,7 @@ class AccountControllerTest {
                     "090",
                     "123-456",
                     "sample-account",
-                    BigDecimal.ZERO
+                    BigDecimal.ZERO,
                 )
             }
         val controller = AccountController(createUseCase, deleteUseCase)

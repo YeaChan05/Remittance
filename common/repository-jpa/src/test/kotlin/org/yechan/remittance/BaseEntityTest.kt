@@ -61,7 +61,7 @@ class BaseEntityTest {
 
     private fun setId(
         entity: BaseEntity,
-        id: Long
+        id: Long,
     ) {
         val field = BaseEntity::class.java.getDeclaredField("id")
         field.isAccessible = true
@@ -71,14 +71,11 @@ class BaseEntityTest {
     private open class TestEntity : BaseEntity()
 
     private class TestEntityProxy(
-        private val initializer: LazyInitializer
-    ) : TestEntity(), HibernateProxy {
-        override fun getHibernateLazyInitializer(): LazyInitializer {
-            return initializer
-        }
+        private val initializer: LazyInitializer,
+    ) : TestEntity(),
+        HibernateProxy {
+        override fun getHibernateLazyInitializer(): LazyInitializer = initializer
 
-        override fun writeReplace(): Any {
-            return this
-        }
+        override fun writeReplace(): Any = this
     }
 }

@@ -15,19 +15,19 @@ import org.yechan.remittance.account.dto.AccountDeleteResponse
 interface AccountApi {
     @Operation(summary = "Create account", description = "Registers a member account.")
     @ApiResponses(
-        ApiResponse(responseCode = "200", description = "Success", content = [Content()])
+        ApiResponse(responseCode = "200", description = "Success", content = [Content()]),
     )
     fun create(
         @Parameter(hidden = true) memberId: Long,
-        request: AccountCreateRequest
+        request: AccountCreateRequest,
     ): ResponseEntity<AccountCreateResponse>
 
     @Operation(summary = "Delete account", description = "Deletes a member account.")
     @ApiResponses(
-        ApiResponse(responseCode = "200", description = "Success", content = [Content()])
+        ApiResponse(responseCode = "200", description = "Success", content = [Content()]),
     )
     fun delete(
         @Parameter(hidden = true) memberId: Long,
-        @Parameter(description = "Account ID") accountId: Long
+        @Parameter(description = "Account ID") accountId: Long,
     ): ResponseEntity<AccountDeleteResponse>
 }

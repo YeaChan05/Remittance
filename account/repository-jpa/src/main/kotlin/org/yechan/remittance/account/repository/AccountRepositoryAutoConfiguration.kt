@@ -10,17 +10,18 @@ import org.yechan.remittance.account.AccountRepository
 import org.yechan.remittance.account.ProcessedEventRepository
 
 @Import(AccountRepositoryBeanRegistrar::class)
-@AutoConfiguration
+@AutoConfiguration(before = [DataJpaRepositoriesAutoConfiguration::class])
 @EntityScan(basePackageClasses = [AccountEntity::class, ProcessedEventEntity::class])
 @EnableJpaRepositories(basePackageClasses = [AccountJpaRepository::class, ProcessedEventJpaRepository::class])
 class AccountRepositoryAutoConfiguration
 
-class AccountRepositoryBeanRegistrar : BeanRegistrarDsl({
-    registerBean<AccountRepository> {
-        AccountRepositoryImpl(bean())
-    }
+class AccountRepositoryBeanRegistrar :
+    BeanRegistrarDsl({
+        registerBean<AccountRepository> {
+            AccountRepositoryImpl(bean())
+        }
 
-    registerBean<ProcessedEventRepository> {
-        ProcessedEventRepositoryImpl(bean())
-    }
-})
+        registerBean<ProcessedEventRepository> {
+            ProcessedEventRepositoryImpl(bean())
+        }
+    })

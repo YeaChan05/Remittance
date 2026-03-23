@@ -1,6 +1,5 @@
 package org.yechan.remittance.account.repository
 
-import java.time.LocalDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -9,6 +8,7 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.TestConstructor
+import java.time.LocalDateTime
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -24,8 +24,8 @@ class ProcessedEventJpaRepositoryTest {
         processedEventRepository.save(
             ProcessedEventEntity.create(
                 100L,
-                LocalDateTime.of(2025, 1, 1, 0, 0)
-            )
+                LocalDateTime.of(2025, 1, 1, 0, 0),
+            ),
         )
 
         assertThat(processedEventRepository.existsByEventId(100L)).isTrue()

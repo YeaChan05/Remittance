@@ -9,8 +9,9 @@ import org.springframework.context.annotation.Import
 @Configuration
 class TransferSnapshotConfiguration
 
-class TransferSnapshotBeanRegistrar : BeanRegistrarDsl({
-    registerBean<TransferSnapshotUtil> {
-        TransferSnapshotUtil(beanProvider<ObjectMapper>().ifAvailable ?: ObjectMapper())
-    }
-})
+class TransferSnapshotBeanRegistrar :
+    BeanRegistrarDsl({
+        registerBean<TransferSnapshotUtil> {
+            TransferSnapshotUtil(beanProvider<ObjectMapper>().ifAvailable ?: ObjectMapper())
+        }
+    })

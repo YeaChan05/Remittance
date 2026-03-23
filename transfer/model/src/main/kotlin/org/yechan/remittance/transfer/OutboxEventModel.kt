@@ -1,3 +1,5 @@
 package org.yechan.remittance.transfer
 
-interface OutboxEventModel : OutboxEventProps, OutboxEventIdentifier
+interface OutboxEventModel :
+    OutboxEventProps,
+    OutboxEventIdentifier

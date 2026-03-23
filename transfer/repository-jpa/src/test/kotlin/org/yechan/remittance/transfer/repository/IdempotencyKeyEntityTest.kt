@@ -1,12 +1,12 @@
 package org.yechan.remittance.transfer.repository
 
-import java.time.LocalDateTime
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.yechan.remittance.transfer.IdempotencyKeyProps
+import java.time.LocalDateTime
 
 class IdempotencyKeyEntityTest {
     @Test

@@ -13,8 +13,6 @@ class TransferTestFixturesConfig {
         restTestClient: RestTestClient,
         em: EntityManager,
         transactionTemplate: TransactionTemplate,
-        tokenVerifier: TokenVerifier
-    ): TransferTestFixtures {
-        return TransferTestFixtures(restTestClient, em, transactionTemplate, tokenVerifier)
-    }
+        tokenVerifier: TokenVerifier,
+    ): TransferTestFixtures = TransferTestFixtures(restTestClient, em, transactionTemplate, tokenVerifier)
 }

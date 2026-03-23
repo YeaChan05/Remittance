@@ -6,21 +6,20 @@ import org.springframework.security.config.annotation.web.configurers.AuthorizeH
 
 fun interface AuthorizeHttpRequestsCustomizer {
     fun customize(
-        registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
+        registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry,
     )
 }
 
 class PrioritizedAuthorizeHttpRequestsCustomizer(
     private val order: Int,
-    private val delegate: AuthorizeHttpRequestsCustomizer
-) : AuthorizeHttpRequestsCustomizer, Ordered {
+    private val delegate: AuthorizeHttpRequestsCustomizer,
+) : AuthorizeHttpRequestsCustomizer,
+    Ordered {
     override fun customize(
-        registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
+        registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry,
     ) {
         delegate.customize(registry)
     }
 
-    override fun getOrder(): Int {
-        return order
-    }
+    override fun getOrder(): Int = order
 }

@@ -52,7 +52,6 @@ include(":auth:service")
 include(":auth:exception")
 include(":auth:infrastructure")
 
-
 include(":common:application-api")
 include(":common:api")
 include(":common:boot")

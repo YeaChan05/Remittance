@@ -9,13 +9,13 @@ interface LedgerRepository {
     fun existsByTransferIdAndAccountIdAndSide(
         transferId: Long,
         accountId: Long,
-        side: LedgerProps.LedgerSideValue
+        side: LedgerProps.LedgerSideValue,
     ): Boolean
 
     fun sumAmountByAccountIdAndSideBetween(
         accountId: Long,
         side: LedgerProps.LedgerSideValue,
         from: LocalDateTime,
-        to: LocalDateTime
+        to: LocalDateTime,
     ): BigDecimal
 }

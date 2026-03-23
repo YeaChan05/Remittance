@@ -50,7 +50,7 @@ class LoginUserIdArgumentResolverTest {
             UsernamePasswordAuthenticationToken(
                 "42",
                 "credentials",
-                listOf(SimpleGrantedAuthority("ROLE_USER"))
+                listOf(SimpleGrantedAuthority("ROLE_USER")),
             )
         val parameter = MethodParameter(method("handlerWithLong", java.lang.Long::class.java), 0)
 
@@ -76,7 +76,7 @@ class LoginUserIdArgumentResolverTest {
             AnonymousAuthenticationToken(
                 "key",
                 "anonymous",
-                listOf(SimpleGrantedAuthority("ROLE_ANONYMOUS"))
+                listOf(SimpleGrantedAuthority("ROLE_ANONYMOUS")),
             )
         val parameter = MethodParameter(method("handlerWithLong", java.lang.Long::class.java), 0)
 
@@ -93,7 +93,7 @@ class LoginUserIdArgumentResolverTest {
             UsernamePasswordAuthenticationToken(
                 "not-a-number",
                 "credentials",
-                listOf(SimpleGrantedAuthority("ROLE_USER"))
+                listOf(SimpleGrantedAuthority("ROLE_USER")),
             )
         val parameter = MethodParameter(method("handlerWithLong", java.lang.Long::class.java), 0)
 
@@ -106,17 +106,17 @@ class LoginUserIdArgumentResolverTest {
 
     private fun method(
         name: String,
-        parameterType: Class<*>
+        parameterType: Class<*>,
     ) = TestController::class.java.getDeclaredMethod(name, parameterType)
 
     private class TestController {
         fun handlerWithLong(
-            @LoginUserId userId: Long?
+            @LoginUserId userId: Long?,
         ) {
         }
 
         fun handlerWithPrimitive(
-            @LoginUserId userId: Long
+            @LoginUserId userId: Long,
         ) {
         }
 

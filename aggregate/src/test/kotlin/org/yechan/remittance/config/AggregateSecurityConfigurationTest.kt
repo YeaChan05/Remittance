@@ -20,11 +20,11 @@ class AggregateSecurityConfigurationTest {
 
         val aggregateCustomizer = context.getBean(
             "aggregateAuthorizeHttpRequestsCustomizer",
-            AuthorizeHttpRequestsCustomizer::class.java
+            AuthorizeHttpRequestsCustomizer::class.java,
         )
         val defaultCustomizer = context.getBean(
             "defaultAuthorizeHttpRequestsCustomizer",
-            AuthorizeHttpRequestsCustomizer::class.java
+            AuthorizeHttpRequestsCustomizer::class.java,
         )
         val orderedCustomizers =
             context.getBeanProvider(AuthorizeHttpRequestsCustomizer::class.java)
@@ -43,10 +43,8 @@ class AggregateSecurityConfigurationTest {
     @Import(AggregateSecurityConfiguration::class)
     class TestConfiguration {
         @Bean("defaultAuthorizeHttpRequestsCustomizer")
-        fun defaultAuthorizeHttpRequestsCustomizer(): AuthorizeHttpRequestsCustomizer {
-            return PrioritizedAuthorizeHttpRequestsCustomizer(
-                Ordered.LOWEST_PRECEDENCE
-            ) { registry -> registry.anyRequest().authenticated() }
-        }
+        fun defaultAuthorizeHttpRequestsCustomizer(): AuthorizeHttpRequestsCustomizer = PrioritizedAuthorizeHttpRequestsCustomizer(
+            Ordered.LOWEST_PRECEDENCE,
+        ) { registry -> registry.anyRequest().authenticated() }
     }
 }

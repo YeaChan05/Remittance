@@ -11,11 +11,12 @@ import java.time.Clock
 @SpringBootApplication
 class AggregateApplication
 
-class AggregateApplicationBeanRegistrar : BeanRegistrarDsl({
-    registerBean<Clock> {
-        Clock.systemUTC()
-    }
-})
+class AggregateApplicationBeanRegistrar :
+    BeanRegistrarDsl({
+        registerBean<Clock> {
+            Clock.systemUTC()
+        }
+    })
 
 fun main(args: Array<String>) {
     runApplication<AggregateApplication>(*args)

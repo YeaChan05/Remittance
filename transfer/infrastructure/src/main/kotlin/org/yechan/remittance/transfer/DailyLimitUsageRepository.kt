@@ -7,6 +7,6 @@ interface DailyLimitUsageRepository {
     fun findOrCreateForUpdate(
         identifier: AccountIdentifier,
         scope: TransferProps.TransferScopeValue,
-        usageDate: LocalDate
+        usageDate: LocalDate,
     ): DailyLimitUsageModel
 }

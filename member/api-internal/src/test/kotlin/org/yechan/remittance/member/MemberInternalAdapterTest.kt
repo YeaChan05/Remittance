@@ -1,9 +1,9 @@
 package org.yechan.remittance.member
 
-import java.util.concurrent.atomic.AtomicReference
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.util.concurrent.atomic.AtomicReference
 
 class MemberInternalAdapterTest {
     @Test

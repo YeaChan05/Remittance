@@ -10,7 +10,7 @@ interface AccountRepository {
     fun findByMemberIdAndBankCodeAndAccountNumber(
         memberId: Long?,
         bankCode: String,
-        accountNumber: String
+        accountNumber: String,
     ): AccountModel?
 
     fun delete(identifier: AccountIdentifier)

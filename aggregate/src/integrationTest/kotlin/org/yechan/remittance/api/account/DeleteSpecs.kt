@@ -9,8 +9,8 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.web.servlet.client.RestTestClient
 import org.yechan.remittance.AggregateApplication
 import org.yechan.remittance.EmailGenerator
-import org.yechan.remittance.PasswordGenerator
 import org.yechan.remittance.IntegrationTestEnvironmentSetup
+import org.yechan.remittance.PasswordGenerator
 import org.yechan.remittance.TokenVerifier
 import org.yechan.remittance.account.dto.AccountCreateRequest
 import org.yechan.remittance.account.dto.AccountCreateResponse

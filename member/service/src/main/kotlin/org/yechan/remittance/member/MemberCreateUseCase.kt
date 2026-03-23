@@ -11,7 +11,7 @@ private val log = KotlinLogging.logger {}
 
 class MemberService(
     private val memberRepository: MemberRepository,
-    private val passwordHashEncoder: PasswordHashEncoder
+    private val passwordHashEncoder: PasswordHashEncoder,
 ) : MemberCreateUseCase {
     override fun register(props: MemberProps): MemberModel {
         log.info { "member.register.start" }
@@ -25,7 +25,7 @@ class MemberService(
     }
 
     private inner class EncodedMemberProps(
-        private val props: MemberProps
+        private val props: MemberProps,
     ) : MemberProps {
         override val name: String
             get() = props.name

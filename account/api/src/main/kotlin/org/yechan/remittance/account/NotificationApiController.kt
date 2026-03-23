@@ -9,10 +9,8 @@ import org.yechan.remittance.LoginUserId
 @RestController
 @RequestMapping("/notification")
 class NotificationApiController(
-    private val useCase: NotificationUseCase
+    private val useCase: NotificationUseCase,
 ) : NotificationApi {
     @GetMapping("/subscribe")
-    override fun connect(@LoginUserId memberId: Long): SseEmitter {
-        return useCase.connectRegister(memberId)
-    }
+    override fun connect(@LoginUserId memberId: Long): SseEmitter = useCase.connectRegister(memberId)
 }

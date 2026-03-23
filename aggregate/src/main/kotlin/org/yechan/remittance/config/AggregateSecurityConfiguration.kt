@@ -12,23 +12,24 @@ import org.yechan.remittance.PrioritizedAuthorizeHttpRequestsCustomizer
 @Configuration
 class AggregateSecurityConfiguration
 
-class AggregateSecurityBeanRegistrar : BeanRegistrarDsl({
-    registerBean<AuthorizeHttpRequestsCustomizer>("aggregateAuthorizeHttpRequestsCustomizer") {
-        PrioritizedAuthorizeHttpRequestsCustomizer(
-            Ordered.HIGHEST_PRECEDENCE
-        ) { registry ->
-            registry
-                .requestMatchers(
-                    "/swagger-ui/**",
-                    "/swagger-ui.html",
-                    "/v3/api-docs",
-                    "/v3/api-docs/**",
-                    "/v3/api-docs.yaml",
-                    "/swagger-resources/**",
-                    "/webjars/**",
-                    "/swagger/**"
-                ).permitAll()
-                .requestMatchers(HttpMethod.POST, "/login", "/members").permitAll()
+class AggregateSecurityBeanRegistrar :
+    BeanRegistrarDsl({
+        registerBean<AuthorizeHttpRequestsCustomizer>("aggregateAuthorizeHttpRequestsCustomizer") {
+            PrioritizedAuthorizeHttpRequestsCustomizer(
+                Ordered.HIGHEST_PRECEDENCE,
+            ) { registry ->
+                registry
+                    .requestMatchers(
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/v3/api-docs",
+                        "/v3/api-docs/**",
+                        "/v3/api-docs.yaml",
+                        "/swagger-resources/**",
+                        "/webjars/**",
+                        "/swagger/**",
+                    ).permitAll()
+                    .requestMatchers(HttpMethod.POST, "/login", "/members").permitAll()
+            }
         }
-    }
-})
+    })

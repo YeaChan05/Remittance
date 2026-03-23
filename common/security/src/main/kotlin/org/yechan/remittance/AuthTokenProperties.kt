@@ -13,5 +13,5 @@ data class AuthTokenProperties(
     @field:Min(1)
     val accessExpiresIn: Long,
     @field:Min(1)
-    val refreshExpiresIn: Long
+    val refreshExpiresIn: Long,
 )

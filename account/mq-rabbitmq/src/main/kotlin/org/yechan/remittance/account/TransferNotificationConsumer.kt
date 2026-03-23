@@ -5,13 +5,13 @@ import org.springframework.messaging.handler.annotation.Header
 
 class TransferNotificationConsumer(
     private val transferNotificationUseCase: TransferNotificationUseCase,
-    private val parser: TransferNotificationPayloadParser
+    private val parser: TransferNotificationPayloadParser,
 ) {
     @RabbitListener(queues = ["\${account.transfer-notification.queue:transfer.completed.queue}"])
     fun consume(
         payload: String,
         @Header(value = "eventId", required = false) eventId: Long?,
-        @Header(value = "eventType", required = false) eventType: String?
+        @Header(value = "eventType", required = false) eventType: String?,
     ) {
         if (eventId == null || eventType != EVENT_TYPE) {
             return

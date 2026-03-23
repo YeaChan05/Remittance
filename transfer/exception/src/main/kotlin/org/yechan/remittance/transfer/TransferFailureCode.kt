@@ -6,5 +6,5 @@ enum class TransferFailureCode {
     INVALID_REQUEST,
     MEMBER_NOT_FOUND,
     OWNER_NOT_FOUND,
-    DAILY_LIMIT_EXCEEDED
+    DAILY_LIMIT_EXCEEDED,
 }

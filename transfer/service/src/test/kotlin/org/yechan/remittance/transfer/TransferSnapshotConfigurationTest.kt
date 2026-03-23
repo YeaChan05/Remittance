@@ -1,10 +1,10 @@
 package org.yechan.remittance.transfer
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.util.concurrent.atomic.AtomicBoolean
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
+import java.util.concurrent.atomic.AtomicBoolean
 
 class TransferSnapshotConfigurationTest {
     @Test
@@ -25,7 +25,7 @@ class TransferSnapshotConfigurationTest {
         val transferSnapshotUtil = context.getBean(TransferSnapshotUtil::class.java)
 
         transferSnapshotUtil.toSnapshot(
-            TransferResult(TransferProps.TransferStatusValue.SUCCEEDED, 1L, null)
+            TransferResult(TransferProps.TransferStatusValue.SUCCEEDED, 1L, null),
         )
 
         assertThat(used.get()).isTrue()
@@ -42,7 +42,7 @@ class TransferSnapshotConfigurationTest {
 
         val transferSnapshotUtil = context.getBean(TransferSnapshotUtil::class.java)
         val snapshot = transferSnapshotUtil.toSnapshot(
-            TransferResult(TransferProps.TransferStatusValue.SUCCEEDED, 1L, null)
+            TransferResult(TransferProps.TransferStatusValue.SUCCEEDED, 1L, null),
         )
 
         assertThat(snapshot).contains("\"status\":\"SUCCEEDED\"")

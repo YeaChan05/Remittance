@@ -1,10 +1,10 @@
 package org.yechan.remittance.transfer
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.time.LocalDateTime
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
 
 class TransferIdempotencyHandlerTest {
     @Test
@@ -13,11 +13,11 @@ class TransferIdempotencyHandlerTest {
         val key = TestKey(
             IdempotencyKeyProps.IdempotencyKeyStatusValue.BEFORE_START,
             LocalDateTime.parse("2026-01-01T09:00:00"),
-            null
+            null,
         )
         val handler = TransferIdempotencyHandler(
             FixedKeyRepository(key),
-            TransferSnapshotUtil(ObjectMapper())
+            TransferSnapshotUtil(ObjectMapper()),
         )
 
         assertThrows(TransferIdempotencyKeyExpiredException::class.java) {
@@ -31,7 +31,7 @@ class TransferIdempotencyHandlerTest {
         key.requestHash = "hash"
         val handler = TransferIdempotencyHandler(
             FixedKeyRepository(key),
-            TransferSnapshotUtil(ObjectMapper())
+            TransferSnapshotUtil(ObjectMapper()),
         )
 
         assertThrows(TransferIdempotencyKeyConflictException::class.java) {
@@ -44,14 +44,14 @@ class TransferIdempotencyHandlerTest {
         val key = TestKey(IdempotencyKeyProps.IdempotencyKeyStatusValue.IN_PROGRESS, null, null)
         val handler = TransferIdempotencyHandler(
             FixedKeyRepository(key),
-            TransferSnapshotUtil(ObjectMapper())
+            TransferSnapshotUtil(ObjectMapper()),
         )
 
         val result = handler.resolveExisting(
             1L,
             "k",
             IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
-            null
+            null,
         )
 
         assertEquals(TransferProps.TransferStatusValue.IN_PROGRESS, result.status)
@@ -62,14 +62,14 @@ class TransferIdempotencyHandlerTest {
         val key = TestKey(IdempotencyKeyProps.IdempotencyKeyStatusValue.SUCCEEDED, null, null)
         val handler = TransferIdempotencyHandler(
             FixedKeyRepository(key),
-            TransferSnapshotUtil(ObjectMapper())
+            TransferSnapshotUtil(ObjectMapper()),
         )
 
         val result = handler.resolveExisting(
             1L,
             "k",
             IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
-            null
+            null,
         )
 
         assertEquals(TransferProps.TransferStatusValue.IN_PROGRESS, result.status)
@@ -88,7 +88,7 @@ class TransferIdempotencyHandlerTest {
             1L,
             "k",
             IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
-            null
+            null,
         )
 
         assertEquals(snapshotResult.status, result.status)
@@ -96,16 +96,14 @@ class TransferIdempotencyHandlerTest {
     }
 
     private class FixedKeyRepository(
-        private val key: IdempotencyKeyModel?
+        private val key: IdempotencyKeyModel?,
     ) : IdempotencyKeyRepository {
-        override fun save(props: IdempotencyKeyProps): IdempotencyKeyModel {
-            return requireNotNull(key)
-        }
+        override fun save(props: IdempotencyKeyProps): IdempotencyKeyModel = requireNotNull(key)
 
         override fun findByKey(
             memberId: Long,
             scope: IdempotencyKeyProps.IdempotencyScopeValue,
-            idempotencyKey: String
+            idempotencyKey: String,
         ): IdempotencyKeyModel? = key
 
         override fun tryMarkInProgress(
@@ -113,7 +111,7 @@ class TransferIdempotencyHandlerTest {
             scope: IdempotencyKeyProps.IdempotencyScopeValue,
             idempotencyKey: String,
             requestHash: String,
-            startedAt: LocalDateTime
+            startedAt: LocalDateTime,
         ): Boolean = false
 
         override fun markSucceeded(
@@ -121,7 +119,7 @@ class TransferIdempotencyHandlerTest {
             scope: IdempotencyKeyProps.IdempotencyScopeValue,
             idempotencyKey: String,
             responseSnapshot: String,
-            completedAt: LocalDateTime
+            completedAt: LocalDateTime,
         ): IdempotencyKeyModel = requireNotNull(key)
 
         override fun markFailed(
@@ -129,19 +127,19 @@ class TransferIdempotencyHandlerTest {
             scope: IdempotencyKeyProps.IdempotencyScopeValue,
             idempotencyKey: String,
             responseSnapshot: String,
-            completedAt: LocalDateTime
+            completedAt: LocalDateTime,
         ): IdempotencyKeyModel = requireNotNull(key)
 
         override fun markTimeoutBefore(
             cutoff: LocalDateTime,
-            responseSnapshot: String
+            responseSnapshot: String,
         ): Int = 0
     }
 
     private class TestKey(
         override val status: IdempotencyKeyProps.IdempotencyKeyStatusValue,
         override val expiresAt: LocalDateTime?,
-        override val responseSnapshot: String?
+        override val responseSnapshot: String?,
     ) : IdempotencyKeyModel {
         override val idempotencyKeyId: Long? = 1L
         override val memberId: Long = 1L

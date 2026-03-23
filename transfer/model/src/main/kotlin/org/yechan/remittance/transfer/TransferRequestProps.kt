@@ -9,18 +9,16 @@ interface TransferRequestProps {
     val scope: TransferProps.TransferScopeValue
     val fee: BigDecimal
 
-    fun toIdempotencyScope(): IdempotencyKeyProps.IdempotencyScopeValue {
-        return when (scope) {
-            TransferProps.TransferScopeValue.WITHDRAW ->
-                IdempotencyKeyProps.IdempotencyScopeValue.WITHDRAW
-            TransferProps.TransferScopeValue.DEPOSIT ->
-                IdempotencyKeyProps.IdempotencyScopeValue.DEPOSIT
-            TransferProps.TransferScopeValue.TRANSFER ->
-                IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
-        }
+    fun toIdempotencyScope(): IdempotencyKeyProps.IdempotencyScopeValue = when (scope) {
+        TransferProps.TransferScopeValue.WITHDRAW ->
+            IdempotencyKeyProps.IdempotencyScopeValue.WITHDRAW
+
+        TransferProps.TransferScopeValue.DEPOSIT ->
+            IdempotencyKeyProps.IdempotencyScopeValue.DEPOSIT
+
+        TransferProps.TransferScopeValue.TRANSFER ->
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
     }
 
-    fun debit(): BigDecimal {
-        return amount.add(fee)
-    }
+    fun debit(): BigDecimal = amount.add(fee)
 }

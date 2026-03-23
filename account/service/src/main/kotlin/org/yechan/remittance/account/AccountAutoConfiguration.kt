@@ -8,20 +8,21 @@ import org.springframework.context.annotation.Import
 @AutoConfiguration
 class AccountAutoConfiguration
 
-class AccountBeanRegistrar : BeanRegistrarDsl({
-    registerBean<AccountCreateUseCase> {
-        AccountService(bean())
-    }
+class AccountBeanRegistrar :
+    BeanRegistrarDsl({
+        registerBean<AccountCreateUseCase> {
+            AccountService(bean())
+        }
 
-    registerBean<AccountDeleteUseCase>{
-        AccountDeleteService(bean())
-    }
+        registerBean<AccountDeleteUseCase> {
+            AccountDeleteService(bean())
+        }
 
-    registerBean<TransferNotificationUseCase> {
-        TransferNotificationService(
-            bean(),
-            bean(),
-            bean()
-        )
-    }
-})
+        registerBean<TransferNotificationUseCase> {
+            TransferNotificationService(
+                bean(),
+                bean(),
+                bean(),
+            )
+        }
+    })

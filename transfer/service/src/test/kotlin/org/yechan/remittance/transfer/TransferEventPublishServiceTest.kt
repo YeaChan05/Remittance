@@ -1,8 +1,8 @@
 package org.yechan.remittance.transfer
 
-import java.time.LocalDateTime
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
 
 class TransferEventPublishServiceTest {
     @Test
@@ -33,29 +33,21 @@ class TransferEventPublishServiceTest {
         assertEquals(1, publisher.publishedCount())
     }
 
-    private fun sampleEvents(): List<OutboxEvent> {
-        return listOf(
-            OutboxEvent(1L, "TRANSFER", "1", "TRANSFER_COMPLETED", "payload", status(), now()),
-            OutboxEvent(2L, "TRANSFER", "2", "TRANSFER_COMPLETED", "payload", status(), now())
-        )
-    }
+    private fun sampleEvents(): List<OutboxEvent> = listOf(
+        OutboxEvent(1L, "TRANSFER", "1", "TRANSFER_COMPLETED", "payload", status(), now()),
+        OutboxEvent(2L, "TRANSFER", "2", "TRANSFER_COMPLETED", "payload", status(), now()),
+    )
 
-    private fun status(): OutboxEventProps.OutboxEventStatusValue {
-        return OutboxEventProps.OutboxEventStatusValue.NEW
-    }
+    private fun status(): OutboxEventProps.OutboxEventStatusValue = OutboxEventProps.OutboxEventStatusValue.NEW
 
-    private fun now(): LocalDateTime {
-        return LocalDateTime.of(2025, 1, 1, 0, 0)
-    }
+    private fun now(): LocalDateTime = LocalDateTime.of(2025, 1, 1, 0, 0)
 
     private class FakeOutboxEventRepository(
-        private val events: List<OutboxEvent>
+        private val events: List<OutboxEvent>,
     ) : OutboxEventRepository {
         val sentEventIds = mutableListOf<Long>()
 
-        override fun save(props: OutboxEventProps): OutboxEventModel {
-            throw UnsupportedOperationException("Not needed")
-        }
+        override fun save(props: OutboxEventProps): OutboxEventModel = throw UnsupportedOperationException("Not needed")
 
         override fun findNewForPublish(limit: Int?): List<OutboxEventModel> = events
 
@@ -83,7 +75,7 @@ class TransferEventPublishServiceTest {
     }
 
     private class FakeOutboxEventStatusUpdater(
-        private val repository: OutboxEventRepository
+        private val repository: OutboxEventRepository,
     ) : OutboxEventStatusUpdater(repository) {
         override fun markSent(identifier: OutboxEventIdentifier) {
             repository.markSent(identifier)

@@ -17,31 +17,32 @@ import org.yechan.remittance.whenPropertyEnabled
 @EnableConfigurationProperties(TransferNotificationConsumerProperties::class)
 class TransferNotificationConsumerAutoConfiguration
 
-class TransferNotificationInfrastructureBeanRegistrar : BeanRegistrarDsl({
-    whenPropertyEnabled("account.transfer-notification", "enabled", matchIfMissing = true) {
-        registerBean<TransferNotificationPayloadParser> {
-            TransferNotificationPayloadParser()
-        }
+class TransferNotificationInfrastructureBeanRegistrar :
+    BeanRegistrarDsl({
+        whenPropertyEnabled("account.transfer-notification", "enabled", matchIfMissing = true) {
+            registerBean<TransferNotificationPayloadParser> {
+                TransferNotificationPayloadParser()
+            }
 
-        registerBean<DirectExchange> {
-            DirectExchange(bean<TransferNotificationConsumerProperties>().exchange)
-        }
+            registerBean<DirectExchange> {
+                DirectExchange(bean<TransferNotificationConsumerProperties>().exchange)
+            }
 
-        registerBean<Queue> {
-            Queue(bean<TransferNotificationConsumerProperties>().queue)
-        }
+            registerBean<Queue> {
+                Queue(bean<TransferNotificationConsumerProperties>().queue)
+            }
 
-        registerBean<Binding> {
-            BindingBuilder.bind(bean<Queue>())
-                .to(bean<DirectExchange>())
-                .with(bean<TransferNotificationConsumerProperties>().routingKey)
-        }
+            registerBean<Binding> {
+                BindingBuilder.bind(bean<Queue>())
+                    .to(bean<DirectExchange>())
+                    .with(bean<TransferNotificationConsumerProperties>().routingKey)
+            }
 
-        registerBean<TransferNotificationConsumer> {
-            TransferNotificationConsumer(
-                bean(),
-                bean()
-            )
+            registerBean<TransferNotificationConsumer> {
+                TransferNotificationConsumer(
+                    bean(),
+                    bean(),
+                )
+            }
         }
-    }
-})
+    })

@@ -6,9 +6,9 @@ import jakarta.persistence.Id
 import jakarta.persistence.MappedSuperclass
 import jakarta.persistence.PrePersist
 import jakarta.persistence.PreUpdate
+import org.hibernate.proxy.HibernateProxy
 import java.time.LocalDateTime
 import java.util.Objects
-import org.hibernate.proxy.HibernateProxy
 
 @MappedSuperclass
 abstract class BaseEntity protected constructor() {
@@ -65,11 +65,9 @@ abstract class BaseEntity protected constructor() {
         return id != null && Objects.equals(id, other.id)
     }
 
-    override fun hashCode(): Int {
-        return if (this is HibernateProxy) {
-            this.hibernateLazyInitializer.persistentClass.hashCode()
-        } else {
-            javaClass.hashCode()
-        }
+    override fun hashCode(): Int = if (this is HibernateProxy) {
+        this.hibernateLazyInitializer.persistentClass.hashCode()
+    } else {
+        javaClass.hashCode()
     }
 }

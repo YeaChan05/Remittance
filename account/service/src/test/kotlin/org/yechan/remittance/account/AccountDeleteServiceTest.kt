@@ -1,10 +1,10 @@
 package org.yechan.remittance.account
 
-import java.math.BigDecimal
-import java.util.concurrent.atomic.AtomicReference
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
+import java.util.concurrent.atomic.AtomicReference
 
 class AccountDeleteServiceTest {
     @Test
@@ -13,7 +13,7 @@ class AccountDeleteServiceTest {
         val repository: AccountRepository =
             TestAccountRepository(
                 TestAccount(1L, 10L),
-                deletedId
+                deletedId,
             )
         val useCase: AccountDeleteUseCase = AccountDeleteService(repository)
 
@@ -28,7 +28,7 @@ class AccountDeleteServiceTest {
         val repository: AccountRepository =
             TestAccountRepository(
                 TestAccount(2L, 10L),
-                AtomicReference()
+                AtomicReference(),
             )
         val useCase: AccountDeleteUseCase = AccountDeleteService(repository)
 
@@ -42,7 +42,7 @@ class AccountDeleteServiceTest {
         val repository: AccountRepository =
             TestAccountRepository(
                 null,
-                AtomicReference()
+                AtomicReference(),
             )
         val useCase: AccountDeleteUseCase = AccountDeleteService(repository)
 
@@ -53,27 +53,19 @@ class AccountDeleteServiceTest {
 
     private class TestAccountRepository(
         private val account: AccountModel?,
-        private val deletedId: AtomicReference<Long>
+        private val deletedId: AtomicReference<Long>,
     ) : AccountRepository {
-        override fun save(props: AccountProps): AccountModel {
-            throw UnsupportedOperationException()
-        }
+        override fun save(props: AccountProps): AccountModel = throw UnsupportedOperationException()
 
-        override fun findById(identifier: AccountIdentifier): AccountModel? {
-            return account
-        }
+        override fun findById(identifier: AccountIdentifier): AccountModel? = account
 
-        override fun findByIdForUpdate(identifier: AccountIdentifier): AccountModel? {
-            return null
-        }
+        override fun findByIdForUpdate(identifier: AccountIdentifier): AccountModel? = null
 
         override fun findByMemberIdAndBankCodeAndAccountNumber(
             memberId: Long?,
             bankCode: String,
-            accountNumber: String
-        ): AccountModel? {
-            return null
-        }
+            accountNumber: String,
+        ): AccountModel? = null
 
         override fun delete(identifier: AccountIdentifier) {
             deletedId.set(identifier.accountId)
@@ -82,12 +74,12 @@ class AccountDeleteServiceTest {
 
     private data class TestDeleteProps(
         override val memberId: Long,
-        override val accountId: Long
+        override val accountId: Long,
     ) : AccountDeleteProps
 
     private data class TestAccount(
         override val memberId: Long?,
-        override val accountId: Long?
+        override val accountId: Long?,
     ) : AccountModel {
         override val bankCode: String = "001"
         override val accountNumber: String = "123"

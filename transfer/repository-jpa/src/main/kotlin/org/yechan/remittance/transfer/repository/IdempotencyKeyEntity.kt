@@ -6,21 +6,25 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
-import java.time.LocalDateTime
 import org.yechan.remittance.BaseEntity
 import org.yechan.remittance.transfer.IdempotencyKeyModel
 import org.yechan.remittance.transfer.IdempotencyKeyProps
+import java.time.LocalDateTime
 
 @Entity
 @Table(
     name = "idempotency_key",
     catalog = "integration",
-    uniqueConstraints = [UniqueConstraint(
-        name = "uk_idempotency_key_client_scope",
-        columnNames = ["client_id", "scope", "idempotency_key"]
-    )]
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "uk_idempotency_key_client_scope",
+            columnNames = ["client_id", "scope", "idempotency_key"],
+        ),
+    ],
 )
-class IdempotencyKeyEntity protected constructor() : BaseEntity(), IdempotencyKeyModel {
+class IdempotencyKeyEntity protected constructor() :
+    BaseEntity(),
+    IdempotencyKeyModel {
     @field:Column(name = "client_id", nullable = false)
     override var memberId: Long = 0
         protected set
@@ -64,7 +68,7 @@ class IdempotencyKeyEntity protected constructor() : BaseEntity(), IdempotencyKe
         memberId: Long,
         idempotencyKey: String,
         expiresAt: LocalDateTime,
-        scope: IdempotencyKeyProps.IdempotencyScopeValue
+        scope: IdempotencyKeyProps.IdempotencyScopeValue,
     ) : this() {
         this.memberId = memberId
         this.idempotencyKey = idempotencyKey
@@ -100,7 +104,7 @@ class IdempotencyKeyEntity protected constructor() : BaseEntity(), IdempotencyKe
     override fun markTimeoutIfBefore(
         cutoff: LocalDateTime,
         responseSnapshot: String,
-        completedAt: LocalDateTime
+        completedAt: LocalDateTime,
     ): Boolean {
         if (status != IdempotencyKeyProps.IdempotencyKeyStatusValue.IN_PROGRESS) {
             return false
@@ -115,13 +119,11 @@ class IdempotencyKeyEntity protected constructor() : BaseEntity(), IdempotencyKe
     }
 
     companion object {
-        fun create(props: IdempotencyKeyProps): IdempotencyKeyEntity {
-            return IdempotencyKeyEntity(
-                props.memberId,
-                props.idempotencyKey,
-                requireNotNull(props.expiresAt),
-                props.scope
-            )
-        }
+        fun create(props: IdempotencyKeyProps): IdempotencyKeyEntity = IdempotencyKeyEntity(
+            props.memberId,
+            props.idempotencyKey,
+            requireNotNull(props.expiresAt),
+            props.scope,
+        )
     }
 }

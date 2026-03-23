@@ -8,6 +8,6 @@ open class AccountException : BusinessException {
 
     constructor(
         status: Status,
-        message: String
+        message: String,
     ) : super(status, message)
 }

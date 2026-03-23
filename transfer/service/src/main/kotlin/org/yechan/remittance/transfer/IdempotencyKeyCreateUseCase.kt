@@ -20,7 +20,7 @@ private val log = KotlinLogging.logger {}
 class IdempotencyKeyService(
     private val repository: IdempotencyKeyRepository,
     private val clock: Clock,
-    private val expiresIn: Duration
+    private val expiresIn: Duration,
 ) : IdempotencyKeyCreateUseCase {
     override fun create(props: IdempotencyKeyCreateProps): IdempotencyKeyModel {
         log.info { "idempotency.create.start memberId=${props.memberId} scope=${props.scope}" }
@@ -33,7 +33,7 @@ class IdempotencyKeyService(
     private inner class GeneratedIdempotencyKeyProps(
         private val props: IdempotencyKeyCreateProps,
         private val key: String,
-        private val now: LocalDateTime
+        private val now: LocalDateTime,
     ) : IdempotencyKeyProps {
         override val memberId: Long
             get() = props.memberId

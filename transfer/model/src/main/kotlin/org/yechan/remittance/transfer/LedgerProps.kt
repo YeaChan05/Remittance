@@ -12,6 +12,6 @@ interface LedgerProps {
 
     enum class LedgerSideValue {
         DEBIT,
-        CREDIT
+        CREDIT,
     }
 }

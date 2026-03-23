@@ -8,7 +8,5 @@ import org.springframework.web.context.WebApplicationContext
 @AutoConfiguration
 class RestTestClientTestConfiguration {
     @Bean
-    fun restTestClient(context: WebApplicationContext): RestTestClient {
-        return RestTestClient.bindToApplicationContext(context).build()
-    }
+    fun restTestClient(context: WebApplicationContext): RestTestClient = RestTestClient.bindToApplicationContext(context).build()
 }

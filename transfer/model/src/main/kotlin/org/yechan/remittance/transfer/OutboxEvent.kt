@@ -9,5 +9,5 @@ data class OutboxEvent(
     override val eventType: String,
     override val payload: String,
     override val status: OutboxEventProps.OutboxEventStatusValue,
-    val createdAt: LocalDateTime?
+    val createdAt: LocalDateTime?,
 ) : OutboxEventModel

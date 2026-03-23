@@ -11,7 +11,9 @@ import org.yechan.remittance.transfer.OutboxEventProps
 
 @Entity
 @Table(name = "outbox_events", catalog = "integration")
-class OutboxEventEntity protected constructor() : BaseEntity(), OutboxEventModel {
+class OutboxEventEntity protected constructor() :
+    BaseEntity(),
+    OutboxEventModel {
     @field:Column(nullable = false)
     override var aggregateType: String = ""
         protected set
@@ -38,7 +40,7 @@ class OutboxEventEntity protected constructor() : BaseEntity(), OutboxEventModel
         aggregateId: String,
         eventType: String,
         payload: String,
-        status: OutboxEventProps.OutboxEventStatusValue
+        status: OutboxEventProps.OutboxEventStatusValue,
     ) : this() {
         this.aggregateType = aggregateType
         this.aggregateId = aggregateId
@@ -51,14 +53,12 @@ class OutboxEventEntity protected constructor() : BaseEntity(), OutboxEventModel
         get() = id
 
     companion object {
-        fun create(props: OutboxEventProps): OutboxEventEntity {
-            return OutboxEventEntity(
-                props.aggregateType,
-                props.aggregateId,
-                props.eventType,
-                props.payload,
-                props.status
-            )
-        }
+        fun create(props: OutboxEventProps): OutboxEventEntity = OutboxEventEntity(
+            props.aggregateType,
+            props.aggregateId,
+            props.eventType,
+            props.payload,
+            props.status,
+        )
     }
 }

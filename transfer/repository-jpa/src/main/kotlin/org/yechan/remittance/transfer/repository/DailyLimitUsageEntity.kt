@@ -6,23 +6,27 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
-import java.math.BigDecimal
-import java.time.LocalDate
 import org.yechan.remittance.BaseEntity
 import org.yechan.remittance.transfer.DailyLimitUsageModel
 import org.yechan.remittance.transfer.DailyLimitUsageProps
 import org.yechan.remittance.transfer.TransferProps
+import java.math.BigDecimal
+import java.time.LocalDate
 
 @Entity
 @Table(
     name = "daily_limit_usage",
     catalog = "core",
-    uniqueConstraints = [UniqueConstraint(
-        name = "uk_daily_limit_usage_account_scope_date",
-        columnNames = ["account_id", "scope", "usage_date"]
-    )]
+    uniqueConstraints = [
+        UniqueConstraint(
+            name = "uk_daily_limit_usage_account_scope_date",
+            columnNames = ["account_id", "scope", "usage_date"],
+        ),
+    ],
 )
-class DailyLimitUsageEntity protected constructor() : BaseEntity(), DailyLimitUsageModel {
+class DailyLimitUsageEntity protected constructor() :
+    BaseEntity(),
+    DailyLimitUsageModel {
     @field:Column(name = "account_id", nullable = false)
     override var accountId: Long = 0
         protected set
@@ -44,7 +48,7 @@ class DailyLimitUsageEntity protected constructor() : BaseEntity(), DailyLimitUs
         accountId: Long,
         scope: TransferProps.TransferScopeValue,
         usageDate: LocalDate,
-        usedAmount: BigDecimal
+        usedAmount: BigDecimal,
     ) : this() {
         this.accountId = accountId
         this.scope = scope
@@ -60,8 +64,6 @@ class DailyLimitUsageEntity protected constructor() : BaseEntity(), DailyLimitUs
     }
 
     companion object {
-        fun create(props: DailyLimitUsageProps): DailyLimitUsageEntity {
-            return DailyLimitUsageEntity(props.accountId, props.scope, props.usageDate, props.usedAmount)
-        }
+        fun create(props: DailyLimitUsageProps): DailyLimitUsageEntity = DailyLimitUsageEntity(props.accountId, props.scope, props.usageDate, props.usedAmount)
     }
 }

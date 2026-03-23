@@ -1,7 +1,5 @@
 package org.yechan.remittance.transfer
 
-import java.nio.charset.StandardCharsets
-import java.time.LocalDateTime
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
@@ -12,6 +10,8 @@ import org.springframework.amqp.core.Message
 import org.springframework.amqp.core.MessagePostProcessor
 import org.springframework.amqp.core.MessageProperties
 import org.springframework.amqp.rabbit.core.RabbitTemplate
+import java.nio.charset.StandardCharsets
+import java.time.LocalDateTime
 
 class TransferEventPublisherImplTest {
     @Test
@@ -29,7 +29,7 @@ class TransferEventPublisherImplTest {
             "TRANSFER_COMPLETED",
             "payload",
             OutboxEventProps.OutboxEventStatusValue.NEW,
-            LocalDateTime.of(2025, 1, 1, 0, 0)
+            LocalDateTime.of(2025, 1, 1, 0, 0),
         )
 
         publisher.publish(event)
@@ -39,7 +39,7 @@ class TransferEventPublisherImplTest {
             eq("transfer.exchange"),
             eq("transfer.completed"),
             eq("payload"),
-            captor.capture()
+            captor.capture(),
         )
 
         val message = Message("payload".toByteArray(StandardCharsets.UTF_8), MessageProperties())

@@ -31,7 +31,7 @@ class MemberJpaRepositoryTest {
                 override val name: String = "name"
                 override val email: String = "test@test.com"
                 override val password: String = "qweasdqwe"
-            }
+            },
         )
 
         val saved = memberRepository.save(member)

@@ -2,11 +2,11 @@ package org.yechan.remittance.transfer
 
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
 
 class TransferSnapshotUtilTest {
     @Test
@@ -40,9 +40,7 @@ class TransferSnapshotUtilTest {
     @Test
     fun `직렬화에 실패하면 도메인 예외로 변환한다`() {
         val failingMapper = object : ObjectMapper() {
-            override fun writeValueAsString(value: Any?): String {
-                throw object : JsonProcessingException("fail") {}
-            }
+            override fun writeValueAsString(value: Any?): String = throw object : JsonProcessingException("fail") {}
         }
         val util = TransferSnapshotUtil(failingMapper)
 

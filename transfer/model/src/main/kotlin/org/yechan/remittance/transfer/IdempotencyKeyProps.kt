@@ -18,12 +18,12 @@ interface IdempotencyKeyProps {
         IN_PROGRESS,
         SUCCEEDED,
         FAILED,
-        TIMEOUT
+        TIMEOUT,
     }
 
     enum class IdempotencyScopeValue {
         TRANSFER,
         DEPOSIT,
-        WITHDRAW
+        WITHDRAW,
     }
 }

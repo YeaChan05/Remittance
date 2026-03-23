@@ -1,9 +1,9 @@
 package org.yechan.remittance.transfer
 
-import java.time.LocalDateTime
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
+import java.time.LocalDateTime
 
 class IdempotencyKeyControllerTest {
     @Test
@@ -21,7 +21,7 @@ class IdempotencyKeyControllerTest {
     }
 
     private data class TestIdempotencyKeyModel(
-        override val expiresAt: LocalDateTime
+        override val expiresAt: LocalDateTime,
     ) : IdempotencyKeyModel {
         override val idempotencyKeyId: Long? = 1L
         override val memberId: Long = 1L

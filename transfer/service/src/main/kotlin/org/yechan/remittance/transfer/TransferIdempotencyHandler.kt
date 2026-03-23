@@ -1,21 +1,21 @@
 package org.yechan.remittance.transfer
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.time.LocalDateTime
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 private val log = KotlinLogging.logger {}
 
 open class TransferIdempotencyHandler(
     private val repository: IdempotencyKeyRepository,
-    private val transferSnapshotUtil: TransferSnapshotUtil
+    private val transferSnapshotUtil: TransferSnapshotUtil,
 ) {
     open fun loadKey(
         memberId: Long,
         idempotencyKey: String,
         scope: IdempotencyKeyProps.IdempotencyScopeValue,
-        now: LocalDateTime
+        now: LocalDateTime,
     ): IdempotencyKeyModel {
         log.info { "transfer.idempotency.load memberId=$memberId scope=$scope" }
         val key = getIdempotencyKey(memberId, idempotencyKey, scope)
@@ -32,7 +32,7 @@ open class TransferIdempotencyHandler(
         idempotencyKey: String,
         scope: IdempotencyKeyProps.IdempotencyScopeValue,
         requestHash: String,
-        now: LocalDateTime
+        now: LocalDateTime,
     ): Boolean {
         log.debug { "transfer.idempotency.mark_in_progress memberId=$memberId scope=$scope" }
         return repository.tryMarkInProgress(memberId, scope, idempotencyKey, requestHash, now)
@@ -42,7 +42,7 @@ open class TransferIdempotencyHandler(
         memberId: Long,
         idempotencyKey: String,
         scope: IdempotencyKeyProps.IdempotencyScopeValue,
-        requestHash: String?
+        requestHash: String?,
     ): TransferResult {
         log.info { "transfer.idempotency.resolve memberId=$memberId scope=$scope" }
         val existing = getIdempotencyKey(memberId, idempotencyKey, scope)
@@ -72,7 +72,7 @@ open class TransferIdempotencyHandler(
         idempotencyKey: String,
         scope: IdempotencyKeyProps.IdempotencyScopeValue,
         failed: TransferResult,
-        now: LocalDateTime
+        now: LocalDateTime,
     ) {
         log.warn { "transfer.idempotency.mark_failed memberId=$memberId scope=$scope" }
         repository.markFailed(
@@ -80,16 +80,14 @@ open class TransferIdempotencyHandler(
             scope,
             idempotencyKey,
             transferSnapshotUtil.toSnapshot(failed),
-            now
+            now,
         )
     }
 
     private fun getIdempotencyKey(
         memberId: Long,
         idempotencyKey: String,
-        scope: IdempotencyKeyProps.IdempotencyScopeValue
-    ): IdempotencyKeyModel {
-        return repository.findByKey(memberId, scope, idempotencyKey)
-            ?: throw TransferIdempotencyKeyNotFoundException("Idempotency key not found")
-    }
+        scope: IdempotencyKeyProps.IdempotencyScopeValue,
+    ): IdempotencyKeyModel = repository.findByKey(memberId, scope, idempotencyKey)
+        ?: throw TransferIdempotencyKeyNotFoundException("Idempotency key not found")
 }

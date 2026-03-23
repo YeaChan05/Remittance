@@ -8,7 +8,7 @@ private val log = KotlinLogging.logger {}
 class TransferNotificationService(
     private val accountRepository: AccountRepository,
     private val processedEventRepository: ProcessedEventRepository,
-    private val notificationPushPort: NotificationPushPort
+    private val notificationPushPort: NotificationPushPort,
 ) : TransferNotificationUseCase {
     override fun notify(props: TransferNotificationProps) {
         log.info {
@@ -35,7 +35,7 @@ class TransferNotificationService(
                 props.transferId,
                 props.amount,
                 props.fromAccountId,
-                props.occurredAt
+                props.occurredAt,
             )
 
         try {
@@ -56,7 +56,7 @@ class TransferNotificationService(
     }
 
     private data class AccountId(
-        override val accountId: Long?
+        override val accountId: Long?,
     ) : AccountIdentifier
 
     private companion object {

@@ -14,20 +14,21 @@ import org.yechan.remittance.whenPropertyEnabled
 @EnableConfigurationProperties(TransferOutboxProperties::class, TransferEventPublisherProperties::class)
 class TransferOutboxAutoConfiguration
 
-class TransferOutboxBeanRegistrar : BeanRegistrarDsl({
-    whenPropertyEnabled("transfer.outbox", "enabled", matchIfMissing = true) {
-        registerBean<TransferEventPublisher> {
-            TransferEventPublisherImpl(
-                bean<RabbitTemplate>(),
-                bean<TransferEventPublisherProperties>()
-            )
-        }
+class TransferOutboxBeanRegistrar :
+    BeanRegistrarDsl({
+        whenPropertyEnabled("transfer.outbox", "enabled", matchIfMissing = true) {
+            registerBean<TransferEventPublisher> {
+                TransferEventPublisherImpl(
+                    bean<RabbitTemplate>(),
+                    bean<TransferEventPublisherProperties>(),
+                )
+            }
 
-        registerBean<TransferOutboxPublisher> {
-            TransferOutboxPublisher(
-                bean(),
-                bean<TransferOutboxProperties>()
-            )
+            registerBean<TransferOutboxPublisher> {
+                TransferOutboxPublisher(
+                    bean(),
+                    bean<TransferOutboxProperties>(),
+                )
+            }
         }
-    }
-})
+    })

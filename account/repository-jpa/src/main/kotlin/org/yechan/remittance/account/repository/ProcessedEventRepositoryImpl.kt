@@ -1,18 +1,16 @@
 package org.yechan.remittance.account.repository
 
-import java.time.LocalDateTime
 import org.yechan.remittance.account.ProcessedEventRepository
+import java.time.LocalDateTime
 
 class ProcessedEventRepositoryImpl(
-    private val repository: ProcessedEventJpaRepository
+    private val repository: ProcessedEventJpaRepository,
 ) : ProcessedEventRepository {
-    override fun existsByEventId(eventId: Long): Boolean {
-        return repository.existsByEventId(eventId)
-    }
+    override fun existsByEventId(eventId: Long): Boolean = repository.existsByEventId(eventId)
 
     override fun markProcessed(
         eventId: Long,
-        processedAt: LocalDateTime
+        processedAt: LocalDateTime,
     ) {
         repository.save(ProcessedEventEntity.create(eventId, processedAt))
     }

@@ -20,7 +20,13 @@ import org.yechan.remittance.TransferTestFixtures
 import org.yechan.remittance.TransferTestFixtures.LedgerRow
 import org.yechan.remittance.TransferTestFixturesConfig
 import org.yechan.remittance.account.AccountIdentifier
-import org.yechan.remittance.transfer.*
+import org.yechan.remittance.transfer.IdempotencyKeyProps
+import org.yechan.remittance.transfer.TransferIdentifier
+import org.yechan.remittance.transfer.TransferModel
+import org.yechan.remittance.transfer.TransferProps
+import org.yechan.remittance.transfer.TransferQueryCondition
+import org.yechan.remittance.transfer.TransferRepository
+import org.yechan.remittance.transfer.TransferRequestProps
 import org.yechan.remittance.transfer.dto.DepositRequest
 import org.yechan.remittance.transfer.dto.IdempotencyKeyCreateResponse
 import org.yechan.remittance.transfer.dto.TransferRequest
@@ -28,7 +34,7 @@ import org.yechan.remittance.transfer.dto.WithdrawalRequest
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDateTime
-import java.util.*
+import java.util.Optional
 import java.util.concurrent.atomic.AtomicBoolean
 
 @SpringBootTest(classes = [AggregateApplication::class])
@@ -67,7 +73,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
-            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
         )
 
         val before = LocalDateTime.now()
@@ -76,7 +82,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
             idempotencyKey,
             fromAccount.accountId,
             toAccount.accountId,
-            transferAmount
+            transferAmount,
         )
         val after = LocalDateTime.now()
 
@@ -90,7 +96,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
             transferAmount.add(fee),
             transferAmount,
             before,
-            after
+            after,
         )
         assertOutbox(requireNotNull(response.transferId), fromAccount.accountId, toAccount.accountId, transferAmount)
         assertIdempotency(memberId, idempotencyKey)
@@ -108,7 +114,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
-            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
         )
         val fee = feeFor(transferAmount)
 
@@ -117,7 +123,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
             idempotencyKey,
             fromAccount.accountId,
             toAccount.accountId,
-            transferAmount
+            transferAmount,
         )
 
         assertTransferSucceeded(firstResponse)
@@ -133,7 +139,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
             idempotencyKey,
             fromAccount.accountId,
             toAccount.accountId,
-            transferAmount
+            transferAmount,
         )
 
         assertThat(secondResponse.status).isEqualTo("SUCCEEDED")
@@ -165,7 +171,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
-            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
         )
 
         val firstResponse = transfer(
@@ -173,7 +179,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
             idempotencyKey,
             fromAccount.accountId,
             toAccount.accountId,
-            transferAmount
+            transferAmount,
         )
 
         assertTransferSucceeded(firstResponse)
@@ -216,7 +222,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
-            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
         )
 
         val transferCountBefore = fixtures.countTransfers()
@@ -228,7 +234,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
             idempotencyKey,
             fromAccount.accountId,
             toAccount.accountId,
-            transferAmount
+            transferAmount,
         )
 
         assertThat(response.status).isEqualTo("FAILED")
@@ -258,7 +264,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
-            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
         )
 
         fixtures.markIdempotencyInProgress(memberId, idempotencyKey, LocalDateTime.now())
@@ -272,7 +278,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
             idempotencyKey,
             fromAccount.accountId,
             toAccount.accountId,
-            transferAmount
+            transferAmount,
         )
 
         assertThat(response.status).isEqualTo("IN_PROGRESS")
@@ -304,14 +310,14 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
 
         val firstKey = issueIdempotencyKey(
             result.auth.accessToken,
-            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
         )
         val firstResponse = transfer(
             result.auth.accessToken,
             firstKey,
             fromAccount.accountId,
             toAccount.accountId,
-            firstAmount
+            firstAmount,
         )
 
         assertTransferSucceeded(firstResponse)
@@ -320,7 +326,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
 
         val secondKey = issueIdempotencyKey(
             result.auth.accessToken,
-            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
         )
         val transferCountBefore = fixtures.countTransfers()
         val outboxCountBefore = fixtures.countOutboxEvents()
@@ -331,7 +337,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
             secondKey,
             fromAccount.accountId,
             toAccount.accountId,
-            secondAmount
+            secondAmount,
         )
 
         assertThat(secondResponse.status).isEqualTo("FAILED")
@@ -347,7 +353,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val idempotency = fixtures.loadIdempotencyKey(
             memberId,
             secondKey,
-            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
         )
         assertThat(idempotency.status).isEqualTo("FAILED")
         assertThat(idempotency.responseSnapshot).contains("FAILED", "DAILY_LIMIT_EXCEEDED")
@@ -364,7 +370,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val fromAccount = fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
         val firstKey = issueIdempotencyKey(
             result.auth.accessToken,
-            IdempotencyKeyProps.IdempotencyScopeValue.WITHDRAW
+            IdempotencyKeyProps.IdempotencyScopeValue.WITHDRAW,
         )
         val firstResponse = withdraw(result.auth.accessToken, firstKey, fromAccount.accountId, firstAmount)
 
@@ -373,7 +379,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
 
         val secondKey = issueIdempotencyKey(
             result.auth.accessToken,
-            IdempotencyKeyProps.IdempotencyScopeValue.WITHDRAW
+            IdempotencyKeyProps.IdempotencyScopeValue.WITHDRAW,
         )
         val transferCountBefore = fixtures.countTransfers()
         val outboxCountBefore = fixtures.countOutboxEvents()
@@ -393,7 +399,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val idempotency = fixtures.loadIdempotencyKey(
             memberId,
             secondKey,
-            IdempotencyKeyProps.IdempotencyScopeValue.WITHDRAW
+            IdempotencyKeyProps.IdempotencyScopeValue.WITHDRAW,
         )
         assertThat(idempotency.status).isEqualTo("FAILED")
         assertThat(idempotency.responseSnapshot).contains("FAILED", "DAILY_LIMIT_EXCEEDED")
@@ -409,7 +415,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val account = fixtures.createAccountWithBalance(memberId, "deposit-account", accountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
-            IdempotencyKeyProps.IdempotencyScopeValue.DEPOSIT
+            IdempotencyKeyProps.IdempotencyScopeValue.DEPOSIT,
         )
 
         val transferCountBefore = fixtures.countTransfers()
@@ -427,7 +433,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val idempotency = fixtures.loadIdempotencyKey(
             memberId,
             idempotencyKey,
-            IdempotencyKeyProps.IdempotencyScopeValue.DEPOSIT
+            IdempotencyKeyProps.IdempotencyScopeValue.DEPOSIT,
         )
         assertThat(idempotency.status).isEqualTo("SUCCEEDED")
         assertThat(idempotency.responseSnapshot).contains("SUCCEEDED")
@@ -445,7 +451,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
-            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
         )
 
         val now = LocalDateTime.now()
@@ -463,7 +469,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
             idempotencyKey,
             fromAccount.accountId,
             toAccount.accountId,
-            transferAmount
+            transferAmount,
         )
 
         assertThat(response.status).isEqualTo("FAILED")
@@ -493,7 +499,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
-            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
         )
 
         val outboxCountBefore = fixtures.countOutboxEvents()
@@ -503,7 +509,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
             idempotencyKey,
             fromAccount.accountId,
             toAccount.accountId,
-            transferAmount
+            transferAmount,
         )
 
         assertTransferSucceeded(response)
@@ -523,7 +529,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
-            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
         )
 
         val response = transfer(
@@ -531,7 +537,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
             idempotencyKey,
             fromAccount.accountId,
             toAccount.accountId,
-            transferAmount
+            transferAmount,
         )
 
         assertTransferSucceeded(response)
@@ -557,7 +563,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
-            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
         )
 
         val response = transfer(
@@ -565,7 +571,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
             idempotencyKey,
             fromAccount.accountId,
             toAccount.accountId,
-            transferAmount
+            transferAmount,
         )
 
         assertTransferSucceeded(response)
@@ -594,7 +600,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
-            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
         )
 
         val transferCountBefore = fixtures.countTransfers()
@@ -624,7 +630,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
 
     private fun issueIdempotencyKey(
         accessToken: String,
-        scope: IdempotencyKeyProps.IdempotencyScopeValue
+        scope: IdempotencyKeyProps.IdempotencyScopeValue,
     ): String {
         val response = restTestClient.post()
             .uri { uriBuilder ->
@@ -647,59 +653,51 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         idempotencyKey: String,
         fromAccountId: Long,
         toAccountId: Long,
-        amount: BigDecimal
-    ): TransferResponse {
-        return restTestClient.post()
-            .uri { uriBuilder -> uriBuilder.path("/transfers/$idempotencyKey").build() }
-            .body(TransferRequest(fromAccountId, toAccountId, amount))
-            .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
-            .accept(MediaType.APPLICATION_JSON)
-            .exchange()
-            .expectStatus().isOk
-            .expectBody(TransferResponse::class.java)
-            .returnResult()
-            .responseBody ?: throw IllegalStateException("Transfer response is null")
-    }
+        amount: BigDecimal,
+    ): TransferResponse = restTestClient.post()
+        .uri { uriBuilder -> uriBuilder.path("/transfers/$idempotencyKey").build() }
+        .body(TransferRequest(fromAccountId, toAccountId, amount))
+        .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isOk
+        .expectBody(TransferResponse::class.java)
+        .returnResult()
+        .responseBody ?: throw IllegalStateException("Transfer response is null")
 
     private fun withdraw(
         accessToken: String,
         idempotencyKey: String,
         accountId: Long,
-        amount: BigDecimal
-    ): TransferResponse {
-        return restTestClient.post()
-            .uri { uriBuilder -> uriBuilder.path("/withdrawals/$idempotencyKey").build() }
-            .body(WithdrawalRequest(accountId, amount))
-            .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
-            .accept(MediaType.APPLICATION_JSON)
-            .exchange()
-            .expectStatus().isOk
-            .expectBody(TransferResponse::class.java)
-            .returnResult()
-            .responseBody ?: throw IllegalStateException("Withdrawal response is null")
-    }
+        amount: BigDecimal,
+    ): TransferResponse = restTestClient.post()
+        .uri { uriBuilder -> uriBuilder.path("/withdrawals/$idempotencyKey").build() }
+        .body(WithdrawalRequest(accountId, amount))
+        .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isOk
+        .expectBody(TransferResponse::class.java)
+        .returnResult()
+        .responseBody ?: throw IllegalStateException("Withdrawal response is null")
 
     private fun deposit(
         accessToken: String,
         idempotencyKey: String,
         accountId: Long,
-        amount: BigDecimal
-    ): TransferResponse {
-        return restTestClient.post()
-            .uri { uriBuilder -> uriBuilder.path("/deposits/$idempotencyKey").build() }
-            .body(DepositRequest(accountId, amount))
-            .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
-            .accept(MediaType.APPLICATION_JSON)
-            .exchange()
-            .expectStatus().isOk
-            .expectBody(TransferResponse::class.java)
-            .returnResult()
-            .responseBody ?: throw IllegalStateException("Deposit response is null")
-    }
+        amount: BigDecimal,
+    ): TransferResponse = restTestClient.post()
+        .uri { uriBuilder -> uriBuilder.path("/deposits/$idempotencyKey").build() }
+        .body(DepositRequest(accountId, amount))
+        .header(HttpHeaders.AUTHORIZATION, "Bearer $accessToken")
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus().isOk
+        .expectBody(TransferResponse::class.java)
+        .returnResult()
+        .responseBody ?: throw IllegalStateException("Deposit response is null")
 
-    private fun feeFor(amount: BigDecimal): BigDecimal {
-        return amount.multiply(TRANSFER_FEE_RATE).setScale(2, RoundingMode.DOWN)
-    }
+    private fun feeFor(amount: BigDecimal): BigDecimal = amount.multiply(TRANSFER_FEE_RATE).setScale(2, RoundingMode.DOWN)
 
     private fun assertLedger(
         ledgers: List<LedgerRow>,
@@ -707,7 +705,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         side: String,
         amount: BigDecimal,
         before: LocalDateTime,
-        after: LocalDateTime
+        after: LocalDateTime,
     ) {
         val ledger = ledgers.firstOrNull { it.accountId == accountId && it.side == side }
             ?: throw IllegalStateException("Ledger not found for account $accountId and side $side")
@@ -724,7 +722,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
 
     private fun assertBalance(
         accountId: Long,
-        expected: BigDecimal
+        expected: BigDecimal,
     ) {
         assertThat(fixtures.loadBalance(accountId)).isEqualByComparingTo(expected)
     }
@@ -736,7 +734,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         debitAmount: BigDecimal,
         creditAmount: BigDecimal,
         before: LocalDateTime,
-        after: LocalDateTime
+        after: LocalDateTime,
     ) {
         val ledgers = fixtures.loadLedgers(transferId)
         assertThat(ledgers).hasSize(2)
@@ -748,7 +746,7 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         transferId: Long,
         fromAccountId: Long,
         toAccountId: Long,
-        amount: BigDecimal
+        amount: BigDecimal,
     ) {
         val outboxes = fixtures.loadOutboxEvents(transferId)
         assertThat(outboxes).hasSize(1)
@@ -757,13 +755,13 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         assertThat(outbox.payload).contains(
             "\"fromAccountId\":$fromAccountId",
             "\"toAccountId\":$toAccountId",
-            "\"amount\":$amount"
+            "\"amount\":$amount",
         )
     }
 
     private fun assertIdempotency(
         memberId: Long,
-        idempotencyKey: String
+        idempotencyKey: String,
     ) {
         val idempotency = fixtures.loadIdempotencyKey(memberId, idempotencyKey)
         assertThat(idempotency.status).isEqualTo("SUCCEEDED")
@@ -773,24 +771,20 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
     data class TransferResponse(
         val status: String,
         val transferId: Long?,
-        val errorCode: String?
+        val errorCode: String?,
     )
 
     @TestConfiguration
     class TransferFailureConfig {
         @Bean
-        fun transferFailureSwitch(): TransferFailureSwitch {
-            return TransferFailureSwitch()
-        }
+        fun transferFailureSwitch(): TransferFailureSwitch = TransferFailureSwitch()
 
         @Bean
         @Primary
         fun failureTransferRepository(
             delegate: TransferRepository,
-            transferFailureSwitch: TransferFailureSwitch
-        ): TransferRepository {
-            return FailureTransferRepository(delegate, transferFailureSwitch)
-        }
+            transferFailureSwitch: TransferFailureSwitch,
+        ): TransferRepository = FailureTransferRepository(delegate, transferFailureSwitch)
     }
 
     class TransferFailureSwitch {
@@ -804,14 +798,12 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
             enabled.set(false)
         }
 
-        fun shouldFail(): Boolean {
-            return enabled.get()
-        }
+        fun shouldFail(): Boolean = enabled.get()
     }
 
     private class FailureTransferRepository(
         private val delegate: TransferRepository,
-        private val failureSwitch: TransferFailureSwitch
+        private val failureSwitch: TransferFailureSwitch,
     ) : TransferRepository {
         override fun save(props: TransferRequestProps): TransferModel {
             if (failureSwitch.shouldFail()) {
@@ -820,25 +812,19 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
             return delegate.save(props)
         }
 
-        override fun findById(identifier: TransferIdentifier): TransferModel? {
-            return delegate.findById(identifier)
-        }
+        override fun findById(identifier: TransferIdentifier): TransferModel? = delegate.findById(identifier)
 
         override fun findCompletedByAccountId(
             identifier: AccountIdentifier,
-            condition: TransferQueryCondition
-        ): List<TransferModel> {
-            return delegate.findCompletedByAccountId(identifier, condition)
-        }
+            condition: TransferQueryCondition,
+        ): List<TransferModel> = delegate.findCompletedByAccountId(identifier, condition)
 
         override fun sumAmountByFromAccountIdAndScopeBetween(
             identifier: AccountIdentifier,
             scope: TransferProps.TransferScopeValue,
             from: LocalDateTime,
-            to: LocalDateTime
-        ): BigDecimal {
-            return delegate.sumAmountByFromAccountIdAndScopeBetween(identifier, scope, from, to)
-        }
+            to: LocalDateTime,
+        ): BigDecimal = delegate.sumAmountByFromAccountIdAndScopeBetween(identifier, scope, from, to)
     }
 
     private companion object {

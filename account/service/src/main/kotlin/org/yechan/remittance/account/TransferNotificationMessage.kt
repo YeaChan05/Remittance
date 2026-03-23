@@ -8,5 +8,5 @@ data class TransferNotificationMessage(
     val transferId: Long,
     val amount: BigDecimal,
     val fromAccountId: Long,
-    val occurredAt: LocalDateTime
+    val occurredAt: LocalDateTime,
 )

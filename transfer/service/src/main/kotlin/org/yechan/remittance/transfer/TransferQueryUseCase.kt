@@ -8,7 +8,7 @@ fun interface TransferQueryUseCase {
     fun query(
         memberId: Long,
         accountId: Long,
-        condition: TransferQueryCondition
+        condition: TransferQueryCondition,
     ): List<TransferModel>
 }
 
@@ -16,12 +16,12 @@ private val log = KotlinLogging.logger {}
 
 class TransferQueryService(
     private val accountRepository: AccountRepository,
-    private val transferRepository: TransferRepository
+    private val transferRepository: TransferRepository,
 ) : TransferQueryUseCase {
     override fun query(
         memberId: Long,
         accountId: Long,
-        condition: TransferQueryCondition
+        condition: TransferQueryCondition,
     ): List<TransferModel> {
         log.info { "transfer.query.start memberId=$memberId accountId=$accountId" }
         val account =
@@ -41,6 +41,6 @@ class TransferQueryService(
     }
 
     private data class AccountId(
-        override val accountId: Long?
+        override val accountId: Long?,
     ) : AccountIdentifier
 }

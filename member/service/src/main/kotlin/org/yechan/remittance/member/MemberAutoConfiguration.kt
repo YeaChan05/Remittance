@@ -7,16 +7,17 @@ import org.springframework.context.annotation.Import
 @Import(MemberBeanRegistrar::class)
 @AutoConfiguration
 class MemberAutoConfiguration
-class MemberBeanRegistrar: BeanRegistrarDsl({
-    registerBean<MemberCreateUseCase> {
-        MemberService(bean(), bean())
-    }
+class MemberBeanRegistrar :
+    BeanRegistrarDsl({
+        registerBean<MemberCreateUseCase> {
+            MemberService(bean(), bean())
+        }
 
-    registerBean<MemberQueryUseCase> {
-        MemberQueryService(bean(), bean(), bean())
-    }
+        registerBean<MemberQueryUseCase> {
+            MemberQueryService(bean(), bean(), bean())
+        }
 
-    registerBean<MemberAuthQueryUseCase> {
-        MemberAuthQueryService(bean(), bean())
-    }
-})
+        registerBean<MemberAuthQueryUseCase> {
+            MemberAuthQueryService(bean(), bean())
+        }
+    })

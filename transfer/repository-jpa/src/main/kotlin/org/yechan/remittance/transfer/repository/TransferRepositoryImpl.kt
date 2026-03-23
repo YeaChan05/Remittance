@@ -1,7 +1,5 @@
 package org.yechan.remittance.transfer.repository
 
-import java.math.BigDecimal
-import java.time.LocalDateTime
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.yechan.remittance.account.AccountIdentifier
@@ -11,21 +9,19 @@ import org.yechan.remittance.transfer.TransferProps
 import org.yechan.remittance.transfer.TransferQueryCondition
 import org.yechan.remittance.transfer.TransferRepository
 import org.yechan.remittance.transfer.TransferRequestProps
+import java.math.BigDecimal
+import java.time.LocalDateTime
 
 class TransferRepositoryImpl(
-    private val repository: TransferJpaRepository
+    private val repository: TransferJpaRepository,
 ) : TransferRepository {
-    override fun save(props: TransferRequestProps): TransferModel {
-        return repository.save(TransferEntity.create(TransferCreateCommand(props)))
-    }
+    override fun save(props: TransferRequestProps): TransferModel = repository.save(TransferEntity.create(TransferCreateCommand(props)))
 
-    override fun findById(identifier: TransferIdentifier): TransferModel? {
-        return repository.findById(requireNotNull(identifier.transferId)).orElse(null)
-    }
+    override fun findById(identifier: TransferIdentifier): TransferModel? = repository.findById(requireNotNull(identifier.transferId)).orElse(null)
 
     override fun findCompletedByAccountId(
         identifier: AccountIdentifier,
-        condition: TransferQueryCondition
+        condition: TransferQueryCondition,
     ): List<TransferModel> {
         val limit = condition.limit
         val pageable = if (limit == null) Pageable.unpaged() else PageRequest.of(0, limit)
@@ -34,7 +30,7 @@ class TransferRepositoryImpl(
             COMPLETED_STATUSES,
             condition.from,
             condition.to,
-            pageable
+            pageable,
         ).map { it as TransferModel }
     }
 
@@ -42,19 +38,17 @@ class TransferRepositoryImpl(
         identifier: AccountIdentifier,
         scope: TransferProps.TransferScopeValue,
         from: LocalDateTime,
-        to: LocalDateTime
-    ): BigDecimal {
-        return repository.sumAmountByFromAccountIdAndScopeBetween(
-            requireNotNull(identifier.accountId),
-            scope,
-            TransferProps.TransferStatusValue.SUCCEEDED,
-            from,
-            to
-        )
-    }
+        to: LocalDateTime,
+    ): BigDecimal = repository.sumAmountByFromAccountIdAndScopeBetween(
+        requireNotNull(identifier.accountId),
+        scope,
+        TransferProps.TransferStatusValue.SUCCEEDED,
+        from,
+        to,
+    )
 
     private data class TransferCreateCommand(
-        private val props: TransferRequestProps
+        private val props: TransferRequestProps,
     ) : TransferProps {
         override val fromAccountId: Long
             get() = props.fromAccountId
@@ -75,7 +69,7 @@ class TransferRepositoryImpl(
     private companion object {
         val COMPLETED_STATUSES = listOf(
             TransferProps.TransferStatusValue.SUCCEEDED,
-            TransferProps.TransferStatusValue.FAILED
+            TransferProps.TransferStatusValue.FAILED,
         )
     }
 }

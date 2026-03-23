@@ -10,7 +10,7 @@ import javax.crypto.SecretKey
 class JwtTokenGenerator(
     salt: String,
     private val accessExpiresIn: Long,
-    private val refreshExpiresIn: Long
+    private val refreshExpiresIn: Long,
 ) : TokenGenerator {
     private val secretKey: SecretKey
 
@@ -30,15 +30,13 @@ class JwtTokenGenerator(
     private fun createToken(
         memberId: Long,
         issuedAt: Instant,
-        expiresInSeconds: Long
-    ): String {
-        return Jwts.builder()
-            .subject(memberId.toString())
-            .issuedAt(Date.from(issuedAt))
-            .expiration(Date.from(issuedAt.plusSeconds(expiresInSeconds)))
-            .signWith(secretKey)
-            .compact()
-    }
+        expiresInSeconds: Long,
+    ): String = Jwts.builder()
+        .subject(memberId.toString())
+        .issuedAt(Date.from(issuedAt))
+        .expiration(Date.from(issuedAt.plusSeconds(expiresInSeconds)))
+        .signWith(secretKey)
+        .compact()
 
     private companion object {
         const val SECRET = "member-token-secret-member-token-secret"

@@ -10,18 +10,19 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 @AutoConfiguration
 class CommonApiAutoConfiguration
 
-class CommonApiBeanRegistrar : BeanRegistrarDsl({
-    registerBean<LoginUserIdArgumentResolver> {
-        LoginUserIdArgumentResolver()
-    }
+class CommonApiBeanRegistrar :
+    BeanRegistrarDsl({
+        registerBean<LoginUserIdArgumentResolver> {
+            LoginUserIdArgumentResolver()
+        }
 
-    registerBean<WebMvcConfigurer> {
-        val loginUserIdArgumentResolver = bean<LoginUserIdArgumentResolver>()
+        registerBean<WebMvcConfigurer> {
+            val loginUserIdArgumentResolver = bean<LoginUserIdArgumentResolver>()
 
-        object : WebMvcConfigurer {
-            override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
-                resolvers.add(loginUserIdArgumentResolver)
+            object : WebMvcConfigurer {
+                override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
+                    resolvers.add(loginUserIdArgumentResolver)
+                }
             }
         }
-    }
-})
+    })

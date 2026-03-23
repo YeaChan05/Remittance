@@ -7,7 +7,7 @@ import org.springframework.test.web.servlet.client.RestTestClient
 
 @SpringBootTest(
     classes = [AggregateApplication::class],
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 )
 class IntegrationTest : IntegrationTestEnvironmentSetup() {
     @Autowired

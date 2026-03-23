@@ -30,6 +30,6 @@ class GlobalExceptionHandlerTest {
     }
 
     private class SomeBusinessException(
-        message: String
+        message: String,
     ) : BusinessException(message)
 }

@@ -13,11 +13,11 @@ import org.yechan.remittance.transfer.dto.IdempotencyKeyCreateResponse
 interface IdempotencyKeyApi {
     @Operation(summary = "Create an idempotency key", description = "Creates an idempotency key for a request scope")
     @ApiResponses(
-        ApiResponse(responseCode = "200", description = "Created", content = [Content()])
+        ApiResponse(responseCode = "200", description = "Created", content = [Content()]),
     )
     fun create(
         @Parameter(hidden = true) memberId: Long,
         @Parameter(description = "Scope (TRANSFER/DEPOSIT/WITHDRAW)")
-        scope: IdempotencyKeyProps.IdempotencyScopeValue?
+        scope: IdempotencyKeyProps.IdempotencyScopeValue?,
     ): ResponseEntity<IdempotencyKeyCreateResponse>
 }

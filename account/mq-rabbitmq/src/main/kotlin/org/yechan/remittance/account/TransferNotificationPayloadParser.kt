@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 class TransferNotificationPayloadParser {
     fun parse(
         eventId: Long,
-        payload: String
+        payload: String,
     ): TransferNotificationProps {
         val values = FIELD_PATTERN.findAll(payload).associate { matchResult ->
             val key = matchResult.groupValues[1]
@@ -25,7 +25,7 @@ class TransferNotificationPayloadParser {
             values.getValue("toAccountId").toLong(),
             values.getValue("fromAccountId").toLong(),
             BigDecimal(values.getValue("amount")),
-            LocalDateTime.parse(values.getValue("completedAt"))
+            LocalDateTime.parse(values.getValue("completedAt")),
         )
     }
 
@@ -35,7 +35,7 @@ class TransferNotificationPayloadParser {
         override val toAccountId: Long,
         override val fromAccountId: Long,
         override val amount: BigDecimal,
-        override val occurredAt: LocalDateTime
+        override val occurredAt: LocalDateTime,
     ) : TransferNotificationProps
 
     private companion object {

@@ -24,8 +24,6 @@ object IntegrationTestEnvironmentSystemProperties {
         registry.add(SPRING_RABBITMQ_PASSWORD) { requiredProperty(SPRING_RABBITMQ_PASSWORD) }
     }
 
-    private fun requiredProperty(propertyName: String): String {
-        return System.getProperty(propertyName)
-            ?: throw IllegalStateException("Missing Gradle-provided system property: $propertyName")
-    }
+    private fun requiredProperty(propertyName: String): String = System.getProperty(propertyName)
+        ?: throw IllegalStateException("Missing Gradle-provided system property: $propertyName")
 }

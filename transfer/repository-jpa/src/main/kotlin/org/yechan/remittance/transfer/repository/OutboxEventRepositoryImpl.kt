@@ -8,11 +8,9 @@ import org.yechan.remittance.transfer.OutboxEventProps
 import org.yechan.remittance.transfer.OutboxEventRepository
 
 class OutboxEventRepositoryImpl(
-    private val repository: OutboxEventJpaRepository
+    private val repository: OutboxEventJpaRepository,
 ) : OutboxEventRepository {
-    override fun save(props: OutboxEventProps): OutboxEventModel {
-        return repository.save(OutboxEventEntity.create(props))
-    }
+    override fun save(props: OutboxEventProps): OutboxEventModel = repository.save(OutboxEventEntity.create(props))
 
     override fun findNewForPublish(limit: Int?): List<OutboxEventModel> {
         val pageable = if (limit == null) Pageable.unpaged() else PageRequest.of(0, limit)

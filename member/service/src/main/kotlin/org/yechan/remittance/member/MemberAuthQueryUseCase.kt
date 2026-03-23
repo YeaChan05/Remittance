@@ -11,7 +11,7 @@ private val log = KotlinLogging.logger {}
 
 class MemberAuthQueryService(
     private val memberRepository: MemberRepository,
-    private val passwordHashEncoder: PasswordHashEncoder
+    private val passwordHashEncoder: PasswordHashEncoder,
 ) : MemberAuthQueryUseCase {
     override fun verify(props: MemberLoginProps): MemberAuthValue {
         log.info { "member.auth.verify.start" }

@@ -12,7 +12,7 @@ private val log = KotlinLogging.logger {}
 
 class AuthService(
     private val memberAuthClient: MemberAuthClient,
-    private val tokenGenerator: TokenGenerator
+    private val tokenGenerator: TokenGenerator,
 ) : AuthLoginUseCase {
     override fun login(props: AuthLoginProps): AuthTokenValue {
         log.info { "auth.login.start" }

@@ -7,7 +7,7 @@ fun BeanRegistrarDsl.whenPropertyEnabled(
     name: String,
     havingValue: String = "true",
     matchIfMissing: Boolean = false,
-    block: BeanRegistrarDsl.() -> Unit
+    block: BeanRegistrarDsl.() -> Unit,
 ) {
     val key = "$prefix.$name"
     val value = env.getProperty(key)

@@ -1,13 +1,13 @@
 package org.yechan.remittance.account
 
-import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Consumer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
+import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Consumer
 
 class NotificationSessionRegistryTest {
     @Test
@@ -52,7 +52,7 @@ class NotificationSessionRegistryTest {
     }
 
     private data class TestPayload(
-        val type: String
+        val type: String,
     )
 
     private class TestEmitter : SseEmitter() {

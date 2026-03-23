@@ -1,17 +1,17 @@
 package org.yechan.remittance.transfer.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import java.math.BigDecimal
-import java.math.RoundingMode
 import org.yechan.remittance.transfer.TransferFailedException
 import org.yechan.remittance.transfer.TransferFailureCode
 import org.yechan.remittance.transfer.TransferProps
 import org.yechan.remittance.transfer.TransferRequestProps
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 class TransferRequest(
     @param:JsonProperty("fromAccountId") private val fromAccountIdRaw: Long?,
     @param:JsonProperty("toAccountId") private val toAccountIdRaw: Long?,
-    @param:JsonProperty("amount") private val amountRaw: BigDecimal?
+    @param:JsonProperty("amount") private val amountRaw: BigDecimal?,
 ) : TransferRequestProps {
     init {
         if (amountRaw == null || amountRaw.compareTo(BigDecimal.ZERO) <= 0) {

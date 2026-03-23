@@ -1,12 +1,12 @@
 package org.yechan.remittance.transfer
 
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 import java.time.Clock
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.atomic.AtomicReference
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
 
 class IdempotencyKeyServiceTest {
     @Test
@@ -23,7 +23,7 @@ class IdempotencyKeyServiceTest {
                 override val memberId: Long = 10L
                 override val scope: IdempotencyKeyProps.IdempotencyScopeValue =
                     IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
-            }
+            },
         )
 
         assertThat(created.memberId).isEqualTo(10L)
@@ -40,7 +40,7 @@ class IdempotencyKeyServiceTest {
     }
 
     private class TestIdempotencyKeyRepository(
-        private val saved: AtomicReference<IdempotencyKeyProps>
+        private val saved: AtomicReference<IdempotencyKeyProps>,
     ) : IdempotencyKeyRepository {
         override fun save(props: IdempotencyKeyProps): IdempotencyKeyModel {
             saved.set(props)
@@ -54,14 +54,14 @@ class IdempotencyKeyServiceTest {
                 props.requestHash,
                 props.responseSnapshot,
                 props.startedAt,
-                props.completedAt
+                props.completedAt,
             )
         }
 
         override fun findByKey(
             memberId: Long,
             scope: IdempotencyKeyProps.IdempotencyScopeValue,
-            idempotencyKey: String
+            idempotencyKey: String,
         ): IdempotencyKeyModel? = null
 
         override fun tryMarkInProgress(
@@ -69,7 +69,7 @@ class IdempotencyKeyServiceTest {
             scope: IdempotencyKeyProps.IdempotencyScopeValue,
             idempotencyKey: String,
             requestHash: String,
-            startedAt: LocalDateTime
+            startedAt: LocalDateTime,
         ): Boolean = false
 
         override fun markSucceeded(
@@ -77,24 +77,20 @@ class IdempotencyKeyServiceTest {
             scope: IdempotencyKeyProps.IdempotencyScopeValue,
             idempotencyKey: String,
             responseSnapshot: String,
-            completedAt: LocalDateTime
-        ): IdempotencyKeyModel {
-            throw UnsupportedOperationException()
-        }
+            completedAt: LocalDateTime,
+        ): IdempotencyKeyModel = throw UnsupportedOperationException()
 
         override fun markFailed(
             memberId: Long,
             scope: IdempotencyKeyProps.IdempotencyScopeValue,
             idempotencyKey: String,
             responseSnapshot: String,
-            completedAt: LocalDateTime
-        ): IdempotencyKeyModel {
-            throw UnsupportedOperationException()
-        }
+            completedAt: LocalDateTime,
+        ): IdempotencyKeyModel = throw UnsupportedOperationException()
 
         override fun markTimeoutBefore(
             cutoff: LocalDateTime,
-            responseSnapshot: String
+            responseSnapshot: String,
         ): Int = 0
     }
 }

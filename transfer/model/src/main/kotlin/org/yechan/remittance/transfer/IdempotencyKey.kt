@@ -12,5 +12,5 @@ data class IdempotencyKey(
     override val requestHash: String?,
     override val responseSnapshot: String?,
     override val startedAt: LocalDateTime?,
-    override val completedAt: LocalDateTime?
+    override val completedAt: LocalDateTime?,
 ) : IdempotencyKeyModel

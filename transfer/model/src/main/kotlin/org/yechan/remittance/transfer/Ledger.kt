@@ -9,5 +9,5 @@ data class Ledger(
     override val accountId: Long,
     override val amount: BigDecimal,
     override val side: LedgerProps.LedgerSideValue,
-    override val createdAt: LocalDateTime?
+    override val createdAt: LocalDateTime?,
 ) : LedgerModel
