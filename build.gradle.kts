@@ -25,7 +25,6 @@ plugins {
 }
 
 ktlint {
-    version.set("1.8.0")
     filter {
         exclude("**/build/**")
         exclude("**/generated/**")
@@ -195,14 +194,6 @@ val jacocoAggregationProjects = mutableListOf<Project>()
 subprojects {
     apply(plugin = "jacoco")
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
-
-    ktlint {
-        filter {
-            exclude("**/build/**")
-            exclude("**/generated/**")
-            exclude("**/out/**")
-        }
-    }
 
     plugins.withType<JavaPlugin> {
         jacocoAggregationProjects.add(this@subprojects)
