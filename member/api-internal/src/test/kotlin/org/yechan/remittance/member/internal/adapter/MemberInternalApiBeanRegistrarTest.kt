@@ -3,6 +3,8 @@ package org.yechan.remittance.member.internal.adapter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
 import org.yechan.remittance.member.MemberAuthQueryUseCase
 import org.yechan.remittance.member.MemberAuthValue
 import org.yechan.remittance.member.MemberExistenceQueryUseCase
@@ -10,7 +12,7 @@ import org.yechan.remittance.member.internal.contract.LoginVerifyRequest
 import org.yechan.remittance.member.internal.contract.MemberExistenceInternalApi
 import org.yechan.remittance.member.internal.contract.MemberInternalApi
 
-class MemberInternalApiAutoConfigurationTest {
+class MemberInternalApiBeanRegistrarTest {
     @Test
     fun `자동 설정은 회원 내부 계약 빈을 등록한다`() {
         val memberAuthQueryUseCase = MemberAuthQueryUseCase { MemberAuthValue(true, 3L) }
@@ -21,7 +23,7 @@ class MemberInternalApiAutoConfigurationTest {
                 "memberExistenceQueryUseCase",
                 memberExistenceQueryUseCase,
             )
-            register(MemberInternalApiAutoConfiguration::class.java)
+            register(TestConfiguration::class.java)
             refresh()
         }
 
@@ -46,4 +48,8 @@ class MemberInternalApiAutoConfigurationTest {
 
         context.close()
     }
+
+    @Configuration(proxyBeanMethods = false)
+    @Import(MemberInternalApiBeanRegistrar::class)
+    class TestConfiguration
 }

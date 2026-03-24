@@ -8,15 +8,13 @@ import org.springframework.amqp.rabbit.annotation.EnableRabbit
 import org.springframework.beans.factory.BeanRegistrarDsl
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.context.annotation.Import
 import org.yechan.remittance.whenPropertyEnabled
 
-@Import(TransferNotificationInfrastructureBeanRegistrar::class)
-@AutoConfiguration
 @EnableRabbit
 @EnableConfigurationProperties(TransferNotificationConsumerProperties::class)
 class TransferNotificationConsumerAutoConfiguration
 
+@AutoConfiguration
 class TransferNotificationInfrastructureBeanRegistrar :
     BeanRegistrarDsl({
         whenPropertyEnabled("account.transfer-notification", "enabled", matchIfMissing = true) {

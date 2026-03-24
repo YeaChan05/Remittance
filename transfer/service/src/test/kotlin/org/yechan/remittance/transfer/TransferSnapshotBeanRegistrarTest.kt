@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
 import java.util.concurrent.atomic.AtomicBoolean
 
-class TransferSnapshotConfigurationTest {
+class TransferSnapshotBeanRegistrarTest {
     @Test
     fun `자동 설정은 애플리케이션 ObjectMapper를 우선 사용한다`() {
         val used = AtomicBoolean(false)
@@ -18,7 +20,7 @@ class TransferSnapshotConfigurationTest {
         }
         val context = AnnotationConfigApplicationContext().apply {
             beanFactory.registerSingleton("objectMapper", objectMapper)
-            register(TransferSnapshotConfiguration::class.java)
+            register(TestConfiguration::class.java)
             refresh()
         }
 
@@ -36,7 +38,7 @@ class TransferSnapshotConfigurationTest {
     @Test
     fun `자동 설정은 ObjectMapper가 없어도 fallback으로 동작한다`() {
         val context = AnnotationConfigApplicationContext().apply {
-            register(TransferSnapshotConfiguration::class.java)
+            register(TestConfiguration::class.java)
             refresh()
         }
 
@@ -49,4 +51,8 @@ class TransferSnapshotConfigurationTest {
 
         context.close()
     }
+
+    @Configuration(proxyBeanMethods = false)
+    @Import(TransferSnapshotBeanRegistrar::class)
+    class TestConfiguration
 }

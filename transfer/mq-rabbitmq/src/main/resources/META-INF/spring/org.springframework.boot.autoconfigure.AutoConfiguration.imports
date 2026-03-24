@@ -1,1 +1,2 @@
 org.yechan.remittance.transfer.TransferOutboxAutoConfiguration
+org.yechan.remittance.transfer.TransferOutboxBeanRegistrar

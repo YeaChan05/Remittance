@@ -2,11 +2,8 @@ package org.yechan.remittance.member
 
 import org.springframework.beans.factory.BeanRegistrarDsl
 import org.springframework.boot.autoconfigure.AutoConfiguration
-import org.springframework.context.annotation.Import
 
-@Import(MemberBeanRegistrar::class)
 @AutoConfiguration
-class MemberAutoConfiguration
 class MemberBeanRegistrar :
     BeanRegistrarDsl({
         registerBean<MemberCreateUseCase> {

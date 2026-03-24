@@ -5,7 +5,6 @@ import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration
 import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration
-import org.springframework.context.annotation.Import
 import org.springframework.core.Ordered
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer
@@ -16,16 +15,15 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.access.AccessDeniedHandler
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
-@Import(CommonSecurityBeanRegistrar::class)
+@EnableConfigurationProperties(AuthTokenProperties::class)
+class CommonSecurityAutoConfiguration
+
 @AutoConfiguration(
     before = [
         SecurityAutoConfiguration::class,
         ServletWebSecurityAutoConfiguration::class,
     ],
 )
-@EnableConfigurationProperties(AuthTokenProperties::class)
-class CommonSecurityAutoConfiguration
-
 class CommonSecurityBeanRegistrar :
     BeanRegistrarDsl({
         registerBean<TokenGenerator> {

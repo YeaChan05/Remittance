@@ -1,1 +1,1 @@
-org.yechan.remittance.auth.AuthClientConfiguration
+org.yechan.remittance.auth.AuthClientBeanRegistrar

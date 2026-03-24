@@ -1,4 +1,4 @@
-package org.yechan.remittance.config
+package org.yechan.remittance.auth
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -10,16 +10,16 @@ import org.springframework.core.Ordered
 import org.yechan.remittance.AuthorizeHttpRequestsCustomizer
 import org.yechan.remittance.PrioritizedAuthorizeHttpRequestsCustomizer
 
-class AggregateSecurityConfigurationTest {
+class AuthSecurityBeanRegistrarTest {
     @Test
-    fun `보안 설정은 aggregate customizer를 default보다 먼저 등록한다`() {
+    fun `보안 설정은 auth customizer를 default보다 먼저 등록한다`() {
         val context = AnnotationConfigApplicationContext().apply {
             register(TestConfiguration::class.java)
             refresh()
         }
 
-        val aggregateCustomizer = context.getBean(
-            "aggregateAuthorizeHttpRequestsCustomizer",
+        val authCustomizer = context.getBean(
+            "authAuthorizeHttpRequestsCustomizer",
             AuthorizeHttpRequestsCustomizer::class.java,
         )
         val defaultCustomizer = context.getBean(
@@ -31,16 +31,16 @@ class AggregateSecurityConfigurationTest {
                 .orderedStream()
                 .toList()
 
-        assertThat(aggregateCustomizer).isInstanceOf(PrioritizedAuthorizeHttpRequestsCustomizer::class.java)
+        assertThat(authCustomizer).isInstanceOf(PrioritizedAuthorizeHttpRequestsCustomizer::class.java)
         assertThat(defaultCustomizer).isInstanceOf(PrioritizedAuthorizeHttpRequestsCustomizer::class.java)
-        assertThat((aggregateCustomizer as Ordered).order).isLessThan((defaultCustomizer as Ordered).order)
-        assertThat(orderedCustomizers).containsExactly(aggregateCustomizer, defaultCustomizer)
+        assertThat((authCustomizer as Ordered).order).isLessThan((defaultCustomizer as Ordered).order)
+        assertThat(orderedCustomizers).containsExactly(authCustomizer, defaultCustomizer)
 
         context.close()
     }
 
     @Configuration(proxyBeanMethods = false)
-    @Import(AggregateSecurityConfiguration::class)
+    @Import(AuthSecurityBeanRegistrar::class)
     class TestConfiguration {
         @Bean("defaultAuthorizeHttpRequestsCustomizer")
         fun defaultAuthorizeHttpRequestsCustomizer(): AuthorizeHttpRequestsCustomizer = PrioritizedAuthorizeHttpRequestsCustomizer(

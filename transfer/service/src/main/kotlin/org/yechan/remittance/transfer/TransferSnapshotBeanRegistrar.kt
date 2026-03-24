@@ -2,13 +2,9 @@ package org.yechan.remittance.transfer
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.BeanRegistrarDsl
-import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Import
+import org.springframework.boot.autoconfigure.AutoConfiguration
 
-@Import(TransferSnapshotBeanRegistrar::class)
-@Configuration
-class TransferSnapshotConfiguration
-
+@AutoConfiguration
 class TransferSnapshotBeanRegistrar :
     BeanRegistrarDsl({
         registerBean<TransferSnapshotUtil> {

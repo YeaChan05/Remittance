@@ -1,2 +1,4 @@
 org.yechan.remittance.transfer.IdempotencyKeyAutoConfiguration
-org.yechan.remittance.transfer.TransferAutoConfiguration
+org.yechan.remittance.transfer.IdempotencyKeyBeanRegistrar
+org.yechan.remittance.transfer.TransferSnapshotBeanRegistrar
+org.yechan.remittance.transfer.TransferBeanRegistrar

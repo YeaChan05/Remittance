@@ -4,10 +4,10 @@ import org.springframework.beans.factory.BeanRegistrarDsl
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Import
-import org.yechan.remittance.config.AggregateSecurityConfiguration
+import org.yechan.remittance.config.AggregateSecurityBeanRegistrar
 import java.time.Clock
 
-@Import(AggregateApplicationBeanRegistrar::class, AggregateSecurityConfiguration::class)
+@Import(AggregateApplicationBeanRegistrar::class, AggregateSecurityBeanRegistrar::class)
 @SpringBootApplication
 class AggregateApplication
 

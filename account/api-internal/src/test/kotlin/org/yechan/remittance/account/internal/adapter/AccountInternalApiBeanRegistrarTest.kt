@@ -3,6 +3,8 @@ package org.yechan.remittance.account.internal.adapter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
 import org.yechan.remittance.account.AccountInternalLockValue
 import org.yechan.remittance.account.AccountInternalQueryUseCase
 import org.yechan.remittance.account.AccountInternalSnapshotValue
@@ -12,7 +14,7 @@ import org.yechan.remittance.account.internal.contract.AccountGetRequest
 import org.yechan.remittance.account.internal.contract.AccountInternalApi
 import java.math.BigDecimal
 
-class AccountInternalApiAutoConfigurationTest {
+class AccountInternalApiBeanRegistrarTest {
     @Test
     fun `자동 설정은 계좌 내부 API 빈을 등록한다`() {
         val queryUseCase = object : AccountInternalQueryUseCase {
@@ -27,7 +29,7 @@ class AccountInternalApiAutoConfigurationTest {
         val context = AnnotationConfigApplicationContext().apply {
             beanFactory.registerSingleton("accountInternalQueryUseCase", queryUseCase)
             beanFactory.registerSingleton("accountInternalUpdateUseCase", updateUseCase)
-            register(AccountInternalApiAutoConfiguration::class.java)
+            register(TestConfiguration::class.java)
             refresh()
         }
 
@@ -47,4 +49,8 @@ class AccountInternalApiAutoConfigurationTest {
 
         context.close()
     }
+
+    @Configuration(proxyBeanMethods = false)
+    @Import(AccountInternalApiBeanRegistrar::class)
+    class TestConfiguration
 }
