@@ -441,6 +441,41 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
     }
 
     @Test
+    fun `출금은 성공적으로 처리된다`() {
+        val result = fixtures.setupAuthentication()
+        val memberId = result.authentication.name.toLong()
+        val accountBalance = BigDecimal.valueOf(10_000L)
+        val withdrawAmount = BigDecimal.valueOf(4_000L)
+
+        val account = fixtures.createAccountWithBalance(memberId, "withdraw-account", accountBalance)
+        val idempotencyKey = issueIdempotencyKey(
+            result.auth.accessToken,
+            IdempotencyKeyProps.IdempotencyScopeValue.WITHDRAW,
+        )
+
+        val transferCountBefore = fixtures.countTransfers()
+        val outboxCountBefore = fixtures.countOutboxEvents()
+        val ledgerCountBefore = fixtures.countLedgers()
+
+        val response =
+            withdraw(result.auth.accessToken, idempotencyKey, account.accountId, withdrawAmount)
+
+        assertTransferSucceeded(response)
+        assertBalance(account.accountId, accountBalance.subtract(withdrawAmount))
+        assertThat(fixtures.countTransfers()).isEqualTo(transferCountBefore + 1)
+        assertThat(fixtures.countOutboxEvents()).isEqualTo(outboxCountBefore)
+        assertThat(fixtures.countLedgers()).isEqualTo(ledgerCountBefore + 1)
+
+        val idempotency = fixtures.loadIdempotencyKey(
+            memberId,
+            idempotencyKey,
+            IdempotencyKeyProps.IdempotencyScopeValue.WITHDRAW,
+        )
+        assertThat(idempotency.status).isEqualTo("SUCCEEDED")
+        assertThat(idempotency.responseSnapshot).contains("SUCCEEDED")
+    }
+
+    @Test
     fun `입금은 성공적으로 처리된다`() {
         val result = fixtures.setupAuthentication()
         val memberId = result.authentication.name.toLong()
@@ -473,6 +508,114 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         )
         assertThat(idempotency.status).isEqualTo("SUCCEEDED")
         assertThat(idempotency.responseSnapshot).contains("SUCCEEDED")
+    }
+
+    @Test
+    fun `입금 요청은 인증이 없으면 401을 반환한다`() {
+        restTestClient.post()
+            .uri("/deposits/invalid-key")
+            .body(
+                mapOf(
+                    "accountId" to 1L,
+                    "amount" to 1000,
+                ),
+            )
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isUnauthorized
+    }
+
+    @Test
+    fun `출금 요청은 인증이 없으면 401을 반환한다`() {
+        restTestClient.post()
+            .uri("/withdrawals/invalid-key")
+            .body(
+                mapOf(
+                    "accountId" to 1L,
+                    "amount" to 1000,
+                ),
+            )
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isUnauthorized
+    }
+
+    @Test
+    fun `입금 요청 body가 잘못되면 400을 반환한다`() {
+        val result = fixtures.setupAuthentication()
+        val memberId = result.authentication.name.toLong()
+        val account = fixtures.createAccountWithBalance(memberId, "deposit-account", BigDecimal.valueOf(10_000L))
+        val idempotencyKey = issueIdempotencyKey(
+            result.auth.accessToken,
+            IdempotencyKeyProps.IdempotencyScopeValue.DEPOSIT,
+        )
+        val transferCountBefore = fixtures.countTransfers()
+        val outboxCountBefore = fixtures.countOutboxEvents()
+        val ledgerCountBefore = fixtures.countLedgers()
+
+        restTestClient.post()
+            .uri("/deposits/$idempotencyKey")
+            .body(
+                mapOf(
+                    "accountId" to account.accountId,
+                    "amount" to 0,
+                ),
+            )
+            .header(HttpHeaders.AUTHORIZATION, "Bearer ${result.auth.accessToken}")
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isBadRequest
+
+        assertThat(fixtures.countTransfers()).isEqualTo(transferCountBefore)
+        assertThat(fixtures.countOutboxEvents()).isEqualTo(outboxCountBefore)
+        assertThat(fixtures.countLedgers()).isEqualTo(ledgerCountBefore)
+
+        val idempotency = fixtures.loadIdempotencyKey(
+            memberId,
+            idempotencyKey,
+            IdempotencyKeyProps.IdempotencyScopeValue.DEPOSIT,
+        )
+        assertThat(idempotency.status).isEqualTo("BEFORE_START")
+        assertThat(idempotency.responseSnapshot).isNull()
+    }
+
+    @Test
+    fun `출금 요청 body가 잘못되면 400을 반환한다`() {
+        val result = fixtures.setupAuthentication()
+        val memberId = result.authentication.name.toLong()
+        val account = fixtures.createAccountWithBalance(memberId, "withdraw-account", BigDecimal.valueOf(10_000L))
+        val idempotencyKey = issueIdempotencyKey(
+            result.auth.accessToken,
+            IdempotencyKeyProps.IdempotencyScopeValue.WITHDRAW,
+        )
+        val transferCountBefore = fixtures.countTransfers()
+        val outboxCountBefore = fixtures.countOutboxEvents()
+        val ledgerCountBefore = fixtures.countLedgers()
+
+        restTestClient.post()
+            .uri("/withdrawals/$idempotencyKey")
+            .body(
+                mapOf(
+                    "accountId" to account.accountId,
+                    "amount" to 0,
+                ),
+            )
+            .header(HttpHeaders.AUTHORIZATION, "Bearer ${result.auth.accessToken}")
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus().isBadRequest
+
+        assertThat(fixtures.countTransfers()).isEqualTo(transferCountBefore)
+        assertThat(fixtures.countOutboxEvents()).isEqualTo(outboxCountBefore)
+        assertThat(fixtures.countLedgers()).isEqualTo(ledgerCountBefore)
+
+        val idempotency = fixtures.loadIdempotencyKey(
+            memberId,
+            idempotencyKey,
+            IdempotencyKeyProps.IdempotencyScopeValue.WITHDRAW,
+        )
+        assertThat(idempotency.status).isEqualTo("BEFORE_START")
+        assertThat(idempotency.responseSnapshot).isNull()
     }
 
     @Test
