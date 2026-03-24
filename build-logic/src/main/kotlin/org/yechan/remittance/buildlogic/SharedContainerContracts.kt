@@ -12,7 +12,10 @@ internal interface SharedContainerProvider {
     val key: String
     val validatedModuleNames: Set<String>
 
-    fun runtimeDependencies(project: Project, coordinates: TestcontainersRuntimeCoordinates): List<Dependency>
+    fun runtimeDependencies(
+        project: Project,
+        coordinates: TestcontainersRuntimeCoordinates,
+    ): List<Dependency>
 
     fun createRuntime(classpath: Set<File>): SharedContainerRuntime
 }
@@ -26,36 +29,32 @@ internal interface SharedContainerRuntime : AutoCloseable {
 internal object SharedContainerRegistry {
     private val providers = listOf(
         MySqlSharedContainerProvider,
-        RabbitMqSharedContainerProvider
+        RabbitMqSharedContainerProvider,
     ).associateBy(SharedContainerProvider::key)
 
-    fun resolve(containerKeys: Collection<String>): List<SharedContainerProvider> {
-        return containerKeys.map { key ->
-            providers[key] ?: throw GradleException("Unknown shared testcontainer key: '$key'.")
-        }
+    fun resolve(containerKeys: Collection<String>): List<SharedContainerProvider> = containerKeys.map { key ->
+        providers[key] ?: throw GradleException("Unknown shared testcontainer key: '$key'.")
     }
 }
 
 internal abstract class ClasspathBackedSharedContainerRuntime(
-    classpath: Set<File>
+    classpath: Set<File>,
 ) : SharedContainerRuntime {
     private val closed = AtomicBoolean(false)
     protected val classLoader = URLClassLoader(
         classpath.map { it.toURI().toURL() }.toTypedArray(),
-        javaClass.classLoader
+        javaClass.classLoader,
     )
 
-    protected fun invoke(target: Any, methodName: String, vararg args: Any): Any? {
-        return withContextClassLoader {
-            val argumentTypes = args.map {
-                when (it) {
-                    is Int -> Integer.TYPE
-                    else -> it.javaClass
-                }
-            }.toTypedArray()
-            val method = target.javaClass.getMethod(methodName, *argumentTypes)
-            method.invoke(target, *args)
-        }
+    protected fun invoke(target: Any, methodName: String, vararg args: Any): Any? = withContextClassLoader {
+        val argumentTypes = args.map {
+            when (it) {
+                is Int -> Integer.TYPE
+                else -> it.javaClass
+            }
+        }.toTypedArray()
+        val method = target.javaClass.getMethod(methodName, *argumentTypes)
+        method.invoke(target, *args)
     }
 
     protected fun <T> withContextClassLoader(block: () -> T): T {
@@ -87,7 +86,8 @@ internal abstract class ClasspathBackedSharedContainerRuntime(
 
     private fun cleanupResourceReaper() {
         withContextClassLoader {
-            val resourceReaperClass = classLoader.loadClass("org.testcontainers.utility.ResourceReaper")
+            val resourceReaperClass =
+                classLoader.loadClass("org.testcontainers.utility.ResourceReaper")
             val resourceReaper = resourceReaperClass.getMethod("instance").invoke(null)
 
             runCatching {

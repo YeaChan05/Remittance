@@ -11,7 +11,10 @@ import org.yechan.remittance.whenPropertyEnabled
 @Import(TransferOutboxBeanRegistrar::class)
 @AutoConfiguration
 @EnableScheduling
-@EnableConfigurationProperties(TransferOutboxProperties::class, TransferEventPublisherProperties::class)
+@EnableConfigurationProperties(
+    TransferOutboxProperties::class,
+    TransferEventPublisherProperties::class,
+)
 class TransferOutboxAutoConfiguration
 
 class TransferOutboxBeanRegistrar :

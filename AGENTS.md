@@ -2,7 +2,8 @@
 
 ## Project Overview
 
-이 저장소는 송금 서비스 구현 레포입니다. 전체 목적과 과제 배경은 [README.md](README.md), 원 요구사항은 [docs/requirements.md](docs/requirements.md)를 먼저 봅니다.
+이 저장소는 송금 서비스 구현 레포입니다. 전체 목적과 과제 배경은 [README.md](README.md), 원
+요구사항은 [docs/requirements.md](docs/requirements.md)를 먼저 봅니다.
 
 프로젝트 구조를 파악할 때는 아래 문서로 라우팅합니다.
 
@@ -32,8 +33,10 @@ API 작업은 관련 API 문서를 직접 봅니다.
 문서가 충돌하면 다음 우선순위를 따릅니다.
 
 1. 이 [AGENTS.md](AGENTS.md)
-2. 구조 규칙 문서: [docs/rule/module.md](docs/rule/module.md), [docs/rule/dependencies.md](docs/rule/dependencies.md), [docs/rule/code_convention.md](docs/rule/code_convention.md)
-3. 도메인/흐름 문서: [docs/filter_arch.md](docs/filter_arch.md), [docs/flow/transfer.md](docs/flow/transfer.md), [docs/flow/transfer-notification.md](docs/flow/transfer-notification.md)
+2. 구조 규칙
+   문서: [docs/rule/module.md](docs/rule/module.md), [docs/rule/dependencies.md](docs/rule/dependencies.md), [docs/rule/code_convention.md](docs/rule/code_convention.md)
+3. 도메인/흐름
+   문서: [docs/filter_arch.md](docs/filter_arch.md), [docs/flow/transfer.md](docs/flow/transfer.md), [docs/flow/transfer-notification.md](docs/flow/transfer-notification.md)
 4. API 문서: [docs/api](docs/api)
 5. 배경 문서: [README.md](README.md), [docs/requirements.md](docs/requirements.md)
 
@@ -48,10 +51,14 @@ API 작업은 관련 API 문서를 직접 봅니다.
 
 코드 파일 레벨에서 wiring 패턴을 확인할 때는 아래를 직접 봅니다.
 
-- 서비스 bean wiring: [account/service/AccountAutoConfiguration.kt](account/service/src/main/kotlin/org/yechan/remittance/account/AccountAutoConfiguration.kt)
-- 송금 bean wiring: [transfer/service/TransferAutoConfiguration.kt](transfer/service/src/main/kotlin/org/yechan/remittance/transfer/TransferAutoConfiguration.kt)
-- API bean wiring: [account/api/AccountApiAutoConfiguration.kt](account/api/src/main/kotlin/org/yechan/remittance/account/AccountApiAutoConfiguration.kt)
-- 조건부 bean 등록: [common/boot/BeanRegistrarExtensions.kt](common/boot/src/main/kotlin/org/yechan/remittance/BeanRegistrarExtensions.kt)
+- 서비스 bean
+  wiring: [account/service/AccountAutoConfiguration.kt](account/service/src/main/kotlin/org/yechan/remittance/account/AccountAutoConfiguration.kt)
+- 송금 bean
+  wiring: [transfer/service/TransferAutoConfiguration.kt](transfer/service/src/main/kotlin/org/yechan/remittance/transfer/TransferAutoConfiguration.kt)
+- API bean
+  wiring: [account/api/AccountApiAutoConfiguration.kt](account/api/src/main/kotlin/org/yechan/remittance/account/AccountApiAutoConfiguration.kt)
+- 조건부 bean
+  등록: [common/boot/BeanRegistrarExtensions.kt](common/boot/src/main/kotlin/org/yechan/remittance/BeanRegistrarExtensions.kt)
 
 핵심 구조 원칙만 짧게 요약하면 다음과 같습니다.
 
@@ -76,10 +83,14 @@ API 작업은 관련 API 문서를 직접 봅니다.
 
 구현 시에는 규칙 문서보다 먼저 "가장 가까운 기존 코드"를 복제 대상으로 봅니다.
 
-- API 패턴: [account/api](account/api/src/main/kotlin/org/yechan/remittance/account), [transfer/api](transfer/api/src/main/kotlin/org/yechan/remittance/transfer)
-- 서비스 패턴: [account/service](account/service/src/main/kotlin/org/yechan/remittance/account), [transfer/service](transfer/service/src/main/kotlin/org/yechan/remittance/transfer)
-- 저장소 패턴: [account/repository-jpa](account/repository-jpa/src/main/kotlin/org/yechan/remittance/account/repository), [transfer/repository-jpa](transfer/repository-jpa/src/main/kotlin/org/yechan/remittance/transfer/repository)
-- 테스트 패턴: [aggregate/src/integrationTest](aggregate/src/integrationTest/kotlin/org/yechan/remittance), [transfer/repository-jpa/src/integrationTest](transfer/repository-jpa/src/integrationTest/kotlin/org/yechan/remittance/transfer/repository)
+- API
+  패턴: [account/api](account/api/src/main/kotlin/org/yechan/remittance/account), [transfer/api](transfer/api/src/main/kotlin/org/yechan/remittance/transfer)
+- 서비스
+  패턴: [account/service](account/service/src/main/kotlin/org/yechan/remittance/account), [transfer/service](transfer/service/src/main/kotlin/org/yechan/remittance/transfer)
+- 저장소
+  패턴: [account/repository-jpa](account/repository-jpa/src/main/kotlin/org/yechan/remittance/account/repository), [transfer/repository-jpa](transfer/repository-jpa/src/main/kotlin/org/yechan/remittance/transfer/repository)
+- 테스트
+  패턴: [aggregate/src/integrationTest](aggregate/src/integrationTest/kotlin/org/yechan/remittance), [transfer/repository-jpa/src/integrationTest](transfer/repository-jpa/src/integrationTest/kotlin/org/yechan/remittance/transfer/repository)
 
 ## Domain Rules
 
@@ -109,11 +120,13 @@ API별 비즈니스 규칙은 해당 API 문서를 직접 읽습니다.
 ### Do
 
 - 작업 시작 전에 관련 문서를 먼저 찾고, 그 문서 링크를 기준으로 판단합니다.
-- 구조 판단은 [docs/rule/module.md](docs/rule/module.md)와 [docs/rule/dependencies.md](docs/rule/dependencies.md)를 먼저 봅니다.
+- 구조 판단은 [docs/rule/module.md](docs/rule/module.md)
+  와 [docs/rule/dependencies.md](docs/rule/dependencies.md)를 먼저 봅니다.
 - 기능 구현은 테스트 우선으로 진행하고, 기존 테스트 패턴을 먼저 복제합니다.
 - bean 등록 변경 시 기존 `BeanRegistrarDsl` wiring 파일도 함께 확인합니다.
 - API/흐름/구조 계약이 바뀌면 해당 문서도 같이 갱신합니다.
-- 내부 통신 계약을 추가하거나 변경할 때는 provider `api-internal`의 `internal.contract` / `internal.adapter` 분리를 유지합니다.
+- 내부 통신 계약을 추가하거나 변경할 때는 provider `api-internal`의 `internal.contract` / `internal.adapter` 분리를
+  유지합니다.
 
 ### Don't
 
@@ -129,7 +142,8 @@ API별 비즈니스 규칙은 해당 API 문서를 직접 읽습니다.
 작업 절차는 문서 라우팅 중심으로 아래 순서를 따릅니다.
 
 1. 요구사항 확인  
-   [README.md](README.md), [docs/requirements.md](docs/requirements.md), 관련 [docs/api](docs/api), [docs/flow](docs/flow)
+   [README.md](README.md), [docs/requirements.md](docs/requirements.md),
+   관련 [docs/api](docs/api), [docs/flow](docs/flow)
 
 2. 구조 확인  
    [docs/rule/module.md](docs/rule/module.md), [docs/rule/dependencies.md](docs/rule/dependencies.md), [docs/filter_arch.md](docs/filter_arch.md)

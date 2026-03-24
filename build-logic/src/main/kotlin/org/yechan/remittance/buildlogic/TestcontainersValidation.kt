@@ -9,14 +9,15 @@ internal object TestcontainersDependencyValidator {
         taskName: String,
         taskSpec: TestcontainersTaskSpec,
         coordinates: TestcontainersRuntimeCoordinates,
-        providers: Collection<SharedContainerProvider>
+        providers: Collection<SharedContainerProvider>,
     ) {
         val validatedModules = buildSet {
             add("testcontainers")
             providers.forEach { addAll(it.validatedModuleNames) }
         }
 
-        val runtimeClasspath = project.configurations.findByName("${taskName}RuntimeClasspath") ?: return
+        val runtimeClasspath =
+            project.configurations.findByName("${taskName}RuntimeClasspath") ?: return
         val mismatches = runtimeClasspath.incoming.resolutionResult.allComponents
             .asSequence()
             .mapNotNull { it.moduleVersion }
@@ -36,7 +37,7 @@ internal object TestcontainersDependencyValidator {
                     appendLine("Resolved modules:")
                     mismatches.forEach { appendLine("- $it") }
                     append("Align the module dependencies with testcontainers { bom(\"${coordinates.bomCoordinate}\") }.")
-                }
+                },
             )
         }
     }

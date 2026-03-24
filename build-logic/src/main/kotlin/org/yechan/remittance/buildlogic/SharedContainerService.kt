@@ -9,10 +9,12 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 internal data class SharedContainerRuntimeKey(
     val providerKey: String,
-    val coordinates: TestcontainersRuntimeCoordinates
+    val coordinates: TestcontainersRuntimeCoordinates,
 )
 
-abstract class SharedContainerService : BuildService<BuildServiceParameters.None>, AutoCloseable {
+abstract class SharedContainerService :
+    BuildService<BuildServiceParameters.None>,
+    AutoCloseable {
     private val runtimes = ConcurrentHashMap<SharedContainerRuntimeKey, SharedContainerRuntime>()
     private val dockerReadyInitialized = AtomicBoolean(false)
     private val dockerReady = AtomicBoolean(false)
@@ -28,7 +30,7 @@ abstract class SharedContainerService : BuildService<BuildServiceParameters.None
         project: Project,
         taskPath: String,
         coordinates: TestcontainersRuntimeCoordinates,
-        provider: SharedContainerProvider
+        provider: SharedContainerProvider,
     ) {
         runtime(project, coordinates, provider).prepare(project, taskPath)
     }
@@ -38,7 +40,7 @@ abstract class SharedContainerService : BuildService<BuildServiceParameters.None
         project: Project,
         taskPath: String,
         coordinates: TestcontainersRuntimeCoordinates,
-        provider: SharedContainerProvider
+        provider: SharedContainerProvider,
     ) {
         runtime(project, coordinates, provider).applyTo(testTask, project, taskPath)
     }
@@ -60,7 +62,7 @@ abstract class SharedContainerService : BuildService<BuildServiceParameters.None
                         .start()
                     process.inputStream.bufferedReader().use { it.readText() }
                     process.waitFor() == 0
-                }.getOrDefault(false)
+                }.getOrDefault(false),
             )
             dockerReadyInitialized.set(true)
         }
@@ -71,7 +73,7 @@ abstract class SharedContainerService : BuildService<BuildServiceParameters.None
     private fun runtime(
         project: Project,
         coordinates: TestcontainersRuntimeCoordinates,
-        provider: SharedContainerProvider
+        provider: SharedContainerProvider,
     ): SharedContainerRuntime {
         val key = SharedContainerRuntimeKey(provider.key, coordinates)
         return runtimes.computeIfAbsent(key) {
@@ -79,8 +81,8 @@ abstract class SharedContainerService : BuildService<BuildServiceParameters.None
                 TestcontainersRuntimeClasspathResolver.resolve(
                     project = project,
                     coordinates = coordinates,
-                    provider = provider
-                )
+                    provider = provider,
+                ),
             )
         }
     }

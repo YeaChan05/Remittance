@@ -23,7 +23,8 @@ class IdempotencyKeyRepositoryImpl(
         requestHash: String,
         startedAt: LocalDateTime,
     ): Boolean {
-        val found = repository.findByMemberIdAndScopeAndIdempotencyKey(memberId, scope, idempotencyKey)
+        val found =
+            repository.findByMemberIdAndScopeAndIdempotencyKey(memberId, scope, idempotencyKey)
         if (found == null) {
             return false
         }
@@ -69,7 +70,8 @@ class IdempotencyKeyRepositoryImpl(
             IdempotencyKeyProps.IdempotencyKeyStatusValue.IN_PROGRESS,
             cutoff,
         )
-        val updated = candidates.count { it.markTimeoutIfBefore(cutoff, responseSnapshot, completedAt) }
+        val updated =
+            candidates.count { it.markTimeoutIfBefore(cutoff, responseSnapshot, completedAt) }
         repository.saveAll(candidates)
         return updated
     }

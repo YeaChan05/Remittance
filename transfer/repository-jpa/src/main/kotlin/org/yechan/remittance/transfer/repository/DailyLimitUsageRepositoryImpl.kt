@@ -29,7 +29,12 @@ open class DailyLimitUsageRepositoryImpl(
         try {
             repository.saveAndFlush(
                 DailyLimitUsageEntity.create(
-                    DailyLimitUsageCreateCommand(requireNotNull(identifier.accountId), scope, usageDate, BigDecimal.ZERO),
+                    DailyLimitUsageCreateCommand(
+                        requireNotNull(identifier.accountId),
+                        scope,
+                        usageDate,
+                        BigDecimal.ZERO,
+                    ),
                 ),
             )
         } catch (_: DataIntegrityViolationException) {

@@ -26,9 +26,10 @@ class AuthSecurityConfigurationTest {
             "defaultAuthorizeHttpRequestsCustomizer",
             AuthorizeHttpRequestsCustomizer::class.java,
         )
-        val orderedCustomizers = context.getBeanProvider(AuthorizeHttpRequestsCustomizer::class.java)
-            .orderedStream()
-            .toList()
+        val orderedCustomizers =
+            context.getBeanProvider(AuthorizeHttpRequestsCustomizer::class.java)
+                .orderedStream()
+                .toList()
 
         assertThat(authCustomizer).isInstanceOf(PrioritizedAuthorizeHttpRequestsCustomizer::class.java)
         assertThat(defaultCustomizer).isInstanceOf(PrioritizedAuthorizeHttpRequestsCustomizer::class.java)

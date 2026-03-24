@@ -110,12 +110,12 @@ flowchart TD
 현재 구현은 아래 순서로 동작한다.
 
 1. 키를 조회한다.
-   - 없으면 `404 Not Found`
-   - 만료되었으면 `400 Bad Request`
+    - 없으면 `404 Not Found`
+    - 만료되었으면 `400 Bad Request`
 2. 요청 바디 해시를 계산한다.
 3. 기존 상태를 확인한다.
-   - `SUCCEEDED` 또는 `FAILED` 이면 저장된 스냅샷을 그대로 반환
-   - `IN_PROGRESS` 이면 `200 OK` + `{"status":"IN_PROGRESS"}` 반환
+    - `SUCCEEDED` 또는 `FAILED` 이면 저장된 스냅샷을 그대로 반환
+    - `IN_PROGRESS` 이면 `200 OK` + `{"status":"IN_PROGRESS"}` 반환
 4. 같은 키에 다른 요청 바디가 오면 `400 Bad Request`
 5. 신규 또는 `BEFORE_START` 상태면 `IN_PROGRESS`로 선점하고 처리로 진입한다.
 
@@ -199,7 +199,8 @@ flowchart TD
 
 ## 8. 현재 구현에서 주의할 HTTP 동작
 
-- `INSUFFICIENT_BALANCE`, `DAILY_LIMIT_EXCEEDED`, `ACCOUNT_NOT_FOUND` 같은 도메인 실패는 주로 `200 OK` + `status=FAILED`로 반환된다.
+- `INSUFFICIENT_BALANCE`, `DAILY_LIMIT_EXCEEDED`, `ACCOUNT_NOT_FOUND` 같은 도메인 실패는 주로 `200 OK` +
+  `status=FAILED`로 반환된다.
 - 요청 body 검증 실패, 멱등키 만료, 멱등키 body conflict는 `400 Bad Request`다.
 - 멱등키 미존재는 `404 Not Found`다.
 

@@ -18,13 +18,16 @@ class AccountInternalUpdateService(
 ) : AccountInternalUpdateUseCase {
     override fun applyBalanceChange(command: AccountInternalBalanceChangeCommand): Boolean {
         if (command.fromAccountId == command.toAccountId) {
-            val account = accountRepository.findByIdForUpdate(AccountId(command.fromAccountId)) ?: return false
+            val account = accountRepository.findByIdForUpdate(AccountId(command.fromAccountId))
+                ?: return false
             account.updateBalance(command.toBalance)
             return true
         }
 
-        val fromAccount = accountRepository.findByIdForUpdate(AccountId(command.fromAccountId)) ?: return false
-        val toAccount = accountRepository.findByIdForUpdate(AccountId(command.toAccountId)) ?: return false
+        val fromAccount =
+            accountRepository.findByIdForUpdate(AccountId(command.fromAccountId)) ?: return false
+        val toAccount =
+            accountRepository.findByIdForUpdate(AccountId(command.toAccountId)) ?: return false
         fromAccount.updateBalance(command.fromBalance)
         toAccount.updateBalance(command.toBalance)
         return true

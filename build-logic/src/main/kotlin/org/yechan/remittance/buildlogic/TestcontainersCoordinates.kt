@@ -7,21 +7,27 @@ import org.gradle.api.artifacts.VersionCatalogsExtension
 import java.io.File
 
 internal data class TestcontainersRuntimeCoordinates(
-    val bomCoordinate: String
+    val bomCoordinate: String,
 ) {
     val bomVersion: String
         get() = bomCoordinate.substringAfterLast(':')
 }
 
 internal object TestcontainersRuntimeCoordinatesResolver {
-    fun resolve(project: Project, extension: TestcontainersExtension): TestcontainersRuntimeCoordinates {
-        return TestcontainersRuntimeCoordinates(
-            bomCoordinate = extension.bomCoordinate ?: libraryCoordinate(project, "testcontainers-bom")
-        )
-    }
+    fun resolve(
+        project: Project,
+        extension: TestcontainersExtension,
+    ): TestcontainersRuntimeCoordinates = TestcontainersRuntimeCoordinates(
+        bomCoordinate = extension.bomCoordinate ?: libraryCoordinate(
+            project,
+            "testcontainers-bom",
+        ),
+    )
 
     internal fun libraryCoordinate(project: Project, alias: String): String {
-        val libraries = project.rootProject.extensions.getByType(VersionCatalogsExtension::class.java).named("libs")
+        val libraries =
+            project.rootProject.extensions.getByType(VersionCatalogsExtension::class.java)
+                .named("libs")
         val dependency = libraries.findLibrary(alias)
             .orElseThrow { GradleException("Version catalog entry '$alias' is required.") }
             .get()
@@ -34,7 +40,7 @@ internal object TestcontainersRuntimeClasspathResolver {
     fun resolve(
         project: Project,
         coordinates: TestcontainersRuntimeCoordinates,
-        provider: SharedContainerProvider
+        provider: SharedContainerProvider,
     ): Set<File> {
         val dependencies = mutableListOf<Dependency>()
         dependencies += project.dependencies.enforcedPlatform(coordinates.bomCoordinate)

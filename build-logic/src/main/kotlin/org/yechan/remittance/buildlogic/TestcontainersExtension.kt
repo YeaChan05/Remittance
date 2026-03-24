@@ -24,7 +24,7 @@ open class TestcontainersExtension {
 }
 
 open class TestcontainersTaskSpec internal constructor(
-    internal val name: String
+    internal val name: String,
 ) {
     internal val containerKeys: MutableSet<String> = linkedSetOf()
 

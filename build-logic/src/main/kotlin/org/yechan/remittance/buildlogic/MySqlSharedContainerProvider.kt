@@ -13,19 +13,23 @@ internal object MySqlSharedContainerProvider : SharedContainerProvider {
     override val key: String = "mysql"
     override val validatedModuleNames: Set<String> = setOf("mysql", "testcontainers-mysql")
 
-    override fun runtimeDependencies(project: Project, coordinates: TestcontainersRuntimeCoordinates): List<Dependency> {
-        return listOf(
-            project.dependencies.create("org.testcontainers:testcontainers-mysql"),
-            project.dependencies.create(TestcontainersRuntimeCoordinatesResolver.libraryCoordinate(project, "mysql-connector-j"))
-        )
-    }
+    override fun runtimeDependencies(
+        project: Project,
+        coordinates: TestcontainersRuntimeCoordinates,
+    ): List<Dependency> = listOf(
+        project.dependencies.create("org.testcontainers:testcontainers-mysql"),
+        project.dependencies.create(
+            TestcontainersRuntimeCoordinatesResolver.libraryCoordinate(
+                project,
+                "mysql-connector-j",
+            ),
+        ),
+    )
 
-    override fun createRuntime(classpath: Set<java.io.File>): SharedContainerRuntime {
-        return MySqlSharedContainerRuntime(classpath)
-    }
+    override fun createRuntime(classpath: Set<java.io.File>): SharedContainerRuntime = MySqlSharedContainerRuntime(classpath)
 
     private class MySqlSharedContainerRuntime(
-        classpath: Set<java.io.File>
+        classpath: Set<java.io.File>,
     ) : ClasspathBackedSharedContainerRuntime(classpath) {
         private val driver = DriverShim(withContextClassLoader { loadMysqlDriver() })
         private val container = withContextClassLoader { createContainer() }
@@ -49,16 +53,17 @@ internal object MySqlSharedContainerProvider : SharedContainerProvider {
             testTask.systemProperty(SPRING_DATASOURCE_PASSWORD, MYSQL_PASSWORD)
         }
 
-        private fun datasourceUrl(taskPath: String): String {
-            return "jdbc:mysql://${host()}:${mappedPort(MYSQL_PORT)}/${databaseName(taskPath)}?useInformationSchema=true"
-        }
+        private fun datasourceUrl(taskPath: String): String = "jdbc:mysql://${host()}:${mappedPort(MYSQL_PORT)}/${databaseName(taskPath)}?useInformationSchema=true"
 
         private fun createContainer(): Any {
-            val dockerImageNameClass = classLoader.loadClass("org.testcontainers.utility.DockerImageName")
+            val dockerImageNameClass =
+                classLoader.loadClass("org.testcontainers.utility.DockerImageName")
             val parse = dockerImageNameClass.getMethod("parse", String::class.java)
             val imageName = parse.invoke(null, "mysql:8.4.8")
-            val containerClass = classLoader.loadClass("org.testcontainers.containers.MySQLContainer")
-            val container = containerClass.getConstructor(dockerImageNameClass).newInstance(imageName)
+            val containerClass =
+                classLoader.loadClass("org.testcontainers.containers.MySQLContainer")
+            val container =
+                containerClass.getConstructor(dockerImageNameClass).newInstance(imageName)
 
             invoke(container, "withDatabaseName", "core")
             invoke(container, "withUsername", MYSQL_USERNAME)
@@ -70,30 +75,24 @@ internal object MySqlSharedContainerProvider : SharedContainerProvider {
             return container
         }
 
-        private fun connection(url: String): Connection {
-            return DriverManager.getConnection(url, MYSQL_USERNAME, MYSQL_PASSWORD)
-        }
+        private fun connection(url: String): Connection = DriverManager.getConnection(url, MYSQL_USERNAME, MYSQL_PASSWORD)
 
         private fun loadMysqlDriver(): Driver {
             val driverClass = classLoader.loadClass("com.mysql.cj.jdbc.Driver")
             return driverClass.getDeclaredConstructor().newInstance() as Driver
         }
 
-        private fun rootJdbcUrl(): String {
-            return "jdbc:mysql://${host()}:${mappedPort(MYSQL_PORT)}/mysql"
-        }
+        private fun rootJdbcUrl(): String = "jdbc:mysql://${host()}:${mappedPort(MYSQL_PORT)}/mysql"
 
         private fun host(): String = invoke(container, "getHost") as String
 
         private fun mappedPort(port: Int): Int = invoke(container, "getMappedPort", port) as Int
 
-        private fun databaseName(taskPath: String): String {
-            return taskPath.trimStart(':')
-                .replace(Regex("[^A-Za-z0-9]+"), "_")
-                .lowercase(Locale.ROOT)
-                .take(MAX_DATABASE_NAME_LENGTH)
-                .trimEnd('_')
-        }
+        private fun databaseName(taskPath: String): String = taskPath.trimStart(':')
+            .replace(Regex("[^A-Za-z0-9]+"), "_")
+            .lowercase(Locale.ROOT)
+            .take(MAX_DATABASE_NAME_LENGTH)
+            .trimEnd('_')
 
         override fun closeRuntime() {
             runCatching {

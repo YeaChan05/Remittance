@@ -6,7 +6,8 @@ Reduce `integrationTest` wall-clock time while keeping integration tests inside 
 
 - Integration tests remain part of `check`.
 - Major integration test tasks should run in parallel.
-- Docker is required. If Docker is unavailable, integration tests and any `build` that includes them fail immediately.
+- Docker is required. If Docker is unavailable, integration tests and any `build` that includes them
+  fail immediately.
 - Test state must stay isolated even when containers are shared.
 
 The current parallelization target is:
@@ -26,44 +27,47 @@ The previous task-scoped container model is replaced with build-wide shared cont
 - RabbitMQ currently serves only `:aggregate:integrationTest`, so it uses the default vhost.
 - Tasks still receive connection information through Gradle-provided system properties.
 
-This design keeps startup cost near one container boot per build while avoiding DB state sharing between parallel tasks.
+This design keeps startup cost near one container boot per build while avoiding DB state sharing
+between parallel tasks.
 
 ## 3. Build Logic
 
 ### 3.1 Root Build
 
 - `build.gradle.kts`
-  - Applies the root `buildlogic.testcontainers-support` plugin.
-  - Creates `integrationTest` suites only for modules that actually contain `src/integrationTest`.
+    - Applies the root `buildlogic.testcontainers-support` plugin.
+    - Creates `integrationTest` suites only for modules that actually contain `src/integrationTest`.
 - `gradle.properties`
-  - Enables `org.gradle.parallel=true`.
-  - CI-focused application builds keep `bootJar` and disable distribution archive tasks such as `bootDistZip`, `distTar`, and `startScripts`.
+    - Enables `org.gradle.parallel=true`.
+    - CI-focused application builds keep `bootJar` and disable distribution archive tasks such as
+      `bootDistZip`, `distTar`, and `startScripts`.
 
 ### 3.2 Shared Environment Services
 
 - `TestcontainersPlugin`
-  - Exposes a `testcontainers` DSL to each project.
-  - Wires only the declared `Test` tasks from each module's `build.gradle.kts`.
-  - Delegates task-specific provider resolution and runtime wiring to `TaskContainerBinder`.
-  - Registers one shared container service for the whole build.
+    - Exposes a `testcontainers` DSL to each project.
+    - Wires only the declared `Test` tasks from each module's `build.gradle.kts`.
+    - Delegates task-specific provider resolution and runtime wiring to `TaskContainerBinder`.
+    - Registers one shared container service for the whole build.
 
 - `SharedContainerService`
-  - Verifies Docker availability once for the build and fails immediately when Docker is unavailable.
-  - Lazily starts one shared runtime per declared provider key.
-  - Caches runtimes by provider key and Testcontainers runtime coordinates.
+    - Verifies Docker availability once for the build and fails immediately when Docker is
+      unavailable.
+    - Lazily starts one shared runtime per declared provider key.
+    - Caches runtimes by provider key and Testcontainers runtime coordinates.
 
 - `MySqlSharedContainerProvider`
-  - Lazily starts one shared MySQL container.
-  - Creates a dedicated database for each task path, for example:
-    - `account_repository_jpa_integration_test`
-    - `member_repository_jpa_integration_test`
-    - `transfer_repository_jpa_integration_test`
-    - `aggregate_integration_test`
-  - Injects `spring.datasource.*` values that point at the task-specific database.
+    - Lazily starts one shared MySQL container.
+    - Creates a dedicated database for each task path, for example:
+        - `account_repository_jpa_integration_test`
+        - `member_repository_jpa_integration_test`
+        - `transfer_repository_jpa_integration_test`
+        - `aggregate_integration_test`
+    - Injects `spring.datasource.*` values that point at the task-specific database.
 
 - `RabbitMqSharedContainerProvider`
-  - Lazily starts one shared RabbitMQ container.
-  - Injects host, port, username, and password for `:aggregate:integrationTest`.
+    - Lazily starts one shared RabbitMQ container.
+    - Injects host, port, username, and password for `:aggregate:integrationTest`.
 
 ## 4. Test Wiring
 
@@ -89,10 +93,13 @@ testcontainers {
 ```
 
 - Repository integration tests rely on their existing Liquibase changelogs.
-- Aggregate integration tests keep using `IntegrationTestEnvironmentSetup` with `@DynamicPropertySource`.
-- `IntegrationTestEnvironmentSystemProperties` still requires Gradle-provided system properties and fails immediately when they are missing.
+- Aggregate integration tests keep using `IntegrationTestEnvironmentSetup` with
+  `@DynamicPropertySource`.
+- `IntegrationTestEnvironmentSystemProperties` still requires Gradle-provided system properties and
+  fails immediately when they are missing.
 
-Because each integration test task gets its own MySQL database, Liquibase lock tables and change history stay isolated across parallel tasks.
+Because each integration test task gets its own MySQL database, Liquibase lock tables and change
+history stay isolated across parallel tasks.
 
 ## 5. Execution Flow
 
@@ -127,7 +134,8 @@ flowchart TD
 ### Tradeoffs
 
 - Multiple tasks still compete for the same MySQL and RabbitMQ container resources.
-- `:aggregate:integrationTest` remains relatively expensive because it boots several Spring contexts.
+- `:aggregate:integrationTest` remains relatively expensive because it boots several Spring
+  contexts.
 - Docker is mandatory for local and CI execution paths that include integration tests.
 
 ## 7. Verification Commands

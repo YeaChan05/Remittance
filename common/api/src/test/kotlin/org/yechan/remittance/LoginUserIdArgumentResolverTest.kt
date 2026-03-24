@@ -31,7 +31,8 @@ class LoginUserIdArgumentResolverTest {
 
     @Test
     fun `어노테이션이 붙은 primitive long 파라미터를 지원한다`() {
-        val parameter = MethodParameter(method("handlerWithPrimitive", Long::class.javaPrimitiveType!!), 0)
+        val parameter =
+            MethodParameter(method("handlerWithPrimitive", Long::class.javaPrimitiveType!!), 0)
 
         assertThat(resolver.supportsParameter(parameter)).isTrue()
     }

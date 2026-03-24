@@ -13,7 +13,11 @@ import org.yechan.remittance.member.dto.MemberRegisterResponse
 interface MemberApi {
     @Operation(summary = "Register member", description = "Registers a new member")
     @ApiResponses(
-        ApiResponse(responseCode = "200", description = "Registration succeeded", content = [Content()]),
+        ApiResponse(
+            responseCode = "200",
+            description = "Registration succeeded",
+            content = [Content()],
+        ),
     )
     fun register(request: MemberRegisterRequest): ResponseEntity<MemberRegisterResponse>
 }

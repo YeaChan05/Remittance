@@ -24,19 +24,19 @@ description: Write repo-style unit or integration tests, place them in the corre
 ## source set 선택
 
 - `src/test`
-  - 순수 비즈니스 로직
-  - 계산
-  - 예외 분기
-  - Spring 없이 직접 생성 가능한 대상
+    - 순수 비즈니스 로직
+    - 계산
+    - 예외 분기
+    - Spring 없이 직접 생성 가능한 대상
 
 - `src/integrationTest`
-  - Spring MVC
-  - Security
-  - JPA / DB
-  - MQ
-  - Testcontainers
-  - BeanRegistrarDsl wiring
-  - 직렬화 / 설정 / 전체 흐름
+    - Spring MVC
+    - Security
+    - JPA / DB
+    - MQ
+    - Testcontainers
+    - BeanRegistrarDsl wiring
+    - 직렬화 / 설정 / 전체 흐름
 
 ## 절차
 
@@ -51,9 +51,9 @@ description: Write repo-style unit or integration tests, place them in the corre
 - 단위 테스트는 대상 모듈 `test`를 우선 실행한다.
 - 통합 테스트는 대상 모듈 `integrationTest`를 우선 실행한다.
 - 예:
-  - `./gradlew :member:service:test`
-  - `./gradlew :transfer:repository-jpa:integrationTest`
-  - `./gradlew :aggregate:integrationTest`
+    - `./gradlew :member:service:test`
+    - `./gradlew :transfer:repository-jpa:integrationTest`
+    - `./gradlew :aggregate:integrationTest`
 
 ## 빠른 패턴
 

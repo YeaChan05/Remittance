@@ -50,7 +50,8 @@ class TransferTestFixtures(
         accountName: String,
         balance: BigDecimal,
     ): Any = try {
-        val accountEntityClass = Class.forName("org.yechan.remittance.account.repository.AccountEntity")
+        val accountEntityClass =
+            Class.forName("org.yechan.remittance.account.repository.AccountEntity")
         val companion = accountEntityClass.getDeclaredField("Companion").get(null)
         companion.javaClass.getDeclaredMethod("create", AccountProps::class.java)
             .invoke(
@@ -171,8 +172,9 @@ class TransferTestFixtures(
     }
 
     fun countOutboxEvents(): Long {
-        val count = em.createQuery("select count(o) from OutboxEventEntity o", java.lang.Long::class.java)
-            .singleResult
+        val count =
+            em.createQuery("select count(o) from OutboxEventEntity o", java.lang.Long::class.java)
+                .singleResult
         return count?.toLong() ?: 0L
     }
 
@@ -205,14 +207,16 @@ class TransferTestFixtures(
     }
 
     fun countLedgers(): Long {
-        val count = em.createQuery("select count(l) from LedgerEntity l", java.lang.Long::class.java)
-            .singleResult
+        val count =
+            em.createQuery("select count(l) from LedgerEntity l", java.lang.Long::class.java)
+                .singleResult
         return count?.toLong() ?: 0L
     }
 
     fun countTransfers(): Long {
-        val count = em.createQuery("select count(t) from TransferEntity t", java.lang.Long::class.java)
-            .singleResult
+        val count =
+            em.createQuery("select count(t) from TransferEntity t", java.lang.Long::class.java)
+                .singleResult
         return count?.toLong() ?: 0L
     }
 

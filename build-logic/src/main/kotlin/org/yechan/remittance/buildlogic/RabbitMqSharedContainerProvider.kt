@@ -8,18 +8,17 @@ internal object RabbitMqSharedContainerProvider : SharedContainerProvider {
     override val key: String = "rabbitmq"
     override val validatedModuleNames: Set<String> = setOf("rabbitmq", "testcontainers-rabbitmq")
 
-    override fun runtimeDependencies(project: Project, coordinates: TestcontainersRuntimeCoordinates): List<Dependency> {
-        return listOf(
-            project.dependencies.create("org.testcontainers:testcontainers-rabbitmq")
-        )
-    }
+    override fun runtimeDependencies(
+        project: Project,
+        coordinates: TestcontainersRuntimeCoordinates,
+    ): List<Dependency> = listOf(
+        project.dependencies.create("org.testcontainers:testcontainers-rabbitmq"),
+    )
 
-    override fun createRuntime(classpath: Set<java.io.File>): SharedContainerRuntime {
-        return RabbitMqSharedContainerRuntime(classpath)
-    }
+    override fun createRuntime(classpath: Set<java.io.File>): SharedContainerRuntime = RabbitMqSharedContainerRuntime(classpath)
 
     private class RabbitMqSharedContainerRuntime(
-        classpath: Set<java.io.File>
+        classpath: Set<java.io.File>,
     ) : ClasspathBackedSharedContainerRuntime(classpath) {
         private val container = withContextClassLoader { createContainer() }
 
@@ -39,11 +38,14 @@ internal object RabbitMqSharedContainerProvider : SharedContainerProvider {
         private fun password(): String = invoke(container, "getAdminPassword") as String
 
         private fun createContainer(): Any {
-            val dockerImageNameClass = classLoader.loadClass("org.testcontainers.utility.DockerImageName")
+            val dockerImageNameClass =
+                classLoader.loadClass("org.testcontainers.utility.DockerImageName")
             val parse = dockerImageNameClass.getMethod("parse", String::class.java)
             val imageName = parse.invoke(null, "rabbitmq:3.8.19")
-            val containerClass = classLoader.loadClass("org.testcontainers.containers.RabbitMQContainer")
-            val container = containerClass.getConstructor(dockerImageNameClass).newInstance(imageName)
+            val containerClass =
+                classLoader.loadClass("org.testcontainers.containers.RabbitMQContainer")
+            val container =
+                containerClass.getConstructor(dockerImageNameClass).newInstance(imageName)
 
             invoke(container, "start")
             return container

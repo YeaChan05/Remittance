@@ -33,7 +33,8 @@ class AccountControllerTest {
             }
         val controller = AccountController(createUseCase, deleteUseCase)
 
-        val response = controller.create(1L, AccountCreateRequest("090", "123-456", "sample-account"))
+        val response =
+            controller.create(1L, AccountCreateRequest("090", "123-456", "sample-account"))
 
         assertNotNull(response.body)
         assertEquals(11L, response.body!!.accountId)

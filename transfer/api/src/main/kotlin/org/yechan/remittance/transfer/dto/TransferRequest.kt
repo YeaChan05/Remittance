@@ -21,7 +21,10 @@ class TransferRequest(
             throw TransferFailedException(TransferFailureCode.INVALID_REQUEST, "Invalid amount")
         }
         if (fromAccountIdRaw == null || toAccountIdRaw == null) {
-            throw TransferFailedException(TransferFailureCode.INVALID_REQUEST, "Account IDs must not be null")
+            throw TransferFailedException(
+                TransferFailureCode.INVALID_REQUEST,
+                "Account IDs must not be null",
+            )
         }
     }
 

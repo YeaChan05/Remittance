@@ -11,7 +11,10 @@ import org.yechan.remittance.transfer.dto.IdempotencyKeyCreateResponse
 
 @Tag(name = "IdempotencyKey", description = "Idempotency key API")
 interface IdempotencyKeyApi {
-    @Operation(summary = "Create an idempotency key", description = "Creates an idempotency key for a request scope")
+    @Operation(
+        summary = "Create an idempotency key",
+        description = "Creates an idempotency key for a request scope",
+    )
     @ApiResponses(
         ApiResponse(responseCode = "200", description = "Created", content = [Content()]),
     )

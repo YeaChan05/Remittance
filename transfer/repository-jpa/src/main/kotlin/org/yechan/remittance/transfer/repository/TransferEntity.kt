@@ -35,7 +35,8 @@ class TransferEntity protected constructor() :
 
     @field:Enumerated(EnumType.STRING)
     @field:Column(nullable = false)
-    override var status: TransferProps.TransferStatusValue = TransferProps.TransferStatusValue.SUCCEEDED
+    override var status: TransferProps.TransferStatusValue =
+        TransferProps.TransferStatusValue.SUCCEEDED
         protected set
 
     @field:Column(nullable = false)

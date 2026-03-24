@@ -14,7 +14,10 @@ abstract class SingleAccountTransferRequest(
             throw TransferFailedException(TransferFailureCode.INVALID_REQUEST, "Invalid amount")
         }
         if (accountIdRaw == null) {
-            throw TransferFailedException(TransferFailureCode.INVALID_REQUEST, "Account ID must not be null")
+            throw TransferFailedException(
+                TransferFailureCode.INVALID_REQUEST,
+                "Account ID must not be null",
+            )
         }
     }
 

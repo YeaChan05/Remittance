@@ -14,7 +14,11 @@ class OutboxEventRepositoryImpl(
 
     override fun findNewForPublish(limit: Int?): List<OutboxEventModel> {
         val pageable = if (limit == null) Pageable.unpaged() else PageRequest.of(0, limit)
-        return repository.findNewForPublish(OutboxEventProps.OutboxEventStatusValue.NEW, null, pageable)
+        return repository.findNewForPublish(
+            OutboxEventProps.OutboxEventStatusValue.NEW,
+            null,
+            pageable,
+        )
             .map { it as OutboxEventModel }
     }
 

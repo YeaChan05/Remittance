@@ -22,7 +22,8 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
     @Test
     fun `올바른 회원가입 요청은 200 SUCCESS와 회원 정보를 반환한다`() {
         val name = "test"
-        val request = MemberRegisterRequest(name, EmailGenerator.generate(), PasswordGenerator.generate())
+        val request =
+            MemberRegisterRequest(name, EmailGenerator.generate(), PasswordGenerator.generate())
 
         val response = restTestClient.post()
             .uri("/members")

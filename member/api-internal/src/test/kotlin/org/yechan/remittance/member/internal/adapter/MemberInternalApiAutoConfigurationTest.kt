@@ -17,7 +17,10 @@ class MemberInternalApiAutoConfigurationTest {
         val memberExistenceQueryUseCase = MemberExistenceQueryUseCase { it == 3L }
         val context = AnnotationConfigApplicationContext().apply {
             beanFactory.registerSingleton("memberAuthQueryUseCase", memberAuthQueryUseCase)
-            beanFactory.registerSingleton("memberExistenceQueryUseCase", memberExistenceQueryUseCase)
+            beanFactory.registerSingleton(
+                "memberExistenceQueryUseCase",
+                memberExistenceQueryUseCase,
+            )
             register(MemberInternalApiAutoConfiguration::class.java)
             refresh()
         }
@@ -25,8 +28,21 @@ class MemberInternalApiAutoConfigurationTest {
         val memberInternalApi = context.getBean(MemberInternalApi::class.java)
         val memberExistenceInternalApi = context.getBean(MemberExistenceInternalApi::class.java)
 
-        assertThat(memberInternalApi.verify(LoginVerifyRequest("user@example.com", "password")).memberId).isEqualTo(3L)
-        assertThat(memberExistenceInternalApi.exists(org.yechan.remittance.member.internal.contract.MemberExistsRequest(3L)).exists).isTrue()
+        assertThat(
+            memberInternalApi.verify(
+                LoginVerifyRequest(
+                    "user@example.com",
+                    "password",
+                ),
+            ).memberId,
+        ).isEqualTo(3L)
+        assertThat(
+            memberExistenceInternalApi.exists(
+                org.yechan.remittance.member.internal.contract.MemberExistsRequest(
+                    3L,
+                ),
+            ).exists,
+        ).isTrue()
 
         context.close()
     }

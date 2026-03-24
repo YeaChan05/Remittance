@@ -2,19 +2,20 @@
 
 ## 1. 문서 개요
 
-이 파일은 단순한 PlantUML 예시가 아니라, 헥사고날 아키텍처 기반에서 **모듈 의존 관계**와 **코드 레벨 의존 방향**을 어떻게 유지할지에 대한 설계 가이드로 해석할 수 있다.
+이 파일은 단순한 PlantUML 예시가 아니라, 헥사고날 아키텍처 기반에서 **모듈 의존 관계**와 **코드 레벨 의존 방향**을 어떻게 유지할지에 대한 설계 가이드로 해석할 수
+있다.
 
 파일은 크게 3개의 관점을 담고 있다.
 
 1. **모듈 구조 관점**
-   - Inbound / Domain / Outbound 계층을 어떻게 나눌지
-   - 애플리케이션 간 연동을 어떤 경계로 수행할지
+    - Inbound / Domain / Outbound 계층을 어떻게 나눌지
+    - 애플리케이션 간 연동을 어떤 경계로 수행할지
 2. **코드 네이밍 관점**
-   - 각 모듈에 어떤 클래스가 위치하는지
-   - 어떤 클래스가 어떤 인터페이스를 호출해야 하는지
+    - 각 모듈에 어떤 클래스가 위치하는지
+    - 어떤 클래스가 어떤 인터페이스를 호출해야 하는지
 3. **정제 중인 설계 초안 관점**
-   - 다이어그램에 `???`, `optional`, `migration` 같은 표기가 포함되어 있어
-   - 이미 확정된 규칙과 아직 논의 중인 규칙이 함께 섞여 있다.
+    - 다이어그램에 `???`, `optional`, `migration` 같은 표기가 포함되어 있어
+    - 이미 확정된 규칙과 아직 논의 중인 규칙이 함께 섞여 있다.
 
 즉, 이 문서는 “현재 팀이 지향하는 헥사고날 표준안 + 일부 미확정 설계 포인트”를 시각화한 문서라고 보는 것이 적절하다.
 
@@ -25,15 +26,15 @@
 다이어그램의 화살표는 단순 연결선이 아니라 **의존 종류**를 뜻한다.
 
 - `-->` : 호출 / 구현 의존
-  - 실제 사용, 호출, 구현체 연결
-  - Gradle 기준으로는 보통 `implementation` 성격에 가깝다.
+    - 실제 사용, 호출, 구현체 연결
+    - Gradle 기준으로는 보통 `implementation` 성격에 가깝다.
 - `..>` : 확장 / 인터페이스 구현 / 추상 의존
-  - 인터페이스를 구현하거나 계약을 따르는 구조
+    - 인터페이스를 구현하거나 계약을 따르는 구조
 - `-[dotted]->` : 참조 의존
-  - DTO, Model, Exception 등을 참조하는 관계
-  - 강한 실행 의존보다는 타입 참조 성격이 강함
+    - DTO, Model, Exception 등을 참조하는 관계
+    - 강한 실행 의존보다는 타입 참조 성격이 강함
 - `-[dotted]-` : 간접 관계
-  - 직접 호출은 아니지만 의미적으로 연결된 관계
+    - 직접 호출은 아니지만 의미적으로 연결된 관계
 
 이 기준으로 보면, 이 파일은 **강한 실행 의존**, **인터페이스 의존**, **타입 참조 의존**을 구분해서 설계하려는 의도가 있다.
 
@@ -81,6 +82,7 @@ Inbound에는 다음 요소들이 등장한다.
 이들의 역할은 다음과 같이 해석된다.
 
 #### api
+
 외부 사용자 요청을 받는 공개 API 계층이다.
 
 - 일반적인 Controller가 위치한다.
@@ -88,24 +90,28 @@ Inbound에는 다음 요소들이 등장한다.
 - 직접 Repository나 Service를 호출하지 않고 UseCase를 호출한다.
 
 #### api-internal
+
 내부 시스템 간 호출을 받는 API 계층이다.
 
 - 같은 조직 내 다른 애플리케이션이나 모듈이 호출할 수 있다.
 - 외부 공개 API와 분리하여 보안/계약을 따로 가져가려는 의도 사용된다.
 
 #### api-operation
+
 운영자 또는 백오피스성 요청을 처리하는 계층이다.
 
 - admin actor가 이쪽으로 연결되어 있다.
 - 일반 사용자 기능과 운영 기능을 분리하려는 목적이다.
 
 #### api-internal-client
+
 다른 애플리케이션의 internal API를 호출하기 위한 클라이언트 계층이다.
 
 - Feign Client, RestClient, WebClient, gRPC Client 등으로 치환 가능하다.
 - 중요한 점은 이 클라이언트가 도메인 핵심 로직을 직접 참조하는 것이 아니라, **in-port 또는 protocol 계약에 맞춰 동작**하도록 유도하고 있다는 것이다.
 
 #### in-port-internal
+
 애플리케이션 외부 또는 타 애플리케이션이 기대하는 **내부 진입 계약**이다.
 
 - 내부 연동용 인터페이스
@@ -123,6 +129,7 @@ Inbound에는 다음 요소들이 등장한다.
 - `exception`
 
 #### model
+
 도메인 상태와 식별자, 속성을 표현하는 중심 모델이다.
 
 두 번째 다이어그램에서는 아래처럼 더 구체화된다.
@@ -148,6 +155,7 @@ Inbound에는 다음 요소들이 등장한다.
 - 테스트와 모델 재사용성 향상
 
 #### service (use-case)
+
 비즈니스 유스케이스를 담당하는 핵심 계층이다.
 
 예시 클래스:
@@ -172,16 +180,18 @@ Inbound에는 다음 요소들이 등장한다.
 - 테스트 대역 구성 용이
 
 UseCase는 각각 다음에서 구현한다.
+
 - `DomainService`
-  - `DomainCreateUseCase`
-  - `DomainReadUseCase`
+    - `DomainCreateUseCase`
+    - `DomainReadUseCase`
 
 - `DomainQueryService`
-  - `DomainQueryUseCase`
+    - `DomainQueryUseCase`
 
 Query와 Command를 분리한다.
 
 #### exception
+
 도메인 또는 애플리케이션 전용 예외 집합이다.
 
 - API 계층도 이를 참조한다.
@@ -199,6 +209,7 @@ Outbound에는 다음 요소들이 등장한다.
 - `message-queue-{type}`
 
 #### infrastructure (out-port)
+
 이름은 infrastructure지만 실제 설명은 **out-port**다.
 즉, 이 계층은 기술 구현체가 아니라 **도메인에서 필요로 하는 외부 의존 계약**을 뜻한다.
 
@@ -212,6 +223,7 @@ Outbound에는 다음 요소들이 등장한다.
 필요한 저장/조회/외부 호출 계약만 알고 있어야 한다는 뜻이다.
 
 #### repository-{type}
+
 실제 저장소 기술에 종속되는 구현 계층이다.
 
 예:
@@ -237,6 +249,7 @@ Outbound에는 다음 요소들이 등장한다.
 로 분리하는 전형적인 형태다.
 
 #### message-queue-{type}
+
 이벤트 발행/소비, 메시징 연동 구현 계층이다.
 
 예:
@@ -332,7 +345,6 @@ api / api-internal / api-operation
 - 내부 시스템 간 계약 변화를
 
 서로 분리할 수 있기 때문이다.
-
 
 ### 6.3 UseCase / Service 계층
 
@@ -534,7 +546,8 @@ AnotherDomainService ..> AnotherDomainProtocolService
 
 #### 9.3.1 `infrastructure --> internal : ????`
 
-바로 아래에 `internal --> another_inport`가 이어지므로, 현재 애플리케이션의 outbound 성격 계층이 다른 애플리케이션의 내부 진입점으로 연결되는 흐름을 표현하려던 것으로 보인다.
+바로 아래에 `internal --> another_inport`가 이어지므로, 현재 애플리케이션의 outbound 성격 계층이 다른 애플리케이션의 내부 진입점으로 연결되는 흐름을
+표현하려던 것으로 보인다.
 
 따라서 이 표기는 대체로 다음 뜻으로 읽힌다.
 
@@ -546,7 +559,8 @@ AnotherDomainService ..> AnotherDomainProtocolService
 
 #### 9.3.2 `HexagonalDomainXXServiceImpl ..> HexagonalDomainUseCase : ????`
 
-이 표기는 두 번째 다이어그램의 `DomainService ..> DomainCreateUseCase`, `DomainQueryService ..> DomainQueryUseCase`와 같은 위치에 있다. 구조상 가장 자연스러운 해석은 다음과 같다.
+이 표기는 두 번째 다이어그램의 `DomainService ..> DomainCreateUseCase`,
+`DomainQueryService ..> DomainQueryUseCase`와 같은 위치에 있다. 구조상 가장 자연스러운 해석은 다음과 같다.
 
 - 구현체가 UseCase 인터페이스를 구현한다.
 - 구현체가 외부에 노출되는 계약을 제공한다.

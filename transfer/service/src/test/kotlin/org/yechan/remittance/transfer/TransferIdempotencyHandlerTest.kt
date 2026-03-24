@@ -95,16 +95,22 @@ class TransferIdempotencyHandlerTest {
 
     @Test
     fun `요청 해시가 다르면 충돌 예외를 던진다`() {
-        val key = TestKey(IdempotencyKeyProps.IdempotencyKeyStatusValue.BEFORE_START, null, null).apply {
-            requestHash = "hash"
-        }
+        val key =
+            TestKey(IdempotencyKeyProps.IdempotencyKeyStatusValue.BEFORE_START, null, null).apply {
+                requestHash = "hash"
+            }
         val handler = TransferIdempotencyHandler(
             RecordingKeyRepository(key),
             TransferSnapshotUtil(ObjectMapper()),
         )
 
         assertThatThrownBy {
-            handler.resolveExisting(1L, "k", IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER, "other")
+            handler.resolveExisting(
+                1L,
+                "k",
+                IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
+                "other",
+            )
         }.isInstanceOf(TransferIdempotencyKeyConflictException::class.java)
     }
 
@@ -233,7 +239,8 @@ class TransferIdempotencyHandlerTest {
             requestHash: String,
             startedAt: LocalDateTime,
         ): Boolean {
-            markInProgressArgs = MarkInProgressArgs(memberId, scope, idempotencyKey, requestHash, startedAt)
+            markInProgressArgs =
+                MarkInProgressArgs(memberId, scope, idempotencyKey, requestHash, startedAt)
             return markInProgressResult
         }
 
@@ -252,7 +259,8 @@ class TransferIdempotencyHandlerTest {
             responseSnapshot: String,
             completedAt: LocalDateTime,
         ): IdempotencyKeyModel {
-            markFailedArgs = MarkFailedArgs(memberId, scope, idempotencyKey, responseSnapshot, completedAt)
+            markFailedArgs =
+                MarkFailedArgs(memberId, scope, idempotencyKey, responseSnapshot, completedAt)
             return requireNotNull(key)
         }
 

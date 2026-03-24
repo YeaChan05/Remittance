@@ -53,7 +53,8 @@ class GetSpecs : IntegrationTestEnvironmentSetup() {
     fun `이체 내역은 completedAt 내림차순으로 조회된다`() {
         val result = fixtures.setupAuthentication()
         val memberId = result.authentication.name.toLong()
-        val fromAccount = fixtures.createAccountWithBalance(memberId, "출금", BigDecimal.valueOf(5_000_000L))
+        val fromAccount =
+            fixtures.createAccountWithBalance(memberId, "출금", BigDecimal.valueOf(5_000_000L))
         val toAccount = fixtures.createAccountWithBalance(memberId, "입금", BigDecimal.ZERO)
 
         val firstKey = issueIdempotencyKey(result.auth.accessToken)
@@ -91,7 +92,8 @@ class GetSpecs : IntegrationTestEnvironmentSetup() {
     fun `입금 받은 계좌에서도 이체 내역이 조회된다`() {
         val result = fixtures.setupAuthentication()
         val memberId = result.authentication.name.toLong()
-        val fromAccount = fixtures.createAccountWithBalance(memberId, "출금", BigDecimal.valueOf(1_000_000L))
+        val fromAccount =
+            fixtures.createAccountWithBalance(memberId, "출금", BigDecimal.valueOf(1_000_000L))
         val toAccount = fixtures.createAccountWithBalance(memberId, "입금", BigDecimal.ZERO)
 
         val key = issueIdempotencyKey(result.auth.accessToken)
@@ -115,7 +117,8 @@ class GetSpecs : IntegrationTestEnvironmentSetup() {
     fun `조회 limit을 적용한다`() {
         val result = fixtures.setupAuthentication()
         val memberId = result.authentication.name.toLong()
-        val fromAccount = fixtures.createAccountWithBalance(memberId, "출금", BigDecimal.valueOf(2_000_000L))
+        val fromAccount =
+            fixtures.createAccountWithBalance(memberId, "출금", BigDecimal.valueOf(2_000_000L))
         val toAccount = fixtures.createAccountWithBalance(memberId, "입금", BigDecimal.ZERO)
 
         val firstKey = issueIdempotencyKey(result.auth.accessToken)

@@ -69,7 +69,8 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val transferAmount = BigDecimal.valueOf(30_000L)
         val fee = feeFor(transferAmount)
 
-        val fromAccount = fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
+        val fromAccount =
+            fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
@@ -87,7 +88,10 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val after = LocalDateTime.now()
 
         assertTransferSucceeded(response)
-        assertBalance(fromAccount.accountId, BigDecimal.valueOf(100_000L).subtract(transferAmount).subtract(fee))
+        assertBalance(
+            fromAccount.accountId,
+            BigDecimal.valueOf(100_000L).subtract(transferAmount).subtract(fee),
+        )
         assertBalance(toAccount.accountId, BigDecimal.valueOf(80_000L))
         assertLedgers(
             requireNotNull(response.transferId),
@@ -98,7 +102,12 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
             before,
             after,
         )
-        assertOutbox(requireNotNull(response.transferId), fromAccount.accountId, toAccount.accountId, transferAmount)
+        assertOutbox(
+            requireNotNull(response.transferId),
+            fromAccount.accountId,
+            toAccount.accountId,
+            transferAmount,
+        )
         assertIdempotency(memberId, idempotencyKey)
     }
 
@@ -110,7 +119,8 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val toAccountBalance = BigDecimal.valueOf(50_000L)
         val transferAmount = BigDecimal.valueOf(30_000L)
 
-        val fromAccount = fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
+        val fromAccount =
+            fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
@@ -127,7 +137,10 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         )
 
         assertTransferSucceeded(firstResponse)
-        assertBalance(fromAccount.accountId, fromAccountBalance.subtract(transferAmount).subtract(fee))
+        assertBalance(
+            fromAccount.accountId,
+            fromAccountBalance.subtract(transferAmount).subtract(fee),
+        )
         assertBalance(toAccount.accountId, BigDecimal.valueOf(80_000L))
 
         val firstSnapshot = fixtures.loadIdempotencyKey(memberId, idempotencyKey).responseSnapshot
@@ -145,7 +158,10 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         assertThat(secondResponse.status).isEqualTo("SUCCEEDED")
         assertThat(secondResponse.transferId).isEqualTo(firstResponse.transferId)
         assertThat(secondResponse.errorCode).isNull()
-        assertBalance(fromAccount.accountId, fromAccountBalance.subtract(transferAmount).subtract(fee))
+        assertBalance(
+            fromAccount.accountId,
+            fromAccountBalance.subtract(transferAmount).subtract(fee),
+        )
         assertBalance(toAccount.accountId, BigDecimal.valueOf(80_000L))
 
         val secondSnapshot = fixtures.loadIdempotencyKey(memberId, idempotencyKey).responseSnapshot
@@ -167,7 +183,8 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val differentAmount = BigDecimal.valueOf(10_000L)
         val fee = feeFor(transferAmount)
 
-        val fromAccount = fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
+        val fromAccount =
+            fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
@@ -183,7 +200,10 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         )
 
         assertTransferSucceeded(firstResponse)
-        assertBalance(fromAccount.accountId, fromAccountBalance.subtract(transferAmount).subtract(fee))
+        assertBalance(
+            fromAccount.accountId,
+            fromAccountBalance.subtract(transferAmount).subtract(fee),
+        )
         assertBalance(toAccount.accountId, BigDecimal.valueOf(80_000L))
 
         val firstSnapshot = fixtures.loadIdempotencyKey(memberId, idempotencyKey).responseSnapshot
@@ -198,7 +218,10 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
             .exchange()
             .expectStatus().isBadRequest
 
-        assertBalance(fromAccount.accountId, fromAccountBalance.subtract(transferAmount).subtract(fee))
+        assertBalance(
+            fromAccount.accountId,
+            fromAccountBalance.subtract(transferAmount).subtract(fee),
+        )
         assertBalance(toAccount.accountId, BigDecimal.valueOf(80_000L))
 
         val secondSnapshot = fixtures.loadIdempotencyKey(memberId, idempotencyKey).responseSnapshot
@@ -218,7 +241,8 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val toAccountBalance = BigDecimal.valueOf(50_000L)
         val transferAmount = BigDecimal.valueOf(50_000L)
 
-        val fromAccount = fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
+        val fromAccount =
+            fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
@@ -260,7 +284,8 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val toAccountBalance = BigDecimal.valueOf(50_000L)
         val transferAmount = BigDecimal.valueOf(30_000L)
 
-        val fromAccount = fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
+        val fromAccount =
+            fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
@@ -305,7 +330,8 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val secondAmount = BigDecimal.valueOf(1_200_000L)
         val firstFee = feeFor(firstAmount)
 
-        val fromAccount = fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
+        val fromAccount =
+            fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
 
         val firstKey = issueIdempotencyKey(
@@ -321,7 +347,10 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         )
 
         assertTransferSucceeded(firstResponse)
-        assertBalance(fromAccount.accountId, fromAccountBalance.subtract(firstAmount).subtract(firstFee))
+        assertBalance(
+            fromAccount.accountId,
+            fromAccountBalance.subtract(firstAmount).subtract(firstFee),
+        )
         assertBalance(toAccount.accountId, firstAmount)
 
         val secondKey = issueIdempotencyKey(
@@ -343,7 +372,10 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         assertThat(secondResponse.status).isEqualTo("FAILED")
         assertThat(secondResponse.transferId).isNull()
         assertThat(secondResponse.errorCode).isEqualTo("DAILY_LIMIT_EXCEEDED")
-        assertBalance(fromAccount.accountId, fromAccountBalance.subtract(firstAmount).subtract(firstFee))
+        assertBalance(
+            fromAccount.accountId,
+            fromAccountBalance.subtract(firstAmount).subtract(firstFee),
+        )
         assertBalance(toAccount.accountId, firstAmount)
 
         assertThat(fixtures.countTransfers()).isEqualTo(transferCountBefore)
@@ -367,12 +399,14 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val firstAmount = BigDecimal.valueOf(600_000L)
         val secondAmount = BigDecimal.valueOf(500_000L)
 
-        val fromAccount = fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
+        val fromAccount =
+            fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
         val firstKey = issueIdempotencyKey(
             result.auth.accessToken,
             IdempotencyKeyProps.IdempotencyScopeValue.WITHDRAW,
         )
-        val firstResponse = withdraw(result.auth.accessToken, firstKey, fromAccount.accountId, firstAmount)
+        val firstResponse =
+            withdraw(result.auth.accessToken, firstKey, fromAccount.accountId, firstAmount)
 
         assertTransferSucceeded(firstResponse)
         assertBalance(fromAccount.accountId, fromAccountBalance.subtract(firstAmount))
@@ -385,7 +419,8 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val outboxCountBefore = fixtures.countOutboxEvents()
         val ledgerCountBefore = fixtures.countLedgers()
 
-        val secondResponse = withdraw(result.auth.accessToken, secondKey, fromAccount.accountId, secondAmount)
+        val secondResponse =
+            withdraw(result.auth.accessToken, secondKey, fromAccount.accountId, secondAmount)
 
         assertThat(secondResponse.status).isEqualTo("FAILED")
         assertThat(secondResponse.transferId).isNull()
@@ -422,7 +457,8 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val outboxCountBefore = fixtures.countOutboxEvents()
         val ledgerCountBefore = fixtures.countLedgers()
 
-        val response = deposit(result.auth.accessToken, idempotencyKey, account.accountId, depositAmount)
+        val response =
+            deposit(result.auth.accessToken, idempotencyKey, account.accountId, depositAmount)
 
         assertTransferSucceeded(response)
         assertBalance(account.accountId, accountBalance.add(depositAmount))
@@ -447,7 +483,8 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val toAccountBalance = BigDecimal.valueOf(50_000L)
         val transferAmount = BigDecimal.valueOf(30_000L)
 
-        val fromAccount = fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
+        val fromAccount =
+            fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
@@ -495,7 +532,8 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val toAccountBalance = BigDecimal.valueOf(50_000L)
         val transferAmount = BigDecimal.valueOf(30_000L)
 
-        val fromAccount = fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
+        val fromAccount =
+            fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
@@ -514,7 +552,12 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
 
         assertTransferSucceeded(response)
         assertThat(fixtures.countOutboxEvents()).isEqualTo(outboxCountBefore + 1)
-        assertOutbox(requireNotNull(response.transferId), fromAccount.accountId, toAccount.accountId, transferAmount)
+        assertOutbox(
+            requireNotNull(response.transferId),
+            fromAccount.accountId,
+            toAccount.accountId,
+            transferAmount,
+        )
     }
 
     @Test
@@ -525,7 +568,8 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val toAccountBalance = BigDecimal.valueOf(50_000L)
         val transferAmount = BigDecimal.valueOf(30_000L)
 
-        val fromAccount = fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
+        val fromAccount =
+            fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
@@ -559,7 +603,8 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val toAccountBalance = BigDecimal.valueOf(50_000L)
         val transferAmount = BigDecimal.valueOf(30_000L)
 
-        val fromAccount = fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
+        val fromAccount =
+            fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
@@ -596,7 +641,8 @@ class PostSpecs : IntegrationTestEnvironmentSetup() {
         val toAccountBalance = BigDecimal.valueOf(50_000L)
         val transferAmount = BigDecimal.valueOf(30_000L)
 
-        val fromAccount = fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
+        val fromAccount =
+            fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
         val toAccount = fixtures.createAccountWithBalance(memberId, "to-account", toAccountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,

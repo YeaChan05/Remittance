@@ -23,10 +23,13 @@ description: Generate standard Remittance domain modules and submodules with the
 3. `settings.gradle.kts`에 `include(":{domain}:{module}")`를 맞춘다.
 4. 각 모듈에 `build.gradle.kts`가 있는지 확인한다.
 5. 표준 소스셋만 만든다.
+
 - `src/main/kotlin`
 - `src/test/kotlin`
 - 필요 시 `src/integrationTest/kotlin`, `src/integrationTest/resources`
+
 6. 여기서 멈춘다.
+
 - 빌드와 테스트는 요청이 있을 때만 실행한다.
 
 ## 제한

@@ -39,7 +39,8 @@ class IdempotencyKeyEntity protected constructor() :
 
     @field:Enumerated(EnumType.STRING)
     @field:Column(name = "scope", nullable = false)
-    override var scope: IdempotencyKeyProps.IdempotencyScopeValue = IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
+    override var scope: IdempotencyKeyProps.IdempotencyScopeValue =
+        IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
         protected set
 
     @field:Enumerated(EnumType.STRING)

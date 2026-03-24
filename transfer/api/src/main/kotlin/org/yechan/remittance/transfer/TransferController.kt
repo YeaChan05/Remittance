@@ -38,7 +38,8 @@ class TransferController(
         to: LocalDateTime?,
         @RequestParam(required = false) limit: Int?,
     ): TransferQueryResponse {
-        val transfers = transferQueryUseCase.query(memberId, accountId, TransferQueryCondition(from, to, limit))
+        val transfers =
+            transferQueryUseCase.query(memberId, accountId, TransferQueryCondition(from, to, limit))
         return TransferQueryResponse.from(transfers)
     }
 }

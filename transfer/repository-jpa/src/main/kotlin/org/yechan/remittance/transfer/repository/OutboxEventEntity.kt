@@ -32,7 +32,8 @@ class OutboxEventEntity protected constructor() :
 
     @field:Enumerated(EnumType.STRING)
     @field:Column(nullable = false)
-    override var status: OutboxEventProps.OutboxEventStatusValue = OutboxEventProps.OutboxEventStatusValue.NEW
+    override var status: OutboxEventProps.OutboxEventStatusValue =
+        OutboxEventProps.OutboxEventStatusValue.NEW
         protected set
 
     private constructor(

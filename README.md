@@ -10,6 +10,7 @@
 - [외부 라이브러리|오픈소스](docs/opensource.md)
 - [API 문서](docs/api)
 - [모듈 및 코드 의존 가이드라인](architecture_guide.puml)
+
 ## API 요약
 
 - 회원가입 `POST /members`

@@ -12,7 +12,10 @@ import java.time.LocalDateTime
 
 @Tag(name = "Transfer", description = "Transfer API")
 interface TransferApi {
-    @Operation(summary = "Create a transfer", description = "Requests a transfer with an idempotency key")
+    @Operation(
+        summary = "Create a transfer",
+        description = "Requests a transfer with an idempotency key",
+    )
     @ApiResponses(
         ApiResponse(responseCode = "200", description = "Succeeded", content = [Content()]),
     )

@@ -6,7 +6,8 @@
 
 * Driving -> Core -> Driven 방향만 허용한다.
 * 기술(JPA, Web, MQ 등)은 Driven 모듈에 둔다.
-* 다른 도메인과의 내부 연결은 `service -> own infrastructure -> provider:api-internal.internal.contract` 경로만 허용한다.
+* 다른 도메인과의 내부 연결은 `service -> own infrastructure -> provider:api-internal.internal.contract` 경로만
+  허용한다.
 * 인증/인가 책임은 역할별로 분리한다.
     * 로그인/토큰 발급: `auth:service`
     * 자격 검증: `member:service` + `member:api-internal`
@@ -306,5 +307,6 @@
     - 의존: `common:exception`
 * `aggregate`
     - 의존: `common:security`, `account:api`, `transfer:api`, `member:api`,
-      `account|member:api-internal`, `account|transfer|member:repository-jpa`, `account|transfer|member:schema`,
+      `account|member:api-internal`, `account|transfer|member:repository-jpa`,
+      `account|transfer|member:schema`,
       `account|transfer:mq-rabbitmq`

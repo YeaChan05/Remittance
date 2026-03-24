@@ -27,11 +27,13 @@ description: Execute the Remittance module-boundary checklist against specified 
 ## 체크리스트
 
 1. 모듈 트리를 확인한다.
+
 - 기대 구조: `{domain}/model`, `infrastructure`, `service`, `exception`, `api`
 - 선택 구조: `api-internal`, `repository-jpa`, `schema`, `mq-rabbitmq`
 - 비표준 디렉터리를 표시한다.
 
 2. Gradle 의존 방향을 확인한다.
+
 - `model`은 구현 모듈에 의존하지 않아야 한다.
 - `infrastructure`는 `{domain}:model`만 본다.
 - `service`는 `{domain}:model`, `infrastructure`, `exception` 중심이어야 한다.
@@ -40,10 +42,12 @@ description: Execute the Remittance module-boundary checklist against specified 
 - `aggregate`는 조립 전용이어야 한다.
 
 3. cross-domain 노출을 확인한다.
+
 - 직접 의존은 `model -> model` 또는 명시된 `api-internal` 계약만 본다.
 - 상대 도메인의 `service`, `repository-jpa`, `api` 직접 참조를 표시한다.
 
 4. 네이밍 흔들림을 확인한다.
+
 - 기술 이름이 클래스 책임을 덮는 경우만 표시한다.
 
 ## 결과 작성

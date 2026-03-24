@@ -26,23 +26,28 @@ description: Modify Java or Gradle code in the remittance repo by copying existi
 ## 빠른 패턴
 
 ### api
+
 - Controller는 `{Domain}Api` 인터페이스를 구현한다.
 - DTO는 `dto` 패키지에 둔다.
 - 비즈니스 로직을 Controller에 두지 않는다.
 
 ### service
+
 - UseCase 인터페이스와 구현을 같은 파일에 두는 기존 패턴을 우선 본다.
 - 트랜잭션 경계와 오케스트레이션은 service에 둔다.
 
 ### model
+
 - 모델은 `interface`로 둔다.
 - `Props`, `Identifier` 인터페이스 조합을 유지한다.
 
 ### repository-jpa
+
 - 포트 구현체는 `*RepositoryImpl`로 둔다.
 - 기술 리포지토리는 별도 인터페이스로 분리한다.
 
 ### BeanRegistrarDsl
+
 - `@AutoConfiguration` + `@Import({Domain}BeanRegistrar::class)`를 우선 사용한다.
 - wiring은 `class {Domain}BeanRegistrar : BeanRegistrarDsl({ ... })` 안에서 처리한다.
 - 기본 형태는 `registerBean<Type> { Impl(bean(), bean<SpecificType>()) }` 이다.

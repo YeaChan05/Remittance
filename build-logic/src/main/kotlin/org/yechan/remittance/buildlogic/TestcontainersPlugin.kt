@@ -12,7 +12,7 @@ class TestcontainersPlugin : Plugin<Project> {
 
         val sharedContainerService = project.gradle.sharedServices.registerIfAbsent(
             "sharedContainerBuildService",
-            SharedContainerService::class.java
+            SharedContainerService::class.java,
         ) {}
 
         project.gradle.buildFinished {
@@ -34,7 +34,7 @@ class TestcontainersPlugin : Plugin<Project> {
                         testTask = testTask,
                         extension = extension,
                         taskSpec = taskSpec,
-                        sharedContainerService = sharedContainerService
+                        sharedContainerService = sharedContainerService,
                     ).bind()
                 }
             }

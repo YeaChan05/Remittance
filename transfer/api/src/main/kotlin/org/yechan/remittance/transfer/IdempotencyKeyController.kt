@@ -19,7 +19,8 @@ class IdempotencyKeyController(
         @RequestParam(required = false) scope: IdempotencyKeyProps.IdempotencyScopeValue?,
     ): ResponseEntity<IdempotencyKeyCreateResponse> {
         val resolvedScope = scope ?: IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
-        val created = idempotencyKeyCreateUseCase.create(IdempotencyKeyCreateCommand(memberId, resolvedScope))
+        val created =
+            idempotencyKeyCreateUseCase.create(IdempotencyKeyCreateCommand(memberId, resolvedScope))
         return ResponseEntity.ok(
             IdempotencyKeyCreateResponse(created.idempotencyKey, requireNotNull(created.expiresAt)),
         )

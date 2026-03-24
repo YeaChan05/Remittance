@@ -29,14 +29,20 @@ class AccountInternalQueryService(
         toAccountId: Long,
     ): AccountInternalLockValue? {
         if (fromAccountId == toAccountId) {
-            val account = accountRepository.findByIdForUpdate(AccountId(fromAccountId)) ?: return null
+            val account =
+                accountRepository.findByIdForUpdate(AccountId(fromAccountId)) ?: return null
             val snapshot = account.toSnapshot()
             return AccountInternalLockValue(snapshot, snapshot)
         }
 
-        val firstAccount = accountRepository.findByIdForUpdate(AccountId(minOf(fromAccountId, toAccountId))) ?: return null
-        val secondAccount = accountRepository.findByIdForUpdate(AccountId(maxOf(fromAccountId, toAccountId))) ?: return null
-        val fromAccount = if (fromAccountId == firstAccount.accountId) firstAccount else secondAccount
+        val firstAccount =
+            accountRepository.findByIdForUpdate(AccountId(minOf(fromAccountId, toAccountId)))
+                ?: return null
+        val secondAccount =
+            accountRepository.findByIdForUpdate(AccountId(maxOf(fromAccountId, toAccountId)))
+                ?: return null
+        val fromAccount =
+            if (fromAccountId == firstAccount.accountId) firstAccount else secondAccount
         val toAccount = if (toAccountId == firstAccount.accountId) firstAccount else secondAccount
 
         return AccountInternalLockValue(fromAccount.toSnapshot(), toAccount.toSnapshot())

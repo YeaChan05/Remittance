@@ -65,7 +65,8 @@ class TransferSnapshotUtilTest {
         override val fromAccountId: Long = 1L
         override val toAccountId: Long = 2L
         override val amount: BigDecimal = BigDecimal("100.00")
-        override val scope: TransferProps.TransferScopeValue = TransferProps.TransferScopeValue.TRANSFER
+        override val scope: TransferProps.TransferScopeValue =
+            TransferProps.TransferScopeValue.TRANSFER
         override val fee: BigDecimal = BigDecimal.ONE
     }
 }

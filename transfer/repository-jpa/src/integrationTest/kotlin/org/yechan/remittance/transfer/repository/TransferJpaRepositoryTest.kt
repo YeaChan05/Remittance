@@ -42,7 +42,10 @@ class TransferJpaRepositoryTest @Autowired constructor(
         )
 
         assertThat(results).hasSize(2)
-        assertThat(results.map { it.completedAt }).containsExactly(now.minusSeconds(30), now.minusSeconds(120))
+        assertThat(results.map { it.completedAt }).containsExactly(
+            now.minusSeconds(30),
+            now.minusSeconds(120),
+        )
         assertThat(results[0].status).isEqualTo(TransferProps.TransferStatusValue.FAILED)
         assertThat(results[1].status).isEqualTo(TransferProps.TransferStatusValue.SUCCEEDED)
     }
@@ -99,7 +102,8 @@ class TransferJpaRepositoryTest @Autowired constructor(
         override val completedAt: LocalDateTime?,
     ) : TransferProps {
         override val amount: BigDecimal = BigDecimal.valueOf(1000L)
-        override val scope: TransferProps.TransferScopeValue = TransferProps.TransferScopeValue.DEPOSIT
+        override val scope: TransferProps.TransferScopeValue =
+            TransferProps.TransferScopeValue.DEPOSIT
     }
 
     private companion object {
