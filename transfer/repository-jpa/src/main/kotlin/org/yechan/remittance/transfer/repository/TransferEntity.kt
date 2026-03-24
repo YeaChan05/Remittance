@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(name = "transfer", catalog = "core")
-class TransferEntity protected constructor() :
+open class TransferEntity protected constructor() :
     BaseEntity(),
     TransferModel {
     @field:Column(nullable = false)

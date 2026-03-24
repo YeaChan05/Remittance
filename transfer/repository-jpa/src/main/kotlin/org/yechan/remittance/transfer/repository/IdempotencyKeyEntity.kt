@@ -22,7 +22,7 @@ import java.time.LocalDateTime
         ),
     ],
 )
-class IdempotencyKeyEntity protected constructor() :
+open class IdempotencyKeyEntity protected constructor() :
     BaseEntity(),
     IdempotencyKeyModel {
     @field:Column(name = "client_id", nullable = false)

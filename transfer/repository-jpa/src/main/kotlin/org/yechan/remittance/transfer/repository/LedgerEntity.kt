@@ -22,7 +22,7 @@ import java.math.BigDecimal
         ),
     ],
 )
-class LedgerEntity protected constructor() :
+open class LedgerEntity protected constructor() :
     BaseEntity(),
     LedgerModel {
     @field:Column(name = "transfer_id", nullable = false)

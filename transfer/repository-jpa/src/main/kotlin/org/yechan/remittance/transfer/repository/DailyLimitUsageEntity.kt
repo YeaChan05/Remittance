@@ -24,7 +24,7 @@ import java.time.LocalDate
         ),
     ],
 )
-class DailyLimitUsageEntity protected constructor() :
+open class DailyLimitUsageEntity protected constructor() :
     BaseEntity(),
     DailyLimitUsageModel {
     @field:Column(name = "account_id", nullable = false)

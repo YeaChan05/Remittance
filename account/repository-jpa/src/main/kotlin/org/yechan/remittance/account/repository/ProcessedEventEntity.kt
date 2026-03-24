@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(name = "processed_events", catalog = "integration")
-class ProcessedEventEntity protected constructor() : BaseEntity() {
+open class ProcessedEventEntity protected constructor() : BaseEntity() {
     @field:Column(nullable = false, unique = true)
     var eventId: Long? = null
         protected set

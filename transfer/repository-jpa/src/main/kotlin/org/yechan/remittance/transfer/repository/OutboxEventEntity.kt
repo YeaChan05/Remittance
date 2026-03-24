@@ -11,7 +11,7 @@ import org.yechan.remittance.transfer.OutboxEventProps
 
 @Entity
 @Table(name = "outbox_events", catalog = "integration")
-class OutboxEventEntity protected constructor() :
+open class OutboxEventEntity protected constructor() :
     BaseEntity(),
     OutboxEventModel {
     @field:Column(nullable = false)

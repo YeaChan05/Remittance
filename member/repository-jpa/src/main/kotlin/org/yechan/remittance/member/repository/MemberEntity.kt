@@ -9,7 +9,7 @@ import org.yechan.remittance.member.MemberProps
 
 @Entity
 @Table(name = "member", catalog = "core")
-class MemberEntity protected constructor() :
+open class MemberEntity protected constructor() :
     BaseEntity(),
     MemberModel {
     @field:Column(nullable = false)

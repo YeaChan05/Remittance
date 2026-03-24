@@ -10,7 +10,7 @@ import java.math.BigDecimal
 
 @Entity
 @Table(name = "account", catalog = "core")
-class AccountEntity protected constructor() :
+open class AccountEntity protected constructor() :
     BaseEntity(),
     AccountModel {
     @field:Column(nullable = false)
