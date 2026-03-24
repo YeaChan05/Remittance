@@ -165,6 +165,7 @@
 * Controller + request/response DTO만 포함한다.
 * 비즈니스 로직 금지.
 * 호출 대상은 `service` 또는 `api-internal`로 제한한다.
+* Spring MVC controller import와 bean 등록 wiring은 분리한다.
 
 의존
 
@@ -176,6 +177,13 @@
 
 * `repository-*` 직접 의존 x
 * `model`을 그대로 응답으로 노출 x(필요 시 api DTO로 변환)
+
+Spring bean / 설정 규칙
+
+* controller import 전용 클래스는 `{Domain}ApiRegistrar` 이름을 사용한다.
+* api 모듈에서 `BeanRegistrarDsl` wiring이 필요하면 `{Domain}ApiBeanRegistrar`를 별도로 둔다.
+* `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`에는 실제로 로딩해야 하는 registrar / bean registrar 클래스를 모두 등록한다.
+* web 기술 타입(`SseEmitter` 등)을 다루는 helper는 api 모듈에 두되, `UseCase` 대신 `Handler` / `Registry` / `Adapter` 이름을 사용한다.
 
 ---
 
@@ -193,6 +201,11 @@
 금지
 
 * `repository-*` 직접 의존 x
+
+Spring bean / 설정 규칙
+
+* provider-side adapter bean 등록은 `{Domain}InternalApiBeanRegistrar`로 둔다.
+* `api-internal` 모듈이 별도 설정 클래스를 두지 않아도 되면 registrar 단독 구조를 허용한다.
 
 ---
 
@@ -213,6 +226,11 @@
 
 * 도메인 규칙/로직 구현 x
 * auto-configuration을 통한 bean 등록을 위해 의존만
+
+Spring bean / 설정 규칙
+
+* 실행 모듈에서 필요한 공통 bean(`Clock` 등)은 `BeanRegistrarDsl` 기반 registrar로 등록한다.
+* `repository-jpa` auto-configuration은 JPA ordering과 direct `@Import` 테스트 경로 때문에 `@Import({Domain}RepositoryBeanRegistrar::class)` + `@AutoConfiguration(before = [...])` 패턴을 예외로 유지한다.
 
 ---
 

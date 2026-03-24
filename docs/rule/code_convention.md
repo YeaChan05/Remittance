@@ -96,15 +96,27 @@
 
     - `{Domain}Controller` (기본)
     - `{Domain}ApiController` (필요 시)
+- Controller import / web 설정
+
+    - `{Domain}ApiRegistrar`
+- BeanRegistrarDsl wiring
+
+    - `{Domain}ApiBeanRegistrar`
 - DTO
 
     - `{Domain}{Action}Request`
     - `{Domain}{Action}Response`
+- web helper
+
+    - `{Domain}{Action}Handler`
+    - `{Domain}{Action}Registry`
+    - `{Domain}{Action}Adapter`
 
 규칙
 
 - Controller는 use-case만 호출
 - Domain 모델 직접 반환 x
+- api 모듈의 web helper에 `UseCase` 접미사 사용 x
 
 ---
 
@@ -128,7 +140,7 @@
 - 구현
 
     - `DomainInternalAdapter`
-    - `DomainInternalApiAutoConfiguration`
+    - `DomainInternalApiBeanRegistrar`
 
 규칙
 

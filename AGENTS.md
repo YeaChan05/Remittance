@@ -52,11 +52,13 @@ API 작업은 관련 API 문서를 직접 봅니다.
 코드 파일 레벨에서 wiring 패턴을 확인할 때는 아래를 직접 봅니다.
 
 - 서비스 bean
-  wiring: [account/service/AccountAutoConfiguration.kt](account/service/src/main/kotlin/org/yechan/remittance/account/AccountAutoConfiguration.kt)
+  wiring: [account/service/AccountAutoConfiguration.kt](account/service/src/main/kotlin/org/yechan/remittance/account/AccountBeanRegistrar.kt)
 - 송금 bean
-  wiring: [transfer/service/TransferAutoConfiguration.kt](transfer/service/src/main/kotlin/org/yechan/remittance/transfer/TransferAutoConfiguration.kt)
+  wiring: [transfer/service/TransferAutoConfiguration.kt](transfer/service/src/main/kotlin/org/yechan/remittance/transfer/TransferBeanRegistrar.kt)
+- API controller import
+  registrar: [account/api/AccountApiAutoConfiguration.kt](account/api/src/main/kotlin/org/yechan/remittance/account/AccountApiRegistrar.kt)
 - API bean
-  wiring: [account/api/AccountApiAutoConfiguration.kt](account/api/src/main/kotlin/org/yechan/remittance/account/AccountApiAutoConfiguration.kt)
+  wiring: [account/api/AccountApiBeanRegistrar.kt](account/api/src/main/kotlin/org/yechan/remittance/account/AccountApiRegistrar.kt)
 - 조건부 bean
   등록: [common/boot/BeanRegistrarExtensions.kt](common/boot/src/main/kotlin/org/yechan/remittance/BeanRegistrarExtensions.kt)
 
@@ -67,6 +69,10 @@ API 작업은 관련 API 문서를 직접 봅니다.
 - 도메인 간 직접 의존은 매우 제한적으로만 허용됩니다.
 - cross-domain 내부 호출은 consumer `infrastructure`가 provider `api-internal` 계약을 감싸는 방식으로만 둡니다.
 - Spring bean 등록은 이 레포의 기존 `BeanRegistrarDsl` 패턴을 우선 따릅니다.
+- controller import 전용 설정은 `{Domain}ApiRegistrar` 이름을 사용합니다.
+- `BeanRegistrarDsl` wiring이 필요하면 `{Domain}BeanRegistrar`, `{Domain}ApiBeanRegistrar`, `{Domain}InternalApiBeanRegistrar`를 별도로 둡니다.
+- `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`에는 실제로 부팅에 필요한 registrar / bean registrar를 모두 등록합니다.
+- api 모듈의 web helper는 `UseCase` 대신 `Handler` / `Registry` / `Adapter` 이름을 사용합니다.
 
 ## Coding Rules
 
@@ -124,6 +130,7 @@ API별 비즈니스 규칙은 해당 API 문서를 직접 읽습니다.
   와 [docs/rule/dependencies.md](docs/rule/dependencies.md)를 먼저 봅니다.
 - 기능 구현은 테스트 우선으로 진행하고, 기존 테스트 패턴을 먼저 복제합니다.
 - bean 등록 변경 시 기존 `BeanRegistrarDsl` wiring 파일도 함께 확인합니다.
+- registrar 테스트는 registrar 클래스를 직접 `register(...)` 하기보다, 테스트용 `@Configuration`에서 `@Import(Registrar::class)`로 올리는 현재 패턴을 우선 따릅니다.
 - API/흐름/구조 계약이 바뀌면 해당 문서도 같이 갱신합니다.
 - 내부 통신 계약을 추가하거나 변경할 때는 provider `api-internal`의 `internal.contract` / `internal.adapter` 분리를
   유지합니다.

@@ -30,6 +30,8 @@ description: Modify Java or Gradle code in the remittance repo by copying existi
 - Controller는 `{Domain}Api` 인터페이스를 구현한다.
 - DTO는 `dto` 패키지에 둔다.
 - 비즈니스 로직을 Controller에 두지 않는다.
+- controller import 전용 설정은 `{Domain}ApiRegistrar` 이름을 우선 본다.
+- web helper는 `UseCase`보다 `Handler` / `Registry` / `Adapter` 이름을 우선 본다.
 
 ### service
 
@@ -48,21 +50,26 @@ description: Modify Java or Gradle code in the remittance repo by copying existi
 
 ### BeanRegistrarDsl
 
-- `@AutoConfiguration` + `@Import({Domain}BeanRegistrar::class)`를 우선 사용한다.
+- controller import 전용 클래스와 bean wiring 클래스는 분리한다.
+- controller import 전용 클래스는 `{Domain}ApiRegistrar`를 우선 사용한다.
 - wiring은 `class {Domain}BeanRegistrar : BeanRegistrarDsl({ ... })` 안에서 처리한다.
+- api wiring은 `class {Domain}ApiBeanRegistrar : BeanRegistrarDsl({ ... })` 안에서 처리한다.
+- internal adapter wiring은 `class {Domain}InternalApiBeanRegistrar : BeanRegistrarDsl({ ... })` 안에서 처리한다.
 - 기본 형태는 `registerBean<Type> { Impl(bean(), bean<SpecificType>()) }` 이다.
 - 타입 추론이 모호하면 `bean<AccountRepository>()`처럼 명시 타입을 쓴다.
 - 조건부 bean은 `whenPropertyEnabled(...)`를 사용한다.
+- `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`에 registrar / bean registrar 등록을 같이 맞춘다.
+- `repository-jpa` auto-configuration은 `@Import({Domain}RepositoryBeanRegistrar::class)` + `@AutoConfiguration(before = [...])` 예외 패턴을 유지한다.
 
 ```kotlin
-@Import(AccountBeanRegistrar::class)
-@AutoConfiguration
-class AccountAutoConfiguration
+@Import(AccountController::class, NotificationApiController::class)
+class AccountApiRegistrar
 
-class AccountBeanRegistrar :
+@AutoConfiguration
+class AccountApiBeanRegistrar :
     BeanRegistrarDsl({
-        registerBean<AccountCreateUseCase> {
-            AccountService(bean())
+        registerBean<NotificationSessionRegistry> {
+            NotificationSessionRegistry()
         }
     })
 ```
@@ -89,4 +96,5 @@ fun BeanRegistrarDsl.whenPropertyEnabled(
 
 - 수정한 모듈과 파일
 - BeanRegistrarDsl 수정 여부
+- imports 파일 수정 여부
 - 남은 blocker 또는 assumption

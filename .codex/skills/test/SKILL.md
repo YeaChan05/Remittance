@@ -61,6 +61,8 @@ description: Write repo-style unit or integration tests, place them in the corre
 - 단위 테스트는 Spring 없이 fake, stub, fixture를 우선 사용한다.
 - 통합 테스트는 repository, MVC, security, 전체 흐름 검증에만 사용한다.
 - aggregate API 흐름은 `aggregate/src/integrationTest` 패턴을 우선 복제한다.
+- registrar wiring 테스트는 테스트용 `@Configuration(proxyBeanMethods = false)`를 두고 `@Import(Registrar::class)`로 올리는 현재 패턴을 우선 복제한다.
+- registrar-only 부팅 구조를 검증할 때는 실제 imports 등록 여부까지 함께 확인한다.
 
 ## 최소 보고
 
