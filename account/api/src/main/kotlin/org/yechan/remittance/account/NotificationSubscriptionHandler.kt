@@ -4,16 +4,16 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
-fun interface NotificationUseCase {
-    fun connectRegister(memberId: Long): SseEmitter
+fun interface NotificationSubscriptionHandler {
+    fun subscribe(memberId: Long): SseEmitter
 }
 
 class NotificationSessionRegistry(
     private val emitterSupplier: () -> SseEmitter = { SseEmitter() },
-) : NotificationUseCase {
+) : NotificationSubscriptionHandler {
     private val sessions = ConcurrentHashMap<Long, SseEmitter>()
 
-    override fun connectRegister(memberId: Long): SseEmitter {
+    override fun subscribe(memberId: Long): SseEmitter {
         val emitter = emitterSupplier()
         sessions[memberId] = emitter
         emitter.onCompletion { sessions.remove(memberId) }

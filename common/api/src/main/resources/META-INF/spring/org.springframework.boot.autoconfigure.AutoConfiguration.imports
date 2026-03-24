@@ -1,1 +1,2 @@
-org.yechan.remittance.CommonApiAutoConfiguration
+org.yechan.remittance.CommonApiRegistrar
+org.yechan.remittance.CommonApiBeanRegistrar

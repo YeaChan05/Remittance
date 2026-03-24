@@ -1,1 +1,2 @@
-org.yechan.remittance.account.AccountApiAutoConfiguration
+org.yechan.remittance.account.AccountApiRegistrar
+org.yechan.remittance.account.AccountApiBeanRegistrar

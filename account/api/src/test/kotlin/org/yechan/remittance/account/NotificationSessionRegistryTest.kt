@@ -14,7 +14,7 @@ class NotificationSessionRegistryTest {
     fun `구독 연결은 member id로 emitter를 저장한다`() {
         val registry = NotificationSessionRegistry(::TestEmitter)
 
-        val emitter = registry.connectRegister(1L)
+        val emitter = registry.subscribe(1L)
 
         assertNotNull(emitter)
         assertNotNull(registry.find(1L))
@@ -23,7 +23,7 @@ class NotificationSessionRegistryTest {
     @Test
     fun `활성 세션이 있으면 payload를 전송한다`() {
         val registry = NotificationSessionRegistry(::TestEmitter)
-        val emitter = registry.connectRegister(2L) as TestEmitter
+        val emitter = registry.subscribe(2L) as TestEmitter
 
         val sent = registry.push(2L, TestPayload("TRANSFER_RECEIVED"))
 
@@ -44,7 +44,7 @@ class NotificationSessionRegistryTest {
     @Test
     fun `연결이 완료되면 세션을 제거한다`() {
         val registry = NotificationSessionRegistry(::TestEmitter)
-        val emitter = registry.connectRegister(3L)
+        val emitter = registry.subscribe(3L)
 
         emitter.complete()
 

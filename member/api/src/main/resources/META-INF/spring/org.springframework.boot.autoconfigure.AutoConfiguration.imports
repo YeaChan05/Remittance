@@ -1,2 +1,2 @@
-org.yechan.remittance.PasswordEncoderAutoConfiguration
-org.yechan.remittance.member.MemberApiAutoConfiguration
+org.yechan.remittance.PasswordEncoderBeanRegistrar
+org.yechan.remittance.member.MemberApiRegistrar

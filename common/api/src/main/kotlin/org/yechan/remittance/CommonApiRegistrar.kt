@@ -6,10 +6,10 @@ import org.springframework.context.annotation.Import
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
-@Import(GlobalExceptionHandler::class, CommonApiBeanRegistrar::class)
-@AutoConfiguration
-class CommonApiAutoConfiguration
+@Import(GlobalExceptionHandler::class)
+class CommonApiRegistrar
 
+@AutoConfiguration
 class CommonApiBeanRegistrar :
     BeanRegistrarDsl({
         registerBean<LoginUserIdArgumentResolver> {

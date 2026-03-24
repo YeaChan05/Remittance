@@ -1,2 +1,2 @@
-org.yechan.remittance.transfer.IdempotencyKeyApiAutoConfiguration
-org.yechan.remittance.transfer.TransferApiAutoConfiguration
+org.yechan.remittance.transfer.IdempotencyKeyApiRegistrar
+org.yechan.remittance.transfer.TransferApiRegistrar
