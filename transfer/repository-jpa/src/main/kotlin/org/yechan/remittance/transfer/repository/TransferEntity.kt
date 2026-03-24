@@ -13,39 +13,39 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(name = "transfer", catalog = "core")
-open class TransferEntity protected constructor() :
+class TransferEntity() :
     BaseEntity(),
     TransferModel {
     @field:Column(nullable = false)
-    override var fromAccountId: Long = 0
-        protected set
+    final override var fromAccountId: Long = 0
+        private set
 
     @field:Column(nullable = false)
-    override var toAccountId: Long = 0
-        protected set
+    final override var toAccountId: Long = 0
+        private set
 
     @field:Column(nullable = false)
-    override var amount: BigDecimal = BigDecimal.ZERO
-        protected set
-
-    @field:Enumerated(EnumType.STRING)
-    @field:Column(nullable = false)
-    override var scope: TransferProps.TransferScopeValue = TransferProps.TransferScopeValue.TRANSFER
-        protected set
+    final override var amount: BigDecimal = BigDecimal.ZERO
+        private set
 
     @field:Enumerated(EnumType.STRING)
     @field:Column(nullable = false)
-    override var status: TransferProps.TransferStatusValue =
+    final override var scope: TransferProps.TransferScopeValue = TransferProps.TransferScopeValue.TRANSFER
+        private set
+
+    @field:Enumerated(EnumType.STRING)
+    @field:Column(nullable = false)
+    final override var status: TransferProps.TransferStatusValue =
         TransferProps.TransferStatusValue.SUCCEEDED
-        protected set
+        private set
 
     @field:Column(nullable = false)
-    override var requestedAt: LocalDateTime = LocalDateTime.now()
-        protected set
+    final override var requestedAt: LocalDateTime = LocalDateTime.now()
+        private set
 
     @field:Column
-    override var completedAt: LocalDateTime? = null
-        protected set
+    final override var completedAt: LocalDateTime? = null
+        private set
 
     private constructor(
         fromAccountId: Long,

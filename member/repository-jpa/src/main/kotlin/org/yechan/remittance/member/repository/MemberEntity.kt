@@ -9,16 +9,16 @@ import org.yechan.remittance.member.MemberProps
 
 @Entity
 @Table(name = "member", catalog = "core")
-open class MemberEntity protected constructor() :
+class MemberEntity() :
     BaseEntity(),
     MemberModel {
     @field:Column(nullable = false)
-    override var name: String = ""
-        protected set
+    final override var name: String = ""
+        private set
 
     @field:Column(nullable = false, unique = true)
-    override var email: String = ""
-        protected set
+    final override var email: String = ""
+        private set
 
     @field:Column(nullable = false)
     private var passwordHash: String = ""

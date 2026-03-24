@@ -11,30 +11,30 @@ import org.yechan.remittance.transfer.OutboxEventProps
 
 @Entity
 @Table(name = "outbox_events", catalog = "integration")
-open class OutboxEventEntity protected constructor() :
+class OutboxEventEntity() :
     BaseEntity(),
     OutboxEventModel {
     @field:Column(nullable = false)
-    override var aggregateType: String = ""
-        protected set
+    final override var aggregateType: String = ""
+        private set
 
     @field:Column(nullable = false)
-    override var aggregateId: String = ""
-        protected set
+    final override var aggregateId: String = ""
+        private set
 
     @field:Column(nullable = false)
-    override var eventType: String = ""
-        protected set
+    final override var eventType: String = ""
+        private set
 
     @field:Column(nullable = false)
-    override var payload: String = ""
-        protected set
+    final override var payload: String = ""
+        private set
 
     @field:Enumerated(EnumType.STRING)
     @field:Column(nullable = false)
-    override var status: OutboxEventProps.OutboxEventStatusValue =
+    final override var status: OutboxEventProps.OutboxEventStatusValue =
         OutboxEventProps.OutboxEventStatusValue.NEW
-        protected set
+        private set
 
     private constructor(
         aggregateType: String,

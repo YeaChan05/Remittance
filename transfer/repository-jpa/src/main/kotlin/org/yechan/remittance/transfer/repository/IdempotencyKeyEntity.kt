@@ -22,48 +22,48 @@ import java.time.LocalDateTime
         ),
     ],
 )
-open class IdempotencyKeyEntity protected constructor() :
+class IdempotencyKeyEntity() :
     BaseEntity(),
     IdempotencyKeyModel {
     @field:Column(name = "client_id", nullable = false)
-    override var memberId: Long = 0
-        protected set
+    final override var memberId: Long = 0
+        private set
 
     @field:Column(name = "idempotency_key", nullable = false)
-    override var idempotencyKey: String = ""
-        protected set
+    final override var idempotencyKey: String = ""
+        private set
 
     @field:Column(nullable = false)
-    override var expiresAt: LocalDateTime = LocalDateTime.MIN
-        protected set
+    final override var expiresAt: LocalDateTime = LocalDateTime.MIN
+        private set
 
     @field:Enumerated(EnumType.STRING)
     @field:Column(name = "scope", nullable = false)
-    override var scope: IdempotencyKeyProps.IdempotencyScopeValue =
+    final override var scope: IdempotencyKeyProps.IdempotencyScopeValue =
         IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
-        protected set
+        private set
 
     @field:Enumerated(EnumType.STRING)
     @field:Column
-    override var status: IdempotencyKeyProps.IdempotencyKeyStatusValue =
+    final override var status: IdempotencyKeyProps.IdempotencyKeyStatusValue =
         IdempotencyKeyProps.IdempotencyKeyStatusValue.BEFORE_START
-        protected set
+        private set
 
     @field:Column
-    override var requestHash: String? = null
-        protected set
+    final override var requestHash: String? = null
+        private set
 
     @field:Column
-    override var responseSnapshot: String? = null
-        protected set
+    final override var responseSnapshot: String? = null
+        private set
 
     @field:Column
-    override var startedAt: LocalDateTime? = null
-        protected set
+    final override var startedAt: LocalDateTime? = null
+        private set
 
     @field:Column
-    override var completedAt: LocalDateTime? = null
-        protected set
+    final override var completedAt: LocalDateTime? = null
+        private set
 
     private constructor(
         memberId: Long,

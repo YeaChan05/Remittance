@@ -24,25 +24,25 @@ import java.time.LocalDate
         ),
     ],
 )
-open class DailyLimitUsageEntity protected constructor() :
+class DailyLimitUsageEntity() :
     BaseEntity(),
     DailyLimitUsageModel {
     @field:Column(name = "account_id", nullable = false)
-    override var accountId: Long = 0
-        protected set
+    final override var accountId: Long = 0
+        private set
 
     @field:Enumerated(EnumType.STRING)
     @field:Column(nullable = false)
-    override var scope: TransferProps.TransferScopeValue = TransferProps.TransferScopeValue.TRANSFER
-        protected set
+    final override var scope: TransferProps.TransferScopeValue = TransferProps.TransferScopeValue.TRANSFER
+        private set
 
     @field:Column(name = "usage_date", nullable = false)
-    override var usageDate: LocalDate = LocalDate.MIN
-        protected set
+    final override var usageDate: LocalDate = LocalDate.MIN
+        private set
 
     @field:Column(name = "used_amount", nullable = false)
-    override var usedAmount: BigDecimal = BigDecimal.ZERO
-        protected set
+    final override var usedAmount: BigDecimal = BigDecimal.ZERO
+        private set
 
     private constructor(
         accountId: Long,

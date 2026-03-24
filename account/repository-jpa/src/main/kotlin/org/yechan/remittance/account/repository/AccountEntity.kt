@@ -10,28 +10,28 @@ import java.math.BigDecimal
 
 @Entity
 @Table(name = "account", catalog = "core")
-open class AccountEntity protected constructor() :
+class AccountEntity() :
     BaseEntity(),
     AccountModel {
     @field:Column(nullable = false)
-    override var memberId: Long? = null
-        protected set
+    final override var memberId: Long? = null
+        private set
 
     @field:Column(nullable = false)
-    override var bankCode: String = ""
-        protected set
+    final override var bankCode: String = ""
+        private set
 
     @field:Column(nullable = false)
-    override var accountNumber: String = ""
-        protected set
+    final override var accountNumber: String = ""
+        private set
 
     @field:Column(nullable = false)
-    override var accountName: String = ""
-        protected set
+    final override var accountName: String = ""
+        private set
 
     @field:Column(nullable = false)
-    override var balance: BigDecimal = BigDecimal.ZERO
-        protected set
+    final override var balance: BigDecimal = BigDecimal.ZERO
+        private set
 
     private constructor(
         memberId: Long?,

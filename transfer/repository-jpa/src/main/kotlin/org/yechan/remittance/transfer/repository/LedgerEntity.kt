@@ -22,25 +22,25 @@ import java.math.BigDecimal
         ),
     ],
 )
-open class LedgerEntity protected constructor() :
+class LedgerEntity() :
     BaseEntity(),
     LedgerModel {
     @field:Column(name = "transfer_id", nullable = false)
-    override var transferId: Long = 0
-        protected set
+    final override var transferId: Long = 0
+        private set
 
     @field:Column(name = "account_id", nullable = false)
-    override var accountId: Long = 0
-        protected set
+    final override var accountId: Long = 0
+        private set
 
     @field:Column(nullable = false)
-    override var amount: BigDecimal = BigDecimal.ZERO
-        protected set
+    final override var amount: BigDecimal = BigDecimal.ZERO
+        private set
 
     @field:Enumerated(EnumType.STRING)
     @field:Column(nullable = false)
-    override var side: LedgerProps.LedgerSideValue = LedgerProps.LedgerSideValue.DEBIT
-        protected set
+    final override var side: LedgerProps.LedgerSideValue = LedgerProps.LedgerSideValue.DEBIT
+        private set
 
     private constructor(
         transferId: Long,

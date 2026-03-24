@@ -8,14 +8,14 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(name = "processed_events", catalog = "integration")
-open class ProcessedEventEntity protected constructor() : BaseEntity() {
+class ProcessedEventEntity() : BaseEntity() {
     @field:Column(nullable = false, unique = true)
-    var eventId: Long? = null
-        protected set
+    final var eventId: Long? = null
+        private set
 
     @field:Column(nullable = false)
-    var processedAt: LocalDateTime? = null
-        protected set
+    final var processedAt: LocalDateTime? = null
+        private set
 
     private constructor(
         eventId: Long,

@@ -3,6 +3,7 @@ import com.linecorp.support.project.multi.recipe.configureByTypeHaving
 import com.linecorp.support.project.multi.recipe.configureByTypePrefix
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.jetbrains.kotlin.allopen.gradle.AllOpenExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.plugin.SpringBootPlugin
@@ -157,6 +158,11 @@ configureByTypeHaving("boot", "mvc") {
 
 configureByTypeHaving("boot", "jpa", "repository") {
     apply(plugin = "org.jetbrains.kotlin.plugin.jpa")
+    extensions.configure<AllOpenExtension> {
+        annotation("jakarta.persistence.Entity")
+        annotation("jakarta.persistence.Embeddable")
+        annotation("jakarta.persistence.MappedSuperclass")
+    }
 
     dependencies {
         implementation("org.springframework.boot:spring-boot-starter-data-jpa")

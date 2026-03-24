@@ -13,16 +13,16 @@ import java.util.Objects
 @MappedSuperclass
 abstract class BaseEntity protected constructor() {
     @field:Column(updatable = false)
-    open var createdAt: LocalDateTime? = null
+    var createdAt: LocalDateTime? = null
         protected set
 
     @field:Column
-    open var updatedAt: LocalDateTime? = null
+    var updatedAt: LocalDateTime? = null
         protected set
 
     @field:Id
     @field:Tsid
-    open var id: Long? = null
+    var id: Long? = null
         protected set
 
     @PrePersist
