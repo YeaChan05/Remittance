@@ -4,6 +4,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
 
+@Suppress("unused")
 class TestcontainersPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         require(project == project.rootProject) {
