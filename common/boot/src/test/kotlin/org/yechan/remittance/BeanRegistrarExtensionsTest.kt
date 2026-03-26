@@ -42,6 +42,48 @@ class BeanRegistrarExtensionsTest {
         context.close()
     }
 
+    @Test
+    fun `registerIf true이면 첫 분기만 등록한다`() {
+        val context = createContext(
+            TestConditionalChainConfiguration::class.java,
+            "sample.feature.mode" to "alpha",
+        )
+
+        assertThat(context.containsBean("alpha")).isTrue()
+        assertThat(context.containsBean("beta")).isFalse()
+        assertThat(context.containsBean("fallback")).isFalse()
+
+        context.close()
+    }
+
+    @Test
+    fun `registerIf false이면 else if 분기를 등록한다`() {
+        val context = createContext(
+            TestConditionalChainConfiguration::class.java,
+            "sample.feature.mode" to "beta",
+        )
+
+        assertThat(context.containsBean("alpha")).isFalse()
+        assertThat(context.containsBean("beta")).isTrue()
+        assertThat(context.containsBean("fallback")).isFalse()
+
+        context.close()
+    }
+
+    @Test
+    fun `모든 조건이 false이면 else 분기를 등록한다`() {
+        val context = createContext(
+            TestConditionalChainConfiguration::class.java,
+            "sample.feature.mode" to "other",
+        )
+
+        assertThat(context.containsBean("alpha")).isFalse()
+        assertThat(context.containsBean("beta")).isFalse()
+        assertThat(context.containsBean("fallback")).isTrue()
+
+        context.close()
+    }
+
     private fun createContext(
         configuration: Class<*>,
         vararg properties: Pair<String, String>,
@@ -61,6 +103,10 @@ class BeanRegistrarExtensionsTest {
     @Import(ExactMatchBeanRegistrar::class)
     class TestExactMatchConfiguration
 
+    @Configuration(proxyBeanMethods = false)
+    @Import(ConditionalChainBeanRegistrar::class)
+    class TestConditionalChainConfiguration
+
     class MatchIfMissingBeanRegistrar :
         BeanRegistrarDsl({
             whenPropertyEnabled("sample.feature", "enabled", matchIfMissing = true) {
@@ -73,5 +119,22 @@ class BeanRegistrarExtensionsTest {
             whenPropertyEnabled("sample.feature", "enabled") {
                 registerBean<String>("sample") { "enabled" }
             }
+        })
+
+    class ConditionalChainBeanRegistrar :
+        BeanRegistrarDsl({
+            registerIf(
+                predicate = { it.getProperty("sample.feature.mode") == "alpha" },
+            ) {
+                registerBean<String>("alpha") { "alpha" }
+            }
+                .orElseIf(
+                    predicate = { it.getProperty("sample.feature.mode") == "beta" },
+                ) {
+                    registerBean<String>("beta") { "beta" }
+                }
+                .orElse {
+                    registerBean<String>("fallback") { "fallback" }
+                }
         })
 }
