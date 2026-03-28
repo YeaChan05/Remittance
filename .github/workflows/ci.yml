@@ -75,7 +75,7 @@ jobs:
         if: steps.impacted.outputs.full_run == 'true'
         uses: madrapps/jacoco-report@v1.2
         with:
-          title: ?뱷 ?뚯뒪??而ㅻ쾭由ъ? 由ы룷?몄엯?덈떎
+          title: Jacoco Coverage Report
           paths: ${{ github.workspace }}/build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 85
