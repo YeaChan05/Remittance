@@ -1,0 +1,35 @@
+server:
+  port: 0
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.security.autoconfigure.actuate.web.servlet.ManagementWebSecurityAutoConfiguration
+  docker:
+    compose:
+      enabled: true
+      lifecycle-management: start-only
+  datasource:
+    url: jdbc:tc:mysql:8.4.8:///account?TC_DAEMON=true&user=root&password=test&useInformationSchema=true
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    username: root
+    password: test
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: validate
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+    url: ${spring.datasource.url}
+    user: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+auth:
+  token:
+    salt: remittance-token-salt
+    access-expires-in: ${AUTH_TOKEN_ACCESS_EXPIRES_IN:3600}
+    refresh-expires-in: ${AUTH_TOKEN_REFRESH_EXPIRES_IN:604800}

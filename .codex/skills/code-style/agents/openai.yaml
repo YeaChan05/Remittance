@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code Style"
+  short_description: "Remittance code style and naming"
+  default_prompt: "Use $code-style to keep new Remittance code aligned with naming, wiring, and style conventions."

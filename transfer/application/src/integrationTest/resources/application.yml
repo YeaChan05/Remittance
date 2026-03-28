@@ -1,0 +1,41 @@
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.security.autoconfigure.actuate.web.servlet.ManagementWebSecurityAutoConfiguration
+  datasource:
+    url: jdbc:tc:mysql:8.4.8:///transfer?TC_DAEMON=true&user=root&password=test&useInformationSchema=true
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    username: root
+    password: test
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+    hibernate:
+      ddl-auto: validate
+    defer-datasource-initialization: false
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+    url: ${spring.datasource.url}
+    user: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+          - beans
+auth:
+  token:
+    salt: remittance-token-salt
+    access-expires-in: ${AUTH_TOKEN_ACCESS_EXPIRES_IN:3600}
+    refresh-expires-in: ${AUTH_TOKEN_REFRESH_EXPIRES_IN:604800}
+transfer:
+  outbox:
+    publisher:
+      enabled: false
+  idempotency-key:
+    expires-in: 24h

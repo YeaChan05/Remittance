@@ -5,6 +5,10 @@ description: Write repo-style unit or integration tests, place them in the corre
 
 # Test
 
+## 먼저 읽을 문서
+
+- [../../rules/agent-coding-discipline.md](../../rules/agent-coding-discipline.md)
+
 ## Language
 
 모든 응답은 한국어로 작성한다.
@@ -14,6 +18,7 @@ description: Write repo-style unit or integration tests, place them in the corre
 - 가장 가까운 기존 테스트를 복제한다.
 - 테스트 위치와 source set을 먼저 정한다.
 - 실행하지 않은 테스트는 실행했다고 적지 않는다.
+- `agent-coding-discipline.md`의 TDD, source set, 좁은 Gradle 검증 규율을 우선한다.
 
 ## 참고 코드 사용 규칙
 
