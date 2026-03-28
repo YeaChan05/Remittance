@@ -11,79 +11,29 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Resolve git range
-        id: git-range
-        shell: bash
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "base_sha=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
-            echo "head_sha=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
-          elif [[ "${{ github.event.before }}" == "0000000000000000000000000000000000000000" ]]; then
-            echo "base_sha=" >> "$GITHUB_OUTPUT"
-            echo "head_sha=${{ github.sha }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "base_sha=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
-            echo "head_sha=${{ github.sha }}" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Resolve impacted modules
-        id: impacted
-        shell: bash
-        run: |
-          bash ./.github/scripts/resolve-impacted-modules.sh \
-            --base "${{ steps.git-range.outputs.base_sha }}" \
-            --head "${{ steps.git-range.outputs.head_sha }}"
-
-      - name: Print impact summary
-        shell: bash
-        run: |
-          cat <<'EOF'
-          ${{ steps.impacted.outputs.summary }}
-          EOF
-
-      - name: Skip CI for non-functional changes
-        if: steps.impacted.outputs.skip_run == 'true'
-        run: echo "Skipping Gradle CI because only non-functional files changed."
 
       - name: Setup Java
-        if: steps.impacted.outputs.skip_run != 'true'
         uses: actions/setup-java@v5
         with:
           distribution: corretto
           java-version-file: .sdkmanrc
 
       - name: Setup Gradle
-        if: steps.impacted.outputs.skip_run != 'true'
         uses: gradle/actions/setup-gradle@v5
 
-      - name: Full build
-        if: steps.impacted.outputs.full_run == 'true'
+      - name: Build
         run: ./gradlew assemble
 
-      - name: Full test
-        if: steps.impacted.outputs.full_run == 'true'
+      - name: Test
         run: ./gradlew test --parallel
 
-      - name: Full Jacoco report
-        if: steps.impacted.outputs.full_run == 'true'
+      - name: Jacoco report
         run: ./gradlew jacocoRootReport -x test -x integrationTest
 
       - name: Upload coverage
-        if: steps.impacted.outputs.full_run == 'true'
         uses: madrapps/jacoco-report@v1.2
         with:
           title: Jacoco Coverage Report
           paths: ${{ github.workspace }}/build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 85
-
-      - name: Selective build
-        if: steps.impacted.outputs.full_run != 'true' && steps.impacted.outputs.skip_run != 'true'
-        run: ./gradlew ${{ steps.impacted.outputs.assemble_tasks }}
-
-      - name: Selective test
-        if: steps.impacted.outputs.full_run != 'true' && steps.impacted.outputs.skip_run != 'true'
-        run: ./gradlew ${{ steps.impacted.outputs.test_tasks }} --parallel
