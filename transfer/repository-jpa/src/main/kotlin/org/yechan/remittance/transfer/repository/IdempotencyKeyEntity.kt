@@ -25,45 +25,39 @@ import java.time.LocalDateTime
 class IdempotencyKeyEntity() :
     BaseEntity(),
     IdempotencyKeyModel {
+    override val idempotencyKeyId: Long?
+        get() = id
+
     @field:Column(name = "client_id", nullable = false)
-    final override var memberId: Long = 0
-        private set
+    override var memberId: Long = 0
 
     @field:Column(name = "idempotency_key", nullable = false)
-    final override var idempotencyKey: String = ""
-        private set
+    override var idempotencyKey: String = ""
 
     @field:Column(nullable = false)
-    final override var expiresAt: LocalDateTime = LocalDateTime.MIN
-        private set
+    override var expiresAt: LocalDateTime = LocalDateTime.MIN
 
     @field:Enumerated(EnumType.STRING)
     @field:Column(name = "scope", nullable = false)
-    final override var scope: IdempotencyKeyProps.IdempotencyScopeValue =
+    override var scope: IdempotencyKeyProps.IdempotencyScopeValue =
         IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
-        private set
 
     @field:Enumerated(EnumType.STRING)
     @field:Column
-    final override var status: IdempotencyKeyProps.IdempotencyKeyStatusValue =
+    override var status: IdempotencyKeyProps.IdempotencyKeyStatusValue =
         IdempotencyKeyProps.IdempotencyKeyStatusValue.BEFORE_START
-        private set
 
     @field:Column
-    final override var requestHash: String? = null
-        private set
+    override var requestHash: String? = null
 
     @field:Column
-    final override var responseSnapshot: String? = null
-        private set
+    override var responseSnapshot: String? = null
 
     @field:Column
-    final override var startedAt: LocalDateTime? = null
-        private set
+    override var startedAt: LocalDateTime? = null
 
     @field:Column
-    final override var completedAt: LocalDateTime? = null
-        private set
+    override var completedAt: LocalDateTime? = null
 
     private constructor(
         memberId: Long,
@@ -76,9 +70,6 @@ class IdempotencyKeyEntity() :
         this.expiresAt = expiresAt
         this.scope = scope
     }
-
-    override val idempotencyKeyId: Long?
-        get() = id
 
     override fun tryMarkInProgress(requestHash: String, startedAt: LocalDateTime?): Boolean {
         if (status != IdempotencyKeyProps.IdempotencyKeyStatusValue.BEFORE_START) {

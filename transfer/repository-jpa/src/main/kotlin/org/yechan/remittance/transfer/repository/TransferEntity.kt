@@ -16,36 +16,32 @@ import java.time.LocalDateTime
 class TransferEntity() :
     BaseEntity(),
     TransferModel {
-    @field:Column(nullable = false)
-    final override var fromAccountId: Long = 0
-        private set
+    override val transferId: Long?
+        get() = id
 
     @field:Column(nullable = false)
-    final override var toAccountId: Long = 0
-        private set
+    override var fromAccountId: Long = 0
 
     @field:Column(nullable = false)
-    final override var amount: BigDecimal = BigDecimal.ZERO
-        private set
+    override var toAccountId: Long = 0
 
-    @field:Enumerated(EnumType.STRING)
     @field:Column(nullable = false)
-    final override var scope: TransferProps.TransferScopeValue = TransferProps.TransferScopeValue.TRANSFER
-        private set
+    override var amount: BigDecimal = BigDecimal.ZERO
 
     @field:Enumerated(EnumType.STRING)
     @field:Column(nullable = false)
-    final override var status: TransferProps.TransferStatusValue =
+    override var scope: TransferProps.TransferScopeValue = TransferProps.TransferScopeValue.TRANSFER
+
+    @field:Enumerated(EnumType.STRING)
+    @field:Column(nullable = false)
+    override var status: TransferProps.TransferStatusValue =
         TransferProps.TransferStatusValue.SUCCEEDED
-        private set
 
     @field:Column(nullable = false)
-    final override var requestedAt: LocalDateTime = LocalDateTime.now()
-        private set
+    override var requestedAt: LocalDateTime = LocalDateTime.now()
 
     @field:Column
-    final override var completedAt: LocalDateTime? = null
-        private set
+    override var completedAt: LocalDateTime? = null
 
     private constructor(
         fromAccountId: Long,
@@ -63,9 +59,6 @@ class TransferEntity() :
         this.requestedAt = LocalDateTime.now()
         this.completedAt = completedAt
     }
-
-    override val transferId: Long?
-        get() = id
 
     companion object {
         fun create(props: TransferProps): TransferEntity = TransferEntity(

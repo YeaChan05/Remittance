@@ -27,22 +27,21 @@ import java.time.LocalDate
 class DailyLimitUsageEntity() :
     BaseEntity(),
     DailyLimitUsageModel {
+    override val dailyLimitUsageId: Long?
+        get() = id
+
     @field:Column(name = "account_id", nullable = false)
-    final override var accountId: Long = 0
-        private set
+    override var accountId: Long = 0
 
     @field:Enumerated(EnumType.STRING)
     @field:Column(nullable = false)
-    final override var scope: TransferProps.TransferScopeValue = TransferProps.TransferScopeValue.TRANSFER
-        private set
+    override var scope: TransferProps.TransferScopeValue = TransferProps.TransferScopeValue.TRANSFER
 
     @field:Column(name = "usage_date", nullable = false)
-    final override var usageDate: LocalDate = LocalDate.MIN
-        private set
+    override var usageDate: LocalDate = LocalDate.MIN
 
     @field:Column(name = "used_amount", nullable = false)
-    final override var usedAmount: BigDecimal = BigDecimal.ZERO
-        private set
+    override var usedAmount: BigDecimal = BigDecimal.ZERO
 
     private constructor(
         accountId: Long,
@@ -55,9 +54,6 @@ class DailyLimitUsageEntity() :
         this.usageDate = usageDate
         this.usedAmount = usedAmount
     }
-
-    override val dailyLimitUsageId: Long?
-        get() = id
 
     override fun updateUsedAmount(usedAmount: BigDecimal) {
         this.usedAmount = usedAmount

@@ -25,22 +25,21 @@ import java.math.BigDecimal
 class LedgerEntity() :
     BaseEntity(),
     LedgerModel {
+    override val ledgerId: Long?
+        get() = id
+
     @field:Column(name = "transfer_id", nullable = false)
-    final override var transferId: Long = 0
-        private set
+    override var transferId: Long = 0
 
     @field:Column(name = "account_id", nullable = false)
-    final override var accountId: Long = 0
-        private set
+    override var accountId: Long = 0
 
     @field:Column(nullable = false)
-    final override var amount: BigDecimal = BigDecimal.ZERO
-        private set
+    override var amount: BigDecimal = BigDecimal.ZERO
 
     @field:Enumerated(EnumType.STRING)
     @field:Column(nullable = false)
-    final override var side: LedgerProps.LedgerSideValue = LedgerProps.LedgerSideValue.DEBIT
-        private set
+    override var side: LedgerProps.LedgerSideValue = LedgerProps.LedgerSideValue.DEBIT
 
     private constructor(
         transferId: Long,
@@ -53,9 +52,6 @@ class LedgerEntity() :
         this.amount = amount
         this.side = side
     }
-
-    override val ledgerId: Long?
-        get() = id
 
     companion object {
         fun create(props: LedgerProps): LedgerEntity = LedgerEntity(props.transferId, props.accountId, props.amount, props.side)

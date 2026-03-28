@@ -12,16 +12,20 @@ import org.yechan.remittance.member.MemberProps
 class MemberEntity() :
     BaseEntity(),
     MemberModel {
+    override val memberId: Long?
+        get() = id
+
     @field:Column(nullable = false)
-    final override var name: String = ""
-        private set
+    override var name: String = ""
 
     @field:Column(nullable = false, unique = true)
-    final override var email: String = ""
-        private set
+    override var email: String = ""
 
     @field:Column(nullable = false)
     private var passwordHash: String = ""
+
+    override val password: String
+        get() = passwordHash
 
     private constructor(
         name: String,
@@ -32,12 +36,6 @@ class MemberEntity() :
         this.email = email
         this.passwordHash = passwordHash
     }
-
-    override val memberId: Long?
-        get() = id
-
-    override val password: String
-        get() = passwordHash
 
     companion object {
         fun create(props: MemberProps): MemberEntity = MemberEntity(props.name, props.email, props.password)

@@ -13,25 +13,23 @@ import java.math.BigDecimal
 class AccountEntity() :
     BaseEntity(),
     AccountModel {
-    @field:Column(nullable = false)
-    final override var memberId: Long? = null
-        private set
+    override val accountId: Long?
+        get() = id
 
     @field:Column(nullable = false)
-    final override var bankCode: String = ""
-        private set
+    override var memberId: Long? = null
 
     @field:Column(nullable = false)
-    final override var accountNumber: String = ""
-        private set
+    override var bankCode: String = ""
 
     @field:Column(nullable = false)
-    final override var accountName: String = ""
-        private set
+    override var accountNumber: String = ""
 
     @field:Column(nullable = false)
-    final override var balance: BigDecimal = BigDecimal.ZERO
-        private set
+    override var accountName: String = ""
+
+    @field:Column(nullable = false)
+    override var balance: BigDecimal = BigDecimal.ZERO
 
     private constructor(
         memberId: Long?,
@@ -46,9 +44,6 @@ class AccountEntity() :
         this.accountName = accountName
         this.balance = balance
     }
-
-    override val accountId: Long?
-        get() = id
 
     override fun updateBalance(balance: BigDecimal) {
         this.balance = balance

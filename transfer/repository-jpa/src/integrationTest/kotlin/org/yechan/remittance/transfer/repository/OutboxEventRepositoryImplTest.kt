@@ -3,6 +3,7 @@ package org.yechan.remittance.transfer.repository
 import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
@@ -25,6 +26,11 @@ class OutboxEventRepositoryImplTest @Autowired constructor(
     private val repository: OutboxEventRepository,
     private val entityManager: EntityManager,
 ) {
+    @BeforeEach
+    fun setUp() {
+        clearOutboxEvents()
+    }
+
     @Test
     fun `save는 props를 entity로 변환해 저장한다`() {
         val saved = repository.save(TestOutboxEventProps(OutboxEventProps.OutboxEventStatusValue.NEW))
@@ -86,6 +92,11 @@ class OutboxEventRepositoryImplTest @Autowired constructor(
     private fun flushClear() {
         entityManager.flush()
         entityManager.clear()
+    }
+
+    private fun clearOutboxEvents() {
+        entityManager.createQuery("delete from OutboxEventEntity").executeUpdate()
+        flushClear()
     }
 
     private data class TestOutboxEventProps(

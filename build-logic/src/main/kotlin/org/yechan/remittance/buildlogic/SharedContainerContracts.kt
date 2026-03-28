@@ -3,7 +3,7 @@ package org.yechan.remittance.buildlogic
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
-import org.gradle.api.tasks.testing.Test
+import org.gradle.process.JavaForkOptions
 import java.io.File
 import java.net.URLClassLoader
 import java.util.concurrent.atomic.AtomicBoolean
@@ -23,12 +23,11 @@ internal interface SharedContainerProvider {
 internal interface SharedContainerRuntime : AutoCloseable {
     fun prepare(project: Project, taskPath: String) {}
 
-    fun applyTo(testTask: Test, project: Project, taskPath: String)
+    fun applyTo(target: JavaForkOptions, project: Project, taskPath: String)
 }
 
 internal object SharedContainerRegistry {
     private val providers = listOf(
-        MySqlSharedContainerProvider,
         RabbitMqSharedContainerProvider,
     ).associateBy(SharedContainerProvider::key)
 

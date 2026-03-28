@@ -4,6 +4,7 @@ CREATE DATABASE IF NOT EXISTS integration;
 CREATE TABLE IF NOT EXISTS core.account
 (
     id             BIGINT         NOT NULL PRIMARY KEY,
+    account_id     BIGINT         NULL,
     member_id      BIGINT         NOT NULL,
     bank_code      VARCHAR(50)    NOT NULL,
     account_number VARCHAR(50)    NOT NULL,

@@ -2,20 +2,26 @@ package org.yechan.remittance.buildlogic
 
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
-import org.gradle.api.tasks.testing.Test
+import org.gradle.api.Task
+import org.gradle.process.JavaForkOptions
 
 internal class TaskContainerBinder(
-    private val testTask: TaskProvider<Test>,
+    private val taskProvider: TaskProvider<Task>,
     private val extension: TestcontainersExtension,
     private val taskSpec: TestcontainersTaskSpec,
     private val sharedContainerService: Provider<SharedContainerService>,
+    private val stackLockService: Provider<SharedContainerStackLockService>,
+    private val stackKey: String,
 ) {
     fun bind() {
-        testTask.configure {
-            val boundTestTask = this
+        taskProvider.configure {
+            val boundTask = this
             usesService(sharedContainerService)
+            usesService(stackLockService)
 
             doFirst {
+                val javaForkTask = boundTask as? JavaForkOptions
+                    ?: error("Shared testcontainers support requires JavaForkOptions task: ${boundTask.path}")
                 val providers = SharedContainerRegistry.resolve(taskSpec.containerKeys)
                 val coordinates =
                     TestcontainersRuntimeCoordinatesResolver.resolve(project, extension)
@@ -32,8 +38,8 @@ internal class TaskContainerBinder(
                 service.ensureDockerReady()
 
                 providers.forEach { provider ->
-                    service.prepare(project, path, coordinates, provider)
-                    service.applyTo(boundTestTask, project, path, coordinates, provider)
+                    service.prepare(project, path, stackKey, coordinates, provider)
+                    service.applyTo(javaForkTask, project, path, stackKey, coordinates, provider)
                 }
             }
         }

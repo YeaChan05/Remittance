@@ -27,6 +27,15 @@ open class TestcontainersTaskSpec internal constructor(
     internal val name: String,
 ) {
     internal val containerKeys: MutableSet<String> = linkedSetOf()
+    internal var stackKey: String? = null
+
+    fun stack(stackKey: String) {
+        require(stackKey.isNotBlank()) {
+            "Shared testcontainer stack key must not be blank."
+        }
+
+        this.stackKey = stackKey.lowercase(Locale.ROOT)
+    }
 
     fun use(containerKey: String) {
         require(containerKey.isNotBlank()) {

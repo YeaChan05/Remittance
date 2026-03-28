@@ -3,12 +3,13 @@ package org.yechan.remittance.buildlogic
 import org.gradle.api.Project
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
-import org.gradle.api.tasks.testing.Test
+import org.gradle.process.JavaForkOptions
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
 internal data class SharedContainerRuntimeKey(
     val providerKey: String,
+    val stackKey: String,
     val coordinates: TestcontainersRuntimeCoordinates,
 )
 
@@ -29,20 +30,22 @@ abstract class SharedContainerService :
     internal fun prepare(
         project: Project,
         taskPath: String,
+        stackKey: String,
         coordinates: TestcontainersRuntimeCoordinates,
         provider: SharedContainerProvider,
     ) {
-        runtime(project, coordinates, provider).prepare(project, taskPath)
+        runtime(project, stackKey, coordinates, provider).prepare(project, taskPath)
     }
 
     internal fun applyTo(
-        testTask: Test,
+        target: JavaForkOptions,
         project: Project,
         taskPath: String,
+        stackKey: String,
         coordinates: TestcontainersRuntimeCoordinates,
         provider: SharedContainerProvider,
     ) {
-        runtime(project, coordinates, provider).applyTo(testTask, project, taskPath)
+        runtime(project, stackKey, coordinates, provider).applyTo(target, project, taskPath)
     }
 
     private fun isDockerReady(): Boolean {
@@ -72,10 +75,11 @@ abstract class SharedContainerService :
 
     private fun runtime(
         project: Project,
+        stackKey: String,
         coordinates: TestcontainersRuntimeCoordinates,
         provider: SharedContainerProvider,
     ): SharedContainerRuntime {
-        val key = SharedContainerRuntimeKey(provider.key, coordinates)
+        val key = SharedContainerRuntimeKey(provider.key, stackKey, coordinates)
         return runtimes.computeIfAbsent(key) {
             provider.createRuntime(
                 TestcontainersRuntimeClasspathResolver.resolve(
@@ -95,4 +99,10 @@ abstract class SharedContainerService :
         runtimes.values.forEach(SharedContainerRuntime::close)
         runtimes.clear()
     }
+}
+
+abstract class SharedContainerStackLockService :
+    BuildService<BuildServiceParameters.None>,
+    AutoCloseable {
+    override fun close() = Unit
 }

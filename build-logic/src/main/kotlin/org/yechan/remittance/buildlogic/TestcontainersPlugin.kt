@@ -2,7 +2,7 @@ package org.yechan.remittance.buildlogic
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.tasks.testing.Test
+import org.gradle.api.Task
 
 @Suppress("unused")
 class TestcontainersPlugin : Plugin<Project> {
@@ -30,15 +30,31 @@ class TestcontainersPlugin : Plugin<Project> {
                         "Shared testcontainers must declare at least one container for ${currentProject.path}:${taskSpec.name}."
                     }
 
-                    val testTask = tasks.named(taskSpec.name, Test::class.java)
+                    val taskProvider = tasks.named(taskSpec.name, Task::class.java)
+                    val stackKey = resolveStackKey(currentProject, taskSpec)
+                    val stackLockService = project.gradle.sharedServices.registerIfAbsent(
+                        "sharedContainerStackLockService-$stackKey",
+                        SharedContainerStackLockService::class.java,
+                    ) {
+                        maxParallelUsages.set(1)
+                    }
                     TaskContainerBinder(
-                        testTask = testTask,
+                        taskProvider = taskProvider,
                         extension = extension,
                         taskSpec = taskSpec,
                         sharedContainerService = sharedContainerService,
+                        stackLockService = stackLockService,
+                        stackKey = stackKey,
                     ).bind()
                 }
             }
         }
     }
+
+    private fun resolveStackKey(
+        project: Project,
+        taskSpec: TestcontainersTaskSpec,
+    ): String = taskSpec.stackKey
+        ?: project.findProperty("testcontainers.stack")?.toString()?.trim()?.lowercase()
+        ?: project.path.trimStart(':').replace(':', '-').lowercase()
 }

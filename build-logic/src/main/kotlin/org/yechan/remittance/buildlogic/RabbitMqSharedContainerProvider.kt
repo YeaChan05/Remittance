@@ -2,7 +2,8 @@ package org.yechan.remittance.buildlogic
 
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Dependency
-import org.gradle.api.tasks.testing.Test
+import org.gradle.process.JavaForkOptions
+import java.io.File
 
 internal object RabbitMqSharedContainerProvider : SharedContainerProvider {
     override val key: String = "rabbitmq"
@@ -15,18 +16,18 @@ internal object RabbitMqSharedContainerProvider : SharedContainerProvider {
         project.dependencies.create("org.testcontainers:testcontainers-rabbitmq"),
     )
 
-    override fun createRuntime(classpath: Set<java.io.File>): SharedContainerRuntime = RabbitMqSharedContainerRuntime(classpath)
+    override fun createRuntime(classpath: Set<File>): SharedContainerRuntime = RabbitMqSharedContainerRuntime(classpath)
 
     private class RabbitMqSharedContainerRuntime(
-        classpath: Set<java.io.File>,
+        classpath: Set<File>,
     ) : ClasspathBackedSharedContainerRuntime(classpath) {
         private val container = withContextClassLoader { createContainer() }
 
-        override fun applyTo(testTask: Test, project: Project, taskPath: String) {
-            testTask.systemProperty(SPRING_RABBITMQ_HOST, host())
-            testTask.systemProperty(SPRING_RABBITMQ_PORT, port())
-            testTask.systemProperty(SPRING_RABBITMQ_USERNAME, username())
-            testTask.systemProperty(SPRING_RABBITMQ_PASSWORD, password())
+        override fun applyTo(target: JavaForkOptions, project: Project, taskPath: String) {
+            target.systemProperty(SPRING_RABBITMQ_HOST, host())
+            target.systemProperty(SPRING_RABBITMQ_PORT, port())
+            target.systemProperty(SPRING_RABBITMQ_USERNAME, username())
+            target.systemProperty(SPRING_RABBITMQ_PASSWORD, password())
         }
 
         private fun host(): String = invoke(container, "getHost") as String

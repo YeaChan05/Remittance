@@ -1,3 +1,8 @@
 spring:
+  datasource:
+    url: jdbc:tc:mysql:8.4.8:///transfer_repository_jpa_integrationtest?TC_DAEMON=true&user=root&password=test&useInformationSchema=true
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    username: root
+    password: test
   liquibase:
     change-log: classpath:/db/changelog/transfer/db.changelog-initial-schema.yaml

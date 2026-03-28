@@ -10,12 +10,10 @@ import java.time.LocalDateTime
 @Table(name = "processed_events", catalog = "integration")
 class ProcessedEventEntity() : BaseEntity() {
     @field:Column(nullable = false, unique = true)
-    final var eventId: Long? = null
-        private set
+    var eventId: Long? = null
 
     @field:Column(nullable = false)
-    final var processedAt: LocalDateTime? = null
-        private set
+    var processedAt: LocalDateTime? = null
 
     private constructor(
         eventId: Long,

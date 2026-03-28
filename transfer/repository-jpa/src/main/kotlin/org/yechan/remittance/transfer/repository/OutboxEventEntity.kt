@@ -14,27 +14,25 @@ import org.yechan.remittance.transfer.OutboxEventProps
 class OutboxEventEntity() :
     BaseEntity(),
     OutboxEventModel {
-    @field:Column(nullable = false)
-    final override var aggregateType: String = ""
-        private set
+    override val eventId: Long?
+        get() = id
 
     @field:Column(nullable = false)
-    final override var aggregateId: String = ""
-        private set
+    override var aggregateType: String = ""
 
     @field:Column(nullable = false)
-    final override var eventType: String = ""
-        private set
+    override var aggregateId: String = ""
 
     @field:Column(nullable = false)
-    final override var payload: String = ""
-        private set
+    override var eventType: String = ""
+
+    @field:Column(nullable = false)
+    override var payload: String = ""
 
     @field:Enumerated(EnumType.STRING)
     @field:Column(nullable = false)
-    final override var status: OutboxEventProps.OutboxEventStatusValue =
+    override var status: OutboxEventProps.OutboxEventStatusValue =
         OutboxEventProps.OutboxEventStatusValue.NEW
-        private set
 
     private constructor(
         aggregateType: String,
@@ -49,9 +47,6 @@ class OutboxEventEntity() :
         this.payload = payload
         this.status = status
     }
-
-    override val eventId: Long?
-        get() = id
 
     companion object {
         fun create(props: OutboxEventProps): OutboxEventEntity = OutboxEventEntity(
