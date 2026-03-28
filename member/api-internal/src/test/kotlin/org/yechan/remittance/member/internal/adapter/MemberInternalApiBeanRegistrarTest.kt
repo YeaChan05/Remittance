@@ -5,17 +5,17 @@ import org.junit.jupiter.api.Test
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
-import org.yechan.remittance.member.MemberAuthQueryUseCase
-import org.yechan.remittance.member.MemberAuthValue
+import org.yechan.remittance.member.MemberAuthenticationQueryUseCase
+import org.yechan.remittance.member.MemberAuthenticationResult
 import org.yechan.remittance.member.MemberExistenceQueryUseCase
-import org.yechan.remittance.member.internal.contract.LoginVerifyRequest
+import org.yechan.remittance.member.internal.contract.MemberAuthenticationInternalApi
+import org.yechan.remittance.member.internal.contract.MemberAuthenticationRequest
 import org.yechan.remittance.member.internal.contract.MemberExistenceInternalApi
-import org.yechan.remittance.member.internal.contract.MemberInternalApi
 
 class MemberInternalApiBeanRegistrarTest {
     @Test
     fun `자동 설정은 회원 내부 계약 빈을 등록한다`() {
-        val memberAuthQueryUseCase = MemberAuthQueryUseCase { MemberAuthValue(true, 3L) }
+        val memberAuthQueryUseCase = MemberAuthenticationQueryUseCase { MemberAuthenticationResult(true, 3L) }
         val memberExistenceQueryUseCase = MemberExistenceQueryUseCase { it == 3L }
         val context = AnnotationConfigApplicationContext().apply {
             beanFactory.registerSingleton("memberAuthQueryUseCase", memberAuthQueryUseCase)
@@ -27,12 +27,12 @@ class MemberInternalApiBeanRegistrarTest {
             refresh()
         }
 
-        val memberInternalApi = context.getBean(MemberInternalApi::class.java)
+        val memberInternalApi = context.getBean(MemberAuthenticationInternalApi::class.java)
         val memberExistenceInternalApi = context.getBean(MemberExistenceInternalApi::class.java)
 
         assertThat(
             memberInternalApi.verify(
-                LoginVerifyRequest(
+                MemberAuthenticationRequest(
                     "user@example.com",
                     "password",
                 ),

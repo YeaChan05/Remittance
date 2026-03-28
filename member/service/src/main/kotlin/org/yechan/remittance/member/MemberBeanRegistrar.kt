@@ -14,8 +14,8 @@ class MemberBeanRegistrar :
             MemberQueryService(bean(), bean(), bean())
         }
 
-        registerBean<MemberAuthQueryUseCase> {
-            MemberAuthQueryService(bean(), bean())
+        registerBean<MemberAuthenticationQueryUseCase> {
+            MemberAuthenticationQueryService(bean(), bean())
         }
 
         registerBean<MemberExistenceQueryUseCase> {

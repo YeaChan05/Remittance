@@ -22,7 +22,7 @@ class MemberBeanRegistrarTest {
 
         assertThat(context.getBean(MemberCreateUseCase::class.java)).isInstanceOf(MemberService::class.java)
         assertThat(context.getBean(MemberQueryUseCase::class.java)).isInstanceOf(MemberQueryService::class.java)
-        assertThat(context.getBean(MemberAuthQueryUseCase::class.java)).isInstanceOf(MemberAuthQueryService::class.java)
+        assertThat(context.getBean(MemberAuthenticationQueryUseCase::class.java)).isInstanceOf(MemberAuthenticationQueryService::class.java)
         assertThat(context.getBean(MemberExistenceQueryUseCase::class.java)).isInstanceOf(MemberExistenceQueryService::class.java)
 
         context.close()
