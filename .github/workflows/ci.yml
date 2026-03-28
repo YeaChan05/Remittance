@@ -63,7 +63,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
 
       - name: Build
-        if: github.event_name != 'pull_request' || steps.impacted.outputs.full_run == 'true'
+        if: github.event_name != 'pull_request'
         run: ./gradlew assemble
 
       - name: Test
@@ -71,21 +71,17 @@ jobs:
         run: ./gradlew test --parallel
 
       - name: Jacoco report
-        if: github.event_name != 'pull_request' || steps.impacted.outputs.full_run == 'true'
+        if: github.event_name != 'pull_request'
         run: ./gradlew jacocoRootReport -x test -x integrationTest
 
       - name: Upload coverage
-        if: github.event_name != 'pull_request' || steps.impacted.outputs.full_run == 'true'
+        if: github.event_name != 'pull_request'
         uses: madrapps/jacoco-report@v1.2
         with:
           title: Jacoco Coverage Report
           paths: ${{ github.workspace }}/build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 85
-
-      - name: Selective build
-        if: github.event_name == 'pull_request' && steps.impacted.outputs.full_run != 'true' && steps.impacted.outputs.skip_run != 'true'
-        run: ./gradlew ${{ steps.impacted.outputs.assemble_tasks }}
 
       - name: Selective test
         if: github.event_name == 'pull_request' && steps.impacted.outputs.full_run != 'true' && steps.impacted.outputs.skip_run != 'true'

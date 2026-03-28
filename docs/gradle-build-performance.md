@@ -39,6 +39,9 @@ between parallel tasks.
     - Creates `integrationTest` suites only for modules that actually contain `src/integrationTest`.
 - `gradle.properties`
     - Enables `org.gradle.parallel=true`.
+    - Enables `org.gradle.caching=true`.
+    - Keeps configuration cache disabled until `buildlogic.testcontainers-support` stops
+      registering a `Gradle.buildFinished` listener that Gradle 9 configuration cache rejects.
     - CI-focused application builds keep `bootJar` and disable distribution archive tasks such as
       `bootDistZip`, `distTar`, and `startScripts`.
 
