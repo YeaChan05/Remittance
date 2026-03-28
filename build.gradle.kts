@@ -1,3 +1,4 @@
+
 import com.linecorp.support.project.multi.recipe.configureByTypeExpression
 import com.linecorp.support.project.multi.recipe.configureByTypeHaving
 import com.linecorp.support.project.multi.recipe.configureByTypePrefix
@@ -8,6 +9,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.plugin.SpringBootPlugin
 import org.springframework.boot.gradle.tasks.bundling.BootJar
+import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
     idea
@@ -177,7 +179,12 @@ configureByTypeHaving("boot", "application") {
         implementation("io.micrometer:micrometer-tracing-bridge-otel")
         implementation("org.springframework.boot:spring-boot-starter-actuator")
         developmentOnly(enforcedPlatform(SpringBootPlugin.BOM_COORDINATES))
+        developmentOnly(enforcedPlatform("org.testcontainers:testcontainers-bom:${rootProject.libs.versions.testcontainers.get()}"))
         developmentOnly("org.springframework.boot:spring-boot-docker-compose")
+    }
+
+    tasks.withType<BootRun>().configureEach {
+        workingDir = rootProject.projectDir
     }
 }
 

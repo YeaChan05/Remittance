@@ -145,14 +145,8 @@ resolve_touched_projects() {
         continue
         ;;
       aggregate/*)
-        for project in "${projects[@]}"; do
-          case "$project" in
-            :aggregate|:account:*|:transfer:*|:member:*)
-              touched_projects["$project"]=1
-              ;;
-          esac
-        done
-        touch_reasons["$normalized -> aggregate application group"]=1
+        touched_projects[":aggregate"]=1
+        touch_reasons["$normalized -> :aggregate"]=1
         continue
         ;;
       docs/*|.codex/*|.omx/*)

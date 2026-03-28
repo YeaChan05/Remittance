@@ -25,6 +25,15 @@
 
 ## 실행 방법
 
-- `./gradlew :aggregate:bootRun`
-- Docker Compose 파일은 `aggregate/src/main/resources/docker-compose.yml`에 있습니다.
-- aggregate 모듈은 여러 도메인을 한 곳에 묶어 실행하는 통합 실행용 모듈입니다.
+- 전체 조합 로컬 실행: `./gradlew :aggregate:bootRun`
+- 회원 도메인 로컬 실행: `./gradlew :member:application:bootRun`
+- 계좌 도메인 로컬 실행: `./gradlew :account:application:bootRun`
+- 송금 도메인 로컬 실행: `./gradlew :transfer:application:bootRun`
+- 로컬 공용 RabbitMQ는 루트 [compose.yml](/Users/shinyechan/IdeaProjects/remittance/compose.yml)을 Spring Docker Compose support로 공유한다.
+- `bootRun`은 루트 working directory에서 공용 RabbitMQ를 재사용하며, lifecycle은 `start-only`로 동작한다.
+
+## 애플리케이션 모듈
+
+- `aggregate`는 여러 도메인을 한 번에 띄워 보는 로컬 조립용 runnable application입니다.
+- 정규 API 통합 테스트는 `member:application`, `account:application`, `transfer:application`이 각각 소유합니다.
+- 로그인과 회원 인증 책임은 `member` 도메인이 소유합니다.

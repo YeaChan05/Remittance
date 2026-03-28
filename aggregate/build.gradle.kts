@@ -1,11 +1,3 @@
-testcontainers {
-    bom("org.testcontainers:testcontainers-bom:${libs.versions.testcontainers.get()}")
-    task("integrationTest") {
-        use("mysql")
-        use("rabbitmq")
-    }
-}
-
 dependencies {
     implementation(project(":common:security"))
 
@@ -25,22 +17,10 @@ dependencies {
     implementation(project(":member:repository-jpa"))
     implementation(project(":member:schema"))
     implementation("org.springframework.boot:spring-boot-starter-liquibase")
-
-    integrationTestImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
-    integrationTestImplementation(testFixtures(project(":common:application-api")))
-    integrationTestImplementation(project(":account:model"))
-    integrationTestImplementation(project(":account:schema"))
-    integrationTestImplementation(project(":member:model"))
-    integrationTestImplementation(project(":member:schema"))
-    integrationTestImplementation(project(":transfer:model"))
-    integrationTestImplementation(project(":transfer:schema"))
-    integrationTestImplementation(project(":transfer:infrastructure"))
+    developmentOnly("org.testcontainers:testcontainers-jdbc")
+    developmentOnly("org.testcontainers:testcontainers-mysql")
 
     runtimeOnly("com.mysql:mysql-connector-j") {
-        exclude(group = "com.google.protobuf", module = "protobuf-java")
-    }
-
-    integrationTestRuntimeOnly("com.mysql:mysql-connector-j") {
         exclude(group = "com.google.protobuf", module = "protobuf-java")
     }
 }

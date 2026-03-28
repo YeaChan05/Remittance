@@ -168,13 +168,14 @@ dependencies {
 
 ---
 
-### 3.3 application-{type} (Execution / Assembly)
+### 3.3 application (Execution / Assembly)
 
 - 책임
 
     - 실행 가능한 애플리케이션
     - Bean 조립, AutoConfiguration
     - 통합 테스트 환경 구성
+    - 도메인별 API 통합 테스트 소유
 - 의존 가능
 
     - `common:security`
@@ -194,7 +195,8 @@ dependencies {
 }
 ```
 
-현재는 aggregate 모듈이 유일하게 application 모듈의 역할을 한다
+현재는 `member:application`, `account:application`, `transfer:application`이 각 도메인 application 역할을 가진다.
+`aggregate`는 전체 조합을 로컬에서 띄워 보기 위한 runnable application으로만 둔다.
 ---
 
 ## 4. 의존성 Diagram (Mermaid)

@@ -9,7 +9,7 @@
 * 다른 도메인과의 내부 연결은 `service -> own infrastructure -> provider:api-internal.internal.contract` 경로만
   허용한다.
 * 인증/인가 책임은 역할별로 분리한다.
-    * 로그인/토큰 발급: `auth:service`
+    * 로그인/토큰 발급: `member:service`
     * 자격 검증: `member:service` + `member:api-internal`
     * 토큰 검증/필터: `common:security`
 * 예외: 암호화/토큰 관련 로직은 `common:security`를 통해 `service`에서도 사용할 수 있다.
@@ -56,10 +56,12 @@
 ### 2.4 Assembly
 
 * 여러 도메인을 조합해 실행하는 모듈이다.
+* 도메인별 runnable application도 Assembly에 포함한다.
 
 대상 모듈
 
 * `aggregate`
+* `{domain}:application`
 
 ---
 
@@ -76,6 +78,13 @@
  ├── repository-{type}
  ├── schema
  └── mq-{type}
+```
+
+애플리케이션 모듈이 필요한 도메인은 아래를 추가한다.
+
+```text
+{domain}
+ └── application
 ```
 
 * `repository-{type}`: 현재 `jpa` 사용
@@ -213,6 +222,8 @@ Spring bean / 설정 규칙
 
 * 실행 가능한 애플리케이션 모듈.
 * 각 adapter들의 Bean을 조립하기 위해 auto-configuration 의존을 둔다.
+* 현재는 로컬에서 전체 도메인을 함께 띄워 보는 조립용 런타임 역할만 가진다.
+* 정규 API 통합 테스트의 소유자는 각 도메인 `application` 모듈이다.
 
 의존(일반)
 
@@ -295,15 +306,7 @@ Spring bean / 설정 규칙
 
 ## 9. 인증/인가 모듈 의존 예시
 
-### 9.1 auth
-
-* `auth:service`
-    - 의존: `auth:exception`, `auth:infrastructure`, `common:security`
-* `auth:infrastructure`
-    - 의존: `member:api-internal`
-    - 사용 패키지: `member.internal.contract`
-
-### 9.2 member (내부 인증 제공)
+### 9.1 member (로그인 + 내부 인증 제공)
 
 * `member:service`
     - 의존: `member:model`, `member:infrastructure`, `member:exception`
@@ -311,7 +314,7 @@ Spring bean / 설정 규칙
     - 의존: `member:service`
     - 패키지: `internal.contract`, `internal.adapter`
 
-### 9.3 transfer (consumer-side internal client)
+### 9.2 transfer (consumer-side internal client)
 
 * `transfer:service`
     - 의존: `transfer:model`, `transfer:infrastructure`, `transfer:exception`

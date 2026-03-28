@@ -3,12 +3,13 @@ spring:
     exclude: org.springframework.boot.security.autoconfigure.actuate.web.servlet.ManagementWebSecurityAutoConfiguration
   docker:
     compose:
-      file: classpath:docker-compose.yml
-      lifecycle-management: start-and-stop
+      enabled: true
+      lifecycle-management: start-only
   datasource:
-    url: jdbc:mysql://localhost:3306/aggregate?useInformationSchema=true
+    url: jdbc:tc:mysql:8.4.8:///aggregate?TC_DAEMON=true&user=root&password=test&useInformationSchema=true
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
     username: root
-    password: root
+    password: test
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
@@ -19,11 +20,6 @@ spring:
     url: ${spring.datasource.url}
     user: ${spring.datasource.username}
     password: ${spring.datasource.password}
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
 springdoc:
   api-docs:
     path: /v3/api-docs
