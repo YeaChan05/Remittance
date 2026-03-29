@@ -1,154 +1,176 @@
-# Gradle Build Performance: Shared Containers for Parallel Integration Tests
+# Gradle 빌드 성능 문서
 
-## 1. Goal
+## 1. 목적
 
-Reduce `integrationTest` wall-clock time while keeping integration tests inside `build` and `check`.
+이 문서는 현재 레포의 Gradle 통합 테스트가 어떤 단위로 병렬화되고, Testcontainers를 어떤 생명주기로 공유하는지 설명한다.
 
-- Integration tests remain part of `check`.
-- Major integration test tasks should run in parallel.
-- Docker is required. If Docker is unavailable, integration tests and any `build` that includes them
-  fail immediately.
-- Test state must stay isolated even when containers are shared.
+- `integrationTest`는 여전히 `check`, `build`에 포함된다.
+- 도메인 간 task는 병렬로 실행한다.
+- 같은 도메인 안의 `integrationTest`는 `repository-jpa -> application` 순서로 직렬 실행한다.
+- 같은 도메인의 `integrationTest`가 진행되는 동안에는 도메인 stack 단위로 컨테이너를 공유한다.
+- 해당 도메인의 마지막 `integrationTest`가 끝나면 컨테이너를 즉시 정리한다.
 
-The current parallelization target is:
+## 2. 현재 적용 대상
 
-- `:account:repository-jpa:integrationTest`
-- `:member:repository-jpa:integrationTest`
-- `:transfer:repository-jpa:integrationTest`
-- `:aggregate:integrationTest`
+루트 [build.gradle.kts](/Users/shinyechan/IdeaProjects/Remittance/build.gradle.kts) 는 `src/integrationTest`가 있는 모듈에만 `integrationTest` 스위트를 생성한다.
 
-## 2. Design Summary
+현재 대상:
 
-The previous task-scoped container model is replaced with build-wide shared containers.
+- `account:repository-jpa`
+- `account:application`
+- `member:repository-jpa`
+- `member:application`
+- `transfer:repository-jpa`
+- `transfer:application`
 
-- One shared MySQL container is created per Gradle invocation.
-- One shared RabbitMQ container is created per Gradle invocation.
-- MySQL state isolation is handled by creating a dedicated database for each integration test task.
-- RabbitMQ currently serves only `:aggregate:integrationTest`, so it uses the default vhost.
-- Tasks still receive connection information through Gradle-provided system properties.
+`aggregate`는 현재 `src/integrationTest`가 없으므로 이 정책의 직접 대상이 아니다.
 
-This design keeps startup cost near one container boot per build while avoiding DB state sharing
-between parallel tasks.
+## 3. 도메인 stack 규칙
 
-## 3. Build Logic
+각 모듈은 자기 `integrationTest`에 사용할 shared container stack을 명시한다.
 
-### 3.1 Root Build
+- `account`
+  - `account:repository-jpa:integrationTest` -> `use("mysql")`
+  - `account:application:integrationTest` -> `use("mysql")`
+- `member`
+  - `member:repository-jpa:integrationTest` -> `use("mysql")`
+  - `member:application:integrationTest` -> `use("mysql")`
+- `transfer`
+  - `transfer:repository-jpa:integrationTest` -> `use("mysql")`
+  - `transfer:application:integrationTest` -> `use("mysql")`, `use("rabbitmq")`
 
-- `build.gradle.kts`
-    - Applies the root `buildlogic.testcontainers-support` plugin.
-    - Creates `integrationTest` suites only for modules that actually contain `src/integrationTest`.
-- `gradle.properties`
-    - Enables `org.gradle.parallel=true`.
-    - Enables `org.gradle.caching=true`.
-    - Keeps configuration cache disabled until `buildlogic.testcontainers-support` stops
-      registering a `Gradle.buildFinished` listener that Gradle 9 configuration cache rejects.
-    - CI-focused application builds keep `bootJar` and disable distribution archive tasks such as
-      `bootDistZip`, `distTar`, and `startScripts`.
+stack key는 도메인명과 동일하다.
 
-### 3.2 Shared Environment Services
-
-- `TestcontainersPlugin`
-    - Exposes a `testcontainers` DSL to each project.
-    - Wires only the declared `Test` tasks from each module's `build.gradle.kts`.
-    - Delegates task-specific provider resolution and runtime wiring to `TaskContainerBinder`.
-    - Registers one shared container service for the whole build.
-
-- `SharedContainerService`
-    - Verifies Docker availability once for the build and fails immediately when Docker is
-      unavailable.
-    - Lazily starts one shared runtime per declared provider key.
-    - Caches runtimes by provider key and Testcontainers runtime coordinates.
-
-- `MySqlSharedContainerProvider`
-    - Lazily starts one shared MySQL container.
-    - Creates a dedicated database for each task path, for example:
-        - `account_repository_jpa_integration_test`
-        - `member_repository_jpa_integration_test`
-        - `transfer_repository_jpa_integration_test`
-        - `aggregate_integration_test`
-    - Injects `spring.datasource.*` values that point at the task-specific database.
-
-- `RabbitMqSharedContainerProvider`
-    - Lazily starts one shared RabbitMQ container.
-    - Injects host, port, username, and password for `:aggregate:integrationTest`.
-
-## 4. Test Wiring
-
-Tests do not create containers directly. They bind only to Spring properties.
-
-- Each module opts in from its own `build.gradle.kts`, for example:
+예:
 
 ```kotlin
 testcontainers {
+    bom("org.testcontainers:testcontainers-bom:${libs.versions.testcontainers.get()}")
     task("integrationTest") {
+        stack("member")
         use("mysql")
     }
 }
 ```
 
-```kotlin
-testcontainers {
-    task("integrationTest") {
-        use("mysql")
-        use("rabbitmq")
-    }
-}
+## 4. 컨테이너 공유 방식
+
+### 4.1 MySQL
+
+MySQL은 이제 task별 `jdbc:tc:` 컨테이너를 직접 띄우지 않고, 도메인 stack당 1개 shared container를 사용한다.
+
+- provider: [build-logic/src/main/kotlin/org/yechan/remittance/buildlogic/MySqlSharedContainerProvider.kt](/Users/shinyechan/IdeaProjects/Remittance/build-logic/src/main/kotlin/org/yechan/remittance/buildlogic/MySqlSharedContainerProvider.kt)
+- registry: [build-logic/src/main/kotlin/org/yechan/remittance/buildlogic/SharedContainerContracts.kt](/Users/shinyechan/IdeaProjects/Remittance/build-logic/src/main/kotlin/org/yechan/remittance/buildlogic/SharedContainerContracts.kt)
+
+다만 DB state는 task 간에 공유하지 않는다.
+
+- 컨테이너는 도메인당 1개
+- 데이터베이스는 task path 기준으로 분리
+
+예:
+
+- `member_repository_jpa_integrationtest`
+- `member_application_integrationtest`
+
+테스트 task에는 다음 system property를 주입한다.
+
+- `spring.datasource.url`
+- `spring.datasource.username`
+- `spring.datasource.password`
+- `spring.datasource.driver-class-name`
+
+기존 `application.yml`의 `jdbc:tc:mysql:...` 값은 fallback으로 남아 있다. shared stack 경로에서는 Gradle이 주입한 system property가 우선 적용된다.
+
+### 4.2 RabbitMQ
+
+RabbitMQ는 `transfer` 도메인 stack에서만 공유한다.
+
+- provider: [build-logic/src/main/kotlin/org/yechan/remittance/buildlogic/RabbitMqSharedContainerProvider.kt](/Users/shinyechan/IdeaProjects/Remittance/build-logic/src/main/kotlin/org/yechan/remittance/buildlogic/RabbitMqSharedContainerProvider.kt)
+- `transfer:application:integrationTest`는 `mysql`, `rabbitmq`를 모두 사용한다.
+
+이 구조 덕분에 `transfer` 도메인은 같은 stack lifetime 안에서 MySQL과 RabbitMQ를 함께 재사용한다.
+
+## 5. 실행 순서
+
+도메인 내부 ordering은 build logic가 중앙에서 구성한다.
+
+- 같은 stack에 `repository-jpa:integrationTest`와 `application:integrationTest`가 모두 있으면
+- `application:integrationTest.mustRunAfter(repository-jpa:integrationTest)`를 적용한다.
+- `dependsOn`은 사용하지 않는다.
+
+즉, 단독 실행은 그대로 가능하다.
+
+- `:member:application:integrationTest`만 실행 가능
+- `:member:repository-jpa:integrationTest`만 실행 가능
+
+하지만 둘 다 graph에 들어오면 순서는 항상 아래와 같다.
+
+```text
+member:repository-jpa:integrationTest
+member:application:integrationTest
 ```
 
-- Repository integration tests rely on their existing Liquibase changelogs.
-- Aggregate integration tests keep using `IntegrationTestEnvironmentSetup` with
-  `@DynamicPropertySource`.
-- `IntegrationTestEnvironmentSystemProperties` still requires Gradle-provided system properties and
-  fails immediately when they are missing.
+## 6. stack lifecycle
 
-Because each integration test task gets its own MySQL database, Liquibase lock tables and change
-history stay isolated across parallel tasks.
+shared runtime의 생명주기는 build 전체가 아니라 stack 기준으로 관리한다.
 
-## 5. Execution Flow
+- 실행 graph가 준비되면 stack별 selected `integrationTest` task 목록을 계산한다.
+- stack의 첫 task가 시작될 때 필요한 provider runtime을 lazy start 한다.
+- 각 task가 끝날 때 stack 진행 상태를 기록한다.
+- 마지막 selected task가 끝나면 해당 stack의 runtime을 즉시 close 한다.
+- `buildFinished` close는 비정상 종료 시 안전망으로만 남긴다.
+
+관련 구현:
+
+- [build-logic/src/main/kotlin/org/yechan/remittance/buildlogic/TestcontainersPlugin.kt](/Users/shinyechan/IdeaProjects/Remittance/build-logic/src/main/kotlin/org/yechan/remittance/buildlogic/TestcontainersPlugin.kt)
+- [build-logic/src/main/kotlin/org/yechan/remittance/buildlogic/TaskContainerBinder.kt](/Users/shinyechan/IdeaProjects/Remittance/build-logic/src/main/kotlin/org/yechan/remittance/buildlogic/TaskContainerBinder.kt)
+- [build-logic/src/main/kotlin/org/yechan/remittance/buildlogic/SharedContainerService.kt](/Users/shinyechan/IdeaProjects/Remittance/build-logic/src/main/kotlin/org/yechan/remittance/buildlogic/SharedContainerService.kt)
+
+## 7. 실행 흐름
 
 ```mermaid
 flowchart TD
-    A["./gradlew integrationTest / build"] --> B["Apply root integration test plugin"]
-    B --> C["Identify target integrationTest tasks"]
-    C --> D["Register shared MySQL service"]
-    C --> E["Register shared RabbitMQ service"]
-    D --> F["Task doFirst"]
-    E --> F
-    F --> G["Verify Docker availability"]
-    G -->|Unavailable| H["Fail immediately"]
-    G -->|Available| I["Start shared MySQL lazily"]
-    I --> J["Create task-specific database"]
-    J --> K["Inject spring.datasource.*"]
-    F -->|aggregate only| L["Start shared RabbitMQ lazily"]
-    L --> M["Inject spring.rabbitmq.*"]
-    K --> N["Spring Boot + Liquibase startup"]
-    M --> N
-    N --> O["Run tests"]
+    A["./gradlew build 또는 integrationTest"] --> B["integrationTest graph 계산"]
+    B --> C["stack별 selected task 목록 결정"]
+    C --> D["같은 stack에서는 repository-jpa -> application 순서 적용"]
+    D --> E["첫 task doFirst에서 shared runtime lazy start"]
+    E --> F["MySQL은 stack당 1개 container 생성"]
+    E --> G["transfer는 RabbitMQ도 stack lifetime으로 공유"]
+    F --> H["task별 datasource system property 주입"]
+    G --> I["spring.rabbitmq.* system property 주입"]
+    H --> J["task 종료 시 stack 진행 상태 기록"]
+    I --> J
+    J --> K["마지막 selected task 종료"]
+    K --> L["stack runtime 즉시 close"]
 ```
 
-## 6. Expected Tradeoffs
+## 8. 트레이드오프
 
-### Benefits
+### 장점
 
-- Container startup cost is paid once per Gradle invocation instead of once per task.
-- Parallel execution becomes more effective in CI cold-start environments.
-- DB state remains isolated because each task uses its own database.
+- 도메인 간 병렬성은 유지한다.
+- 같은 도메인 안에서는 컨테이너 기동 비용을 한 번만 지불한다.
+- task별 DB 분리로 `repository-jpa`와 `application` 사이의 상태 오염을 막는다.
+- `transfer`는 MySQL과 RabbitMQ를 같은 stack lifetime으로 재사용할 수 있다.
 
-### Tradeoffs
+### 한계
 
-- Multiple tasks still compete for the same MySQL and RabbitMQ container resources.
-- `:aggregate:integrationTest` remains relatively expensive because it boots several Spring
-  contexts.
-- Docker is mandatory for local and CI execution paths that include integration tests.
+- 현재 ordering 규칙은 `repository-jpa`와 `application` 두 종류의 `integrationTest`만 전제로 한다.
+- `buildFinished`와 task graph listener 기반 구현이라 Gradle의 최신 configuration cache 친화적 구조는 아니다.
+- `aggregate`에 `integrationTest`가 추가되면 같은 규칙을 적용할지 별도 판단이 필요하다.
 
-## 7. Verification Commands
+## 9. 검증 명령
 
-Use the following commands to validate both correctness and performance:
+권장 명령:
 
 ```bash
-./gradlew --parallel integrationTest --rerun-tasks
-./gradlew --parallel build --rerun-tasks --profile
-./gradlew build jacocoRootReport
+./gradlew -p build-logic test
+JAVA_HOME=$(/usr/libexec/java_home -v 25) ./gradlew --parallel :member:repository-jpa:integrationTest :member:application:integrationTest --dry-run
+JAVA_HOME=$(/usr/libexec/java_home -v 25) ./gradlew --parallel :member:repository-jpa:integrationTest :member:application:integrationTest --rerun-tasks
+JAVA_HOME=$(/usr/libexec/java_home -v 25) ./gradlew :transfer:application:integrationTest --rerun-tasks
 ```
 
-Profile reports are generated under `build/reports/profile/`.
+참고:
+
+- 현재 기본 `java`가 JDK 26이면 Gradle script parsing 단계에서 `Unsupported class file major version 70`가 발생할 수 있다.
+- 로컬 검증은 JDK 24 또는 25로 `JAVA_HOME`을 내려 실행하는 것이 안전하다.
