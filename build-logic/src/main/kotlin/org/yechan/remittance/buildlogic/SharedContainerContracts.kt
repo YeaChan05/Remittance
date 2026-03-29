@@ -28,6 +28,7 @@ internal interface SharedContainerRuntime : AutoCloseable {
 
 internal object SharedContainerRegistry {
     private val providers = listOf(
+        MySqlSharedContainerProvider,
         RabbitMqSharedContainerProvider,
     ).associateBy(SharedContainerProvider::key)
 

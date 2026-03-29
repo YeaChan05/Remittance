@@ -17,6 +17,7 @@ abstract class SharedContainerService :
     BuildService<BuildServiceParameters.None>,
     AutoCloseable {
     private val runtimes = ConcurrentHashMap<SharedContainerRuntimeKey, SharedContainerRuntime>()
+    private val stackTracker = SharedContainerStackTracker()
     private val dockerReadyInitialized = AtomicBoolean(false)
     private val dockerReady = AtomicBoolean(false)
     private val closed = AtomicBoolean(false)
@@ -46,6 +47,32 @@ abstract class SharedContainerService :
         provider: SharedContainerProvider,
     ) {
         runtime(project, stackKey, coordinates, provider).applyTo(target, project, taskPath)
+    }
+
+    internal fun registerExecutionPlan(
+        stackKey: String,
+        taskPaths: Set<String>,
+    ) {
+        if (taskPaths.isEmpty()) {
+            return
+        }
+
+        synchronized(this) {
+            stackTracker.register(stackKey, taskPaths)
+        }
+    }
+
+    internal fun release(
+        stackKey: String,
+        taskPath: String,
+    ) {
+        val shouldClose = synchronized(this) {
+            stackTracker.release(stackKey, taskPath)
+        }
+
+        if (shouldClose) {
+            closeStack(stackKey)
+        }
     }
 
     private fun isDockerReady(): Boolean {
@@ -91,6 +118,14 @@ abstract class SharedContainerService :
         }
     }
 
+    private fun closeStack(stackKey: String) {
+        runtimes.keys
+            .filter { it.stackKey == stackKey }
+            .forEach { key ->
+                runtimes.remove(key)?.close()
+            }
+    }
+
     override fun close() {
         if (!closed.compareAndSet(false, true)) {
             return
@@ -105,4 +140,40 @@ abstract class SharedContainerStackLockService :
     BuildService<BuildServiceParameters.None>,
     AutoCloseable {
     override fun close() = Unit
+}
+
+internal class SharedContainerStackTracker {
+    private val expectedTaskPathsByStack = linkedMapOf<String, Set<String>>()
+    private val completedTaskPathsByStack = linkedMapOf<String, MutableSet<String>>()
+
+    fun register(
+        stackKey: String,
+        taskPaths: Set<String>,
+    ) {
+        expectedTaskPathsByStack[stackKey] = taskPaths.toSet()
+        completedTaskPathsByStack.remove(stackKey)
+    }
+
+    fun release(
+        stackKey: String,
+        taskPath: String,
+    ): Boolean {
+        val expectedTaskPaths = expectedTaskPathsByStack[stackKey] ?: return false
+        if (taskPath !in expectedTaskPaths) {
+            return false
+        }
+
+        val completedTaskPaths = completedTaskPathsByStack.getOrPut(stackKey) {
+            linkedSetOf()
+        }
+        completedTaskPaths += taskPath
+
+        if (!completedTaskPaths.containsAll(expectedTaskPaths)) {
+            return false
+        }
+
+        expectedTaskPathsByStack.remove(stackKey)
+        completedTaskPathsByStack.remove(stackKey)
+        return true
+    }
 }

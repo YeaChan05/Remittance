@@ -1,3 +1,11 @@
+testcontainers {
+    bom("org.testcontainers:testcontainers-bom:${libs.versions.testcontainers.get()}")
+    task("integrationTest") {
+        stack("account")
+        use("mysql")
+    }
+}
+
 dependencies {
     implementation(project(":common:security"))
     implementation(project(":account:api"))

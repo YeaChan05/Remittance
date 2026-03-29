@@ -1,8 +1,13 @@
 package org.yechan.remittance.buildlogic
 
+import org.gradle.api.Action
+import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.execution.TaskExecutionGraph
+import org.gradle.api.tasks.TaskProvider
+import java.util.concurrent.ConcurrentHashMap
 
 @Suppress("unused")
 class TestcontainersPlugin : Plugin<Project> {
@@ -15,9 +20,44 @@ class TestcontainersPlugin : Plugin<Project> {
             "sharedContainerBuildService",
             SharedContainerService::class.java,
         ) {}
+        val taskProvidersByPath = linkedMapOf<String, TaskProvider<Task>>()
+        val releaseTaskProvidersByPath = linkedMapOf<String, TaskProvider<DefaultTask>>()
+        val taskRegistrations = linkedMapOf<String, SharedContainerTaskRegistration>()
+        val selectedTaskPathsByStack = ConcurrentHashMap<String, Set<String>>()
 
         project.gradle.buildFinished {
             sharedContainerService.orNull?.close()
+        }
+        project.gradle.taskGraph.whenReady(
+            object : Action<TaskExecutionGraph> {
+                override fun execute(taskGraph: TaskExecutionGraph) {
+                    taskRegistrations.values
+                        .groupBy(SharedContainerTaskRegistration::stackKey)
+                        .forEach { (stackKey, registrations) ->
+                            val selectedTaskPaths = registrations
+                                .map(SharedContainerTaskRegistration::taskPath)
+                                .filter(taskGraph::hasTask)
+                                .toSet()
+
+                            if (selectedTaskPaths.isEmpty()) {
+                                return@forEach
+                            }
+
+                            selectedTaskPathsByStack[stackKey] = selectedTaskPaths
+                            sharedContainerService.get().registerExecutionPlan(stackKey, selectedTaskPaths)
+                        }
+                }
+            },
+        )
+        project.gradle.projectsEvaluated {
+            repositoryBeforeApplicationPairs(taskRegistrations.values).forEach { (repositoryTaskPath, applicationTaskPath) ->
+                val repositoryTask = taskProvidersByPath[repositoryTaskPath] ?: return@forEach
+                val repositoryReleaseTask = releaseTaskProvidersByPath[repositoryTaskPath] ?: return@forEach
+                val applicationTask = taskProvidersByPath[applicationTaskPath] ?: return@forEach
+                applicationTask.configure {
+                    mustRunAfter(repositoryTask, repositoryReleaseTask)
+                }
+            }
         }
 
         project.allprojects {
@@ -32,11 +72,32 @@ class TestcontainersPlugin : Plugin<Project> {
 
                     val taskProvider = tasks.named(taskSpec.name, Task::class.java)
                     val stackKey = resolveStackKey(currentProject, taskSpec)
+                    val taskRegistration = SharedContainerTaskRegistration(
+                        projectPath = currentProject.path,
+                        taskName = taskSpec.name,
+                        stackKey = stackKey,
+                    )
                     val stackLockService = project.gradle.sharedServices.registerIfAbsent(
                         "sharedContainerStackLockService-$stackKey",
                         SharedContainerStackLockService::class.java,
                     ) {
                         maxParallelUsages.set(1)
+                    }
+                    val releaseTaskProvider = tasks.register(
+                        "${taskSpec.name}ReleaseSharedContainers",
+                        DefaultTask::class.java,
+                    ) {
+                        usesService(sharedContainerService)
+                        usesService(stackLockService)
+                        doLast {
+                            sharedContainerService.get().release(stackKey, taskRegistration.taskPath)
+                        }
+                    }
+                    taskProvidersByPath[taskRegistration.taskPath] = taskProvider
+                    releaseTaskProvidersByPath[taskRegistration.taskPath] = releaseTaskProvider
+                    taskRegistrations[taskRegistration.taskPath] = taskRegistration
+                    taskProvider.configure {
+                        finalizedBy(releaseTaskProvider)
                     }
                     TaskContainerBinder(
                         taskProvider = taskProvider,
@@ -58,3 +119,35 @@ class TestcontainersPlugin : Plugin<Project> {
         ?: project.findProperty("testcontainers.stack")?.toString()?.trim()?.lowercase()
         ?: project.path.trimStart(':').replace(':', '-').lowercase()
 }
+
+internal data class SharedContainerTaskRegistration(
+    val projectPath: String,
+    val taskName: String,
+    val stackKey: String,
+) {
+    val taskPath: String = "$projectPath:$taskName"
+
+    fun isRepositoryIntegrationTest(): Boolean = projectPath.endsWith(":repository-jpa") && taskName == INTEGRATION_TEST
+
+    fun isApplicationIntegrationTest(): Boolean = projectPath.endsWith(":application") && taskName == INTEGRATION_TEST
+
+    private companion object {
+        private const val INTEGRATION_TEST = "integrationTest"
+    }
+}
+
+internal fun repositoryBeforeApplicationPairs(
+    taskRegistrations: Collection<SharedContainerTaskRegistration>,
+): List<Pair<String, String>> = taskRegistrations
+    .groupBy(SharedContainerTaskRegistration::stackKey)
+    .values
+    .flatMap { registrations ->
+        val repositoryTasks = registrations.filter(SharedContainerTaskRegistration::isRepositoryIntegrationTest)
+        val applicationTasks = registrations.filter(SharedContainerTaskRegistration::isApplicationIntegrationTest)
+
+        applicationTasks.flatMap { applicationTask ->
+            repositoryTasks.map { repositoryTask ->
+                repositoryTask.taskPath to applicationTask.taskPath
+            }
+        }
+    }

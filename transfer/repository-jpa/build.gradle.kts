@@ -1,5 +1,9 @@
 testcontainers {
     bom("org.testcontainers:testcontainers-bom:${libs.versions.testcontainers.get()}")
+    task("integrationTest") {
+        stack("transfer")
+        use("mysql")
+    }
 }
 
 dependencies {
