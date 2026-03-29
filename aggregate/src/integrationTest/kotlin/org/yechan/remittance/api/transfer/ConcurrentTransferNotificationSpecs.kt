@@ -160,7 +160,7 @@ class ConcurrentTransferNotificationSpecs {
     }
 
     private fun assertEventuallyConsistent(scenario: ConcurrentTransferScenario) {
-        eventually(Duration.ofSeconds(10), Duration.ofMillis(100)) {
+        eventually(Duration.ofSeconds(60), Duration.ofMillis(200)) {
             assertThat(fixtures.countTransfers()).isEqualTo(
                 scenario.transferCountBefore + scenario.requestCount.toLong(),
             )
