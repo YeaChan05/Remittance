@@ -21,7 +21,10 @@ class IdempotencyKeyBeanRegistrarTest {
                     mapOf("transfer.idempotency-key.expires-in" to "PT5M"),
                 ),
             )
-            beanFactory.registerSingleton("idempotencyKeyRepository", mock(IdempotencyKeyRepository::class.java))
+            beanFactory.registerSingleton(
+                "idempotencyKeyRepository",
+                mock(IdempotencyKeyRepository::class.java),
+            )
             beanFactory.registerSingleton(
                 "clock",
                 Clock.fixed(Instant.parse("2026-01-01T00:00:00Z"), ZoneOffset.UTC),
@@ -30,7 +33,9 @@ class IdempotencyKeyBeanRegistrarTest {
             refresh()
         }
 
-        assertThat(context.getBean(IdempotencyKeyCreateUseCase::class.java)).isInstanceOf(IdempotencyKeyService::class.java)
+        assertThat(context.getBean(IdempotencyKeyCreateUseCase::class.java)).isInstanceOf(
+            IdempotencyKeyService::class.java,
+        )
 
         context.close()
     }

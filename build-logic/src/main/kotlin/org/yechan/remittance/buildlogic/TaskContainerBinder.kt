@@ -1,8 +1,8 @@
 package org.yechan.remittance.buildlogic
 
+import org.gradle.api.Task
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
-import org.gradle.api.Task
 import org.gradle.process.JavaForkOptions
 
 internal class TaskContainerBinder(

@@ -30,7 +30,8 @@
 - 계좌 도메인 로컬 실행: `./gradlew :account:application:bootRun`
 - 송금 도메인 로컬 실행: `./gradlew :transfer:application:bootRun`
 - 로컬 공용 RabbitMQ는 루트 [compose.yml](/compose.yml)을 Spring Docker Compose support로 띄운다.
-- `aggregate`, `account:application`, `transfer:application`의 `bootRun`은 lifecycle을 `start-and-stop`으로 사용하므로, 애플리케이션이 종료되면 RabbitMQ도 함께 멈춘다.
+- `aggregate`, `account:application`, `transfer:application`의 `bootRun`은 lifecycle을 `start-and-stop`
+  으로 사용하므로, 애플리케이션이 종료되면 RabbitMQ도 함께 멈춘다.
 
 ## 애플리케이션 모듈
 

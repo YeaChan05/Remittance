@@ -17,8 +17,8 @@ description: Keep new or modified Remittance code aligned with the repo's naming
 
 - 스타일 기준 문서: [docs/rule/code_convention.md](../../../docs/rule/code_convention.md)
 - 모듈/의존 규칙이 이름과 배치에 영향을 줄 때:
-  - [docs/rule/module.md](../../../docs/rule/module.md)
-  - [docs/rule/dependencies.md](../../../docs/rule/dependencies.md)
+    - [docs/rule/module.md](../../../docs/rule/module.md)
+    - [docs/rule/dependencies.md](../../../docs/rule/dependencies.md)
 
 ## 수행 규칙
 

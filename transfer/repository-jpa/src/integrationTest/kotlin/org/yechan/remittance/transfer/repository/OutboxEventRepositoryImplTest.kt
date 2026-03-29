@@ -33,7 +33,8 @@ class OutboxEventRepositoryImplTest @Autowired constructor(
 
     @Test
     fun `save는 props를 entity로 변환해 저장한다`() {
-        val saved = repository.save(TestOutboxEventProps(OutboxEventProps.OutboxEventStatusValue.NEW))
+        val saved =
+            repository.save(TestOutboxEventProps(OutboxEventProps.OutboxEventStatusValue.NEW))
         flushClear()
 
         val found = entityManager.find(OutboxEventEntity::class.java, requireNotNull(saved.eventId))

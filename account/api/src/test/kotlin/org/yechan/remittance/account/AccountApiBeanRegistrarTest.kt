@@ -11,8 +11,14 @@ class AccountApiBeanRegistrarTest {
     @Test
     fun `자동 설정은 account api 관련 빈을 등록한다`() {
         val context = AnnotationConfigApplicationContext().apply {
-            beanFactory.registerSingleton("accountCreateUseCase", mock(AccountCreateUseCase::class.java))
-            beanFactory.registerSingleton("accountDeleteUseCase", mock(AccountDeleteUseCase::class.java))
+            beanFactory.registerSingleton(
+                "accountCreateUseCase",
+                mock(AccountCreateUseCase::class.java),
+            )
+            beanFactory.registerSingleton(
+                "accountDeleteUseCase",
+                mock(AccountDeleteUseCase::class.java),
+            )
             register(TestConfiguration::class.java)
             refresh()
         }
@@ -20,7 +26,9 @@ class AccountApiBeanRegistrarTest {
         assertThat(context.getBean(AccountController::class.java)).isNotNull
         assertThat(context.getBean(NotificationApiController::class.java)).isNotNull
         assertThat(context.getBean(NotificationSessionRegistry::class.java)).isNotNull
-        assertThat(context.getBean(NotificationPushPort::class.java)).isInstanceOf(NotificationPushAdapter::class.java)
+        assertThat(context.getBean(NotificationPushPort::class.java)).isInstanceOf(
+            NotificationPushAdapter::class.java,
+        )
 
         context.close()
     }

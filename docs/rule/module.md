@@ -191,8 +191,10 @@ Spring bean / 설정 규칙
 
 * controller import 전용 클래스는 `{Domain}ApiRegistrar` 이름을 사용한다.
 * api 모듈에서 `BeanRegistrarDsl` wiring이 필요하면 `{Domain}ApiBeanRegistrar`를 별도로 둔다.
-* `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`에는 실제로 로딩해야 하는 registrar / bean registrar 클래스를 모두 등록한다.
-* web 기술 타입(`SseEmitter` 등)을 다루는 helper는 api 모듈에 두되, `UseCase` 대신 `Handler` / `Registry` / `Adapter` 이름을 사용한다.
+* `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`에는 실제로 로딩해야 하는
+  registrar / bean registrar 클래스를 모두 등록한다.
+* web 기술 타입(`SseEmitter` 등)을 다루는 helper는 api 모듈에 두되, `UseCase` 대신 `Handler` / `Registry` / `Adapter`
+  이름을 사용한다.
 
 ---
 
@@ -241,7 +243,9 @@ Spring bean / 설정 규칙
 Spring bean / 설정 규칙
 
 * 실행 모듈에서 필요한 공통 bean(`Clock` 등)은 `BeanRegistrarDsl` 기반 registrar로 등록한다.
-* `repository-jpa` auto-configuration은 JPA ordering과 direct `@Import` 테스트 경로 때문에 `@Import({Domain}RepositoryBeanRegistrar::class)` + `@AutoConfiguration(before = [...])` 패턴을 예외로 유지한다.
+* `repository-jpa` auto-configuration은 JPA ordering과 direct `@Import` 테스트 경로 때문에
+  `@Import({Domain}RepositoryBeanRegistrar::class)` + `@AutoConfiguration(before = [...])` 패턴을 예외로
+  유지한다.
 
 ---
 

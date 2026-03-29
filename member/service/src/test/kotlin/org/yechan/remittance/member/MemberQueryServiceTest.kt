@@ -23,7 +23,8 @@ class MemberQueryServiceTest {
             override fun matches(password: String, encodedPassword: String): Boolean = true
         }
         val tokenGenerator = TokenGenerator { AuthTokenValue("access", "refresh", 3600L) }
-        val useCase: MemberQueryUseCase = MemberQueryService(memberRepository, passwordHashEncoder, tokenGenerator)
+        val useCase: MemberQueryUseCase =
+            MemberQueryService(memberRepository, passwordHashEncoder, tokenGenerator)
 
         val token = useCase.login(TestLoginProps())
 
@@ -47,7 +48,8 @@ class MemberQueryServiceTest {
             override fun matches(password: String, encodedPassword: String): Boolean = false
         }
         val tokenGenerator = TokenGenerator { AuthTokenValue("access", "refresh", 3600L) }
-        val useCase: MemberQueryUseCase = MemberQueryService(memberRepository, passwordHashEncoder, tokenGenerator)
+        val useCase: MemberQueryUseCase =
+            MemberQueryService(memberRepository, passwordHashEncoder, tokenGenerator)
 
         assertThatThrownBy { useCase.login(TestLoginProps()) }
             .isInstanceOf(MemberPermissionDeniedException::class.java)

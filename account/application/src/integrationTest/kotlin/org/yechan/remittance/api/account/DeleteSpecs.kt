@@ -15,7 +15,10 @@ import org.yechan.remittance.account.dto.AccountCreateRequest
 import org.yechan.remittance.account.dto.AccountCreateResponse
 import org.yechan.remittance.account.dto.AccountDeleteResponse
 
-@SpringBootTest(classes = [AccountApiApplication::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    classes = [AccountApiApplication::class],
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+)
 class DeleteSpecs {
     @Autowired
     lateinit var restTestClient: RestTestClient

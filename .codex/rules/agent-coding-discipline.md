@@ -11,10 +11,10 @@
 
 - 이 문서는 `Remittance` 레포에서 코드를 읽거나 수정하는 모든 agent/skill의 행동 규율이다.
 - 우선순위는 다음과 같다.
-  1. system / developer / user 지시
-  2. `AGENTS.md`
-  3. 이 문서
-  4. 개별 skill / agent 문서
+    1. system / developer / user 지시
+    2. `AGENTS.md`
+    3. 이 문서
+    4. 개별 skill / agent 문서
 - 개별 skill이나 agent가 이 문서보다 느슨한 규칙을 갖고 있으면 이 문서를 우선한다.
 - 개별 skill이나 agent가 더 엄격한 규칙을 갖고 있으면 더 엄격한 쪽을 우선한다.
 
@@ -114,7 +114,8 @@
 
 - controller import 전용 class와 bean wiring class는 분리한다.
 - controller import 전용 class는 `{Domain}ApiRegistrar`를 우선 사용한다.
-- bean wiring은 `{Domain}BeanRegistrar`, `{Domain}ApiBeanRegistrar`, `{Domain}InternalApiBeanRegistrar` 규칙을 따른다.
+- bean wiring은 `{Domain}BeanRegistrar`, `{Domain}ApiBeanRegistrar`,
+  `{Domain}InternalApiBeanRegistrar` 규칙을 따른다.
 - 설정 annotation과 bean wiring은 책임 기준으로 분리한다.
 
 ### 6.3 허용 예외
@@ -144,18 +145,18 @@
 ### 8.1 테스트 위치
 
 - `src/test`
-  - 순수 비즈니스 로직
-  - 계산
-  - 예외 분기
-  - Spring 없이 직접 생성 가능한 대상
+    - 순수 비즈니스 로직
+    - 계산
+    - 예외 분기
+    - Spring 없이 직접 생성 가능한 대상
 - `src/integrationTest`
-  - Spring MVC
-  - Security
-  - JPA / DB
-  - MQ
-  - Testcontainers
-  - BeanRegistrarDsl wiring
-  - 설정 / 직렬화 / 전체 흐름
+    - Spring MVC
+    - Security
+    - JPA / DB
+    - MQ
+    - Testcontainers
+    - BeanRegistrarDsl wiring
+    - 설정 / 직렬화 / 전체 흐름
 
 ### 8.2 테스트 작성
 
@@ -219,4 +220,5 @@
 
 ## 12. 한 줄 기준
 
-이 레포에서 agent는 “새로운 정답”을 만들지 않는다. 문서와 가장 가까운 기존 구현을 바탕으로, 가장 작은 failing test부터 시작해, 구조 규칙을 깨지 않는 최소 변경만 수행한다.
+이 레포에서 agent는 “새로운 정답”을 만들지 않는다. 문서와 가장 가까운 기존 구현을 바탕으로, 가장 작은 failing test부터 시작해, 구조 규칙을 깨지 않는 최소
+변경만 수행한다.

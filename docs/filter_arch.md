@@ -26,7 +26,8 @@
 - 계약 패키지: `member.internal.contract`
 - adapter 패키지: `member.internal.adapter`
 - 주요 계약: `MemberAuthenticationInternalApi`, `MemberExistenceInternalApi`
-- 주요 DTO: `MemberAuthenticationRequest`, `MemberAuthenticationResponse`, `MemberExistsRequest`, `MemberExistsResponse`
+- 주요 DTO: `MemberAuthenticationRequest`, `MemberAuthenticationResponse`, `MemberExistsRequest`,
+  `MemberExistsResponse`
 
 같은 규칙으로 transfer는
 `transfer:service -> transfer:infrastructure -> member|account:api-internal.internal.contract` 구조를

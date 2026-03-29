@@ -108,9 +108,9 @@ flowchart TD
 이 흐름의 실패 제어는 두 겹이다.
 
 1. 테스트 실패 루프
-   - `implementer` 안에서 해결
+    - `implementer` 안에서 해결
 2. spec 불충족 루프
-   - `spec-conformance-auditor` 결과를 기준으로 다시 구현 단계로 복귀
+    - `spec-conformance-auditor` 결과를 기준으로 다시 구현 단계로 복귀
 
 즉, 구현 완료 조건은 두 가지를 모두 만족해야 한다.
 

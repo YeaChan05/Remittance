@@ -24,7 +24,10 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.Optional
 
-@SpringBootTest(classes = [TransferApiApplication::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    classes = [TransferApiApplication::class],
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+)
 @Import(TransferTestFixturesConfig::class)
 class GetSpecs {
     @Autowired

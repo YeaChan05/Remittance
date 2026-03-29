@@ -60,12 +60,15 @@ description: Modify Java or Gradle code in the remittance repo by copying existi
 - controller import 전용 클래스는 `{Domain}ApiRegistrar`를 우선 사용한다.
 - wiring은 `class {Domain}BeanRegistrar : BeanRegistrarDsl({ ... })` 안에서 처리한다.
 - api wiring은 `class {Domain}ApiBeanRegistrar : BeanRegistrarDsl({ ... })` 안에서 처리한다.
-- internal adapter wiring은 `class {Domain}InternalApiBeanRegistrar : BeanRegistrarDsl({ ... })` 안에서 처리한다.
+- internal adapter wiring은 `class {Domain}InternalApiBeanRegistrar : BeanRegistrarDsl({ ... })` 안에서
+  처리한다.
 - 기본 형태는 `registerBean<Type> { Impl(bean(), bean<SpecificType>()) }` 이다.
 - 타입 추론이 모호하면 `bean<AccountRepository>()`처럼 명시 타입을 쓴다.
 - 조건부 bean은 `whenPropertyEnabled(...)`를 사용한다.
-- `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`에 registrar / bean registrar 등록을 같이 맞춘다.
-- `repository-jpa` auto-configuration은 `@Import({Domain}RepositoryBeanRegistrar::class)` + `@AutoConfiguration(before = [...])` 예외 패턴을 유지한다.
+- `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`에 registrar /
+  bean registrar 등록을 같이 맞춘다.
+- `repository-jpa` auto-configuration은 `@Import({Domain}RepositoryBeanRegistrar::class)` +
+  `@AutoConfiguration(before = [...])` 예외 패턴을 유지한다.
 
 ```kotlin
 @Import(AccountController::class, NotificationApiController::class)

@@ -37,7 +37,10 @@ import java.time.LocalDateTime
 import java.util.Optional
 import java.util.concurrent.atomic.AtomicBoolean
 
-@SpringBootTest(classes = [TransferApiApplication::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    classes = [TransferApiApplication::class],
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+)
 @Import(TransferTestFixturesConfig::class, PostSpecs.TransferFailureConfig::class)
 class PostSpecs {
     @Autowired
@@ -448,7 +451,8 @@ class PostSpecs {
         val accountBalance = BigDecimal.valueOf(10_000L)
         val withdrawAmount = BigDecimal.valueOf(4_000L)
 
-        val account = fixtures.createAccountWithBalance(memberId, "withdraw-account", accountBalance)
+        val account =
+            fixtures.createAccountWithBalance(memberId, "withdraw-account", accountBalance)
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
             IdempotencyKeyProps.IdempotencyScopeValue.WITHDRAW,
@@ -545,7 +549,11 @@ class PostSpecs {
     fun `입금 요청 body가 잘못되면 400을 반환한다`() {
         val result = fixtures.setupAuthentication()
         val memberId = result.authentication.name.toLong()
-        val account = fixtures.createAccountWithBalance(memberId, "deposit-account", BigDecimal.valueOf(10_000L))
+        val account = fixtures.createAccountWithBalance(
+            memberId,
+            "deposit-account",
+            BigDecimal.valueOf(10_000L),
+        )
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
             IdempotencyKeyProps.IdempotencyScopeValue.DEPOSIT,
@@ -584,7 +592,11 @@ class PostSpecs {
     fun `출금 요청 body가 잘못되면 400을 반환한다`() {
         val result = fixtures.setupAuthentication()
         val memberId = result.authentication.name.toLong()
-        val account = fixtures.createAccountWithBalance(memberId, "withdraw-account", BigDecimal.valueOf(10_000L))
+        val account = fixtures.createAccountWithBalance(
+            memberId,
+            "withdraw-account",
+            BigDecimal.valueOf(10_000L),
+        )
         val idempotencyKey = issueIdempotencyKey(
             result.auth.accessToken,
             IdempotencyKeyProps.IdempotencyScopeValue.WITHDRAW,

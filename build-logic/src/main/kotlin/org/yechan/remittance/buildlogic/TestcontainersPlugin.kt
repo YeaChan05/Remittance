@@ -44,7 +44,8 @@ class TestcontainersPlugin : Plugin<Project> {
                             }
 
                             selectedTaskPathsByStack[stackKey] = selectedTaskPaths
-                            sharedContainerService.get().registerExecutionPlan(stackKey, selectedTaskPaths)
+                            sharedContainerService.get()
+                                .registerExecutionPlan(stackKey, selectedTaskPaths)
                         }
                 }
             },
@@ -52,7 +53,8 @@ class TestcontainersPlugin : Plugin<Project> {
         project.gradle.projectsEvaluated {
             repositoryBeforeApplicationPairs(taskRegistrations.values).forEach { (repositoryTaskPath, applicationTaskPath) ->
                 val repositoryTask = taskProvidersByPath[repositoryTaskPath] ?: return@forEach
-                val repositoryReleaseTask = releaseTaskProvidersByPath[repositoryTaskPath] ?: return@forEach
+                val repositoryReleaseTask =
+                    releaseTaskProvidersByPath[repositoryTaskPath] ?: return@forEach
                 val applicationTask = taskProvidersByPath[applicationTaskPath] ?: return@forEach
                 applicationTask.configure {
                     mustRunAfter(repositoryTask, repositoryReleaseTask)
@@ -90,7 +92,8 @@ class TestcontainersPlugin : Plugin<Project> {
                         usesService(sharedContainerService)
                         usesService(stackLockService)
                         doLast {
-                            sharedContainerService.get().release(stackKey, taskRegistration.taskPath)
+                            sharedContainerService.get()
+                                .release(stackKey, taskRegistration.taskPath)
                         }
                     }
                     taskProvidersByPath[taskRegistration.taskPath] = taskProvider
@@ -142,8 +145,10 @@ internal fun repositoryBeforeApplicationPairs(
     .groupBy(SharedContainerTaskRegistration::stackKey)
     .values
     .flatMap { registrations ->
-        val repositoryTasks = registrations.filter(SharedContainerTaskRegistration::isRepositoryIntegrationTest)
-        val applicationTasks = registrations.filter(SharedContainerTaskRegistration::isApplicationIntegrationTest)
+        val repositoryTasks =
+            registrations.filter(SharedContainerTaskRegistration::isRepositoryIntegrationTest)
+        val applicationTasks =
+            registrations.filter(SharedContainerTaskRegistration::isApplicationIntegrationTest)
 
         applicationTasks.flatMap { applicationTask ->
             repositoryTasks.map { repositoryTask ->

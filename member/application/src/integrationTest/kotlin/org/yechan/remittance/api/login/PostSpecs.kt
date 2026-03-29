@@ -15,7 +15,10 @@ import org.yechan.remittance.member.dto.MemberLoginRequest
 import org.yechan.remittance.member.dto.MemberLoginResponse
 import org.yechan.remittance.member.dto.MemberRegisterRequest
 
-@SpringBootTest(classes = [MemberApiApplication::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    classes = [MemberApiApplication::class],
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+)
 class PostSpecs {
     @Autowired
     lateinit var restTestClient: RestTestClient

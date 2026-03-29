@@ -15,7 +15,10 @@ import org.yechan.remittance.transfer.dto.IdempotencyKeyCreateResponse
 import java.time.LocalDateTime
 import java.util.UUID
 
-@SpringBootTest(classes = [TransferApiApplication::class], webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    classes = [TransferApiApplication::class],
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+)
 class PostSpecs {
     @Autowired
     lateinit var restTestClient: RestTestClient

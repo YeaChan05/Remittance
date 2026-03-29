@@ -15,7 +15,8 @@ import org.yechan.remittance.member.internal.contract.MemberExistenceInternalApi
 class MemberInternalApiBeanRegistrarTest {
     @Test
     fun `자동 설정은 회원 내부 계약 빈을 등록한다`() {
-        val memberAuthQueryUseCase = MemberAuthenticationQueryUseCase { MemberAuthenticationResult(true, 3L) }
+        val memberAuthQueryUseCase =
+            MemberAuthenticationQueryUseCase { MemberAuthenticationResult(true, 3L) }
         val memberExistenceQueryUseCase = MemberExistenceQueryUseCase { it == 3L }
         val context = AnnotationConfigApplicationContext().apply {
             beanFactory.registerSingleton("memberAuthQueryUseCase", memberAuthQueryUseCase)

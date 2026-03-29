@@ -14,7 +14,9 @@ class TransferOutboxBeanRegistrarTest {
     fun `enabled 기본값에서는 publisher 관련 빈을 등록한다`() {
         val context = createContext()
 
-        assertThat(context.getBean(TransferEventPublisher::class.java)).isInstanceOf(TransferEventPublisherImpl::class.java)
+        assertThat(context.getBean(TransferEventPublisher::class.java)).isInstanceOf(
+            TransferEventPublisherImpl::class.java,
+        )
         assertThat(context.getBean(TransferOutboxPublisher::class.java)).isNotNull
 
         context.close()

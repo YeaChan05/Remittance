@@ -14,7 +14,8 @@ class MemberLoginControllerTest {
             )
         }
         val controller = MemberLoginController(memberQueryUseCase)
-        val request = org.yechan.remittance.member.dto.MemberLoginRequest("user@example.com", "password!1")
+        val request =
+            org.yechan.remittance.member.dto.MemberLoginRequest("user@example.com", "password!1")
 
         val response = controller.login(request)
 
