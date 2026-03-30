@@ -368,7 +368,7 @@ class ConcurrentTransferNotificationSpecs {
         entityManager.createQuery(query, java.lang.Long::class.java)
             .singleResult
             .toLong()
-    } ?: 0L
+    }
 
     private fun countByOutboxStatus(
         status: OutboxEventProps.OutboxEventStatusValue,
@@ -385,7 +385,7 @@ class ConcurrentTransferNotificationSpecs {
             .setParameter("status", status)
             .singleResult
             .toLong()
-    } ?: 0L
+    }
 
     private fun feeFor(amount: BigDecimal): BigDecimal = amount.multiply(TRANSFER_FEE_RATE)
         .setScale(2, RoundingMode.DOWN)
