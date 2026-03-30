@@ -31,6 +31,9 @@ dependencies {
 
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
     integrationTestImplementation(testFixtures(project(":common:application-api")))
+    integrationTestImplementation(project(":account:service"))
+    integrationTestImplementation(project(":member:service"))
+    integrationTestImplementation(project(":transfer:service"))
     integrationTestRuntimeOnly(enforcedPlatform("org.testcontainers:testcontainers-bom:${libs.versions.testcontainers.get()}"))
     integrationTestRuntimeOnly("org.testcontainers:testcontainers-jdbc")
     integrationTestRuntimeOnly("org.testcontainers:testcontainers-mysql")
