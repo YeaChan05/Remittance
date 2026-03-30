@@ -39,7 +39,7 @@ flowchart TD
     tx1 --> balanceCheck
     balanceCheck -- 아니오 --> tx1Failed
     balanceCheck -- 예 --> accounts --> transfer --> outbox --> idemComplete --> response
-    tx1 --> tx2
+    idemComplete --> tx2 --> response
     outbox --> publisher --> mq --> consumer --> notify
 ```
 
@@ -154,14 +154,14 @@ flowchart TD
 
 ### 4-2. TX2 (Ledger)
 
-1. 별도 트랜잭션(`REQUIRES_NEW`) 시작
+1. TX1 커밋 이후 별도 트랜잭션(`REQUIRES_NEW`) 시작
 2. Ledger 기록
 
     - `(transfer_id, account_id, side)` UNIQUE
 3. TX2 커밋
 
     - 실패 시 예외를 다시 던진다
-    - TX1이 이미 커밋된 상태일 수 있으므로, 요청은 `500`이지만 transfer/outbox/idempotency는 이미 성공 상태일 수 있다
+    - 호출 시점에 TX1은 이미 커밋된 뒤이므로, 요청은 `500`이지만 transfer/outbox/idempotency는 이미 성공 상태다
 
 ---
 
@@ -192,7 +192,7 @@ flowchart TD
 ## 7. outbox publisher
 
 - publish 성공 → `SENT`
-- 실패 → 상태 유지 + backoff
+- 실패 → 상태 유지, 다음 스케줄 주기에 다시 시도
 - 중복 발행 가능(정상)
 
 ---
