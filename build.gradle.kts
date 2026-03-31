@@ -55,7 +55,7 @@ configureByTypePrefix("kotlin") {
 
     extensions.configure<JavaPluginExtension> {
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(25))
+            languageVersion.set(JavaLanguageVersion.of(21))
         }
     }
 
@@ -213,8 +213,7 @@ subprojects {
     plugins.withId("org.jetbrains.kotlin.jvm") {
         tasks.withType<KotlinCompile>().configureEach {
             compilerOptions {
-                // Kotlin does not expose a JVM 25 bytecode target yet.
-                jvmTarget.set(JvmTarget.JVM_24)
+                jvmTarget.set(JvmTarget.JVM_21)
             }
         }
     }
