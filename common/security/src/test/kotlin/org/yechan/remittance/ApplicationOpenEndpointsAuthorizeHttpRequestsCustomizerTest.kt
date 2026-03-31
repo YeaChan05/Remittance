@@ -7,12 +7,14 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.springframework.http.HttpMethod
 
-class ApplicationOpenEndpointsCustomizerTest {
+class ApplicationOpenEndpointsAuthorizeHttpRequestsCustomizerTest {
     @Test
     fun `swagger openapi 경로는 항상 permit all 처리한다`() {
         val registry = mockApplicationRequestMatcherRegistry()
 
-        applicationOpenEndpointsCustomizer().customize(registry)
+        ApplicationOpenEndpointsAuthorizeHttpRequestsCustomizer(
+            StaticApplicationOpenEndpointPolicy(),
+        ).customize(registry)
 
         verify(registry).requestMatchers(
             "/swagger-ui/**",
@@ -31,8 +33,12 @@ class ApplicationOpenEndpointsCustomizerTest {
         val registryWithHealth = mockApplicationRequestMatcherRegistry()
         val registryWithoutHealth = mockApplicationRequestMatcherRegistry()
 
-        applicationOpenEndpointsCustomizer(includeHealth = true).customize(registryWithHealth)
-        applicationOpenEndpointsCustomizer(includeHealth = false).customize(registryWithoutHealth)
+        ApplicationOpenEndpointsAuthorizeHttpRequestsCustomizer(
+            StaticApplicationOpenEndpointPolicy(includeHealth = true),
+        ).customize(registryWithHealth)
+        ApplicationOpenEndpointsAuthorizeHttpRequestsCustomizer(
+            StaticApplicationOpenEndpointPolicy(includeHealth = false),
+        ).customize(registryWithoutHealth)
 
         verify(registryWithHealth).requestMatchers("/actuator/health")
         verify(registryWithoutHealth, never()).requestMatchers("/actuator/health")
@@ -42,11 +48,13 @@ class ApplicationOpenEndpointsCustomizerTest {
     fun `additional matchers는 method 유무에 맞춰 공개 경로를 추가한다`() {
         val registry = mockApplicationRequestMatcherRegistry()
 
-        applicationOpenEndpointsCustomizer(
-            additionalMatchers =
-            listOf(
-                OpenEndpointMatcher(HttpMethod.POST, "/login"),
-                OpenEndpointMatcher(pattern = "/internal/open"),
+        ApplicationOpenEndpointsAuthorizeHttpRequestsCustomizer(
+            StaticApplicationOpenEndpointPolicy(
+                additionalMatchers =
+                listOf(
+                    OpenEndpointMatcher(HttpMethod.POST, "/login"),
+                    OpenEndpointMatcher(pattern = "/internal/open"),
+                ),
             ),
         ).customize(registry)
 

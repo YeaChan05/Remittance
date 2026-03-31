@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.core.Ordered
+import org.yechan.remittance.ApplicationOpenEndpointPolicy
 import org.yechan.remittance.AuthorizeHttpRequestsCustomizer
 import org.yechan.remittance.PrioritizedAuthorizeHttpRequestsCustomizer
 
@@ -26,6 +27,7 @@ class TransferApplicationSecurityBeanRegistrarTest {
             "defaultAuthorizeHttpRequestsCustomizer",
             AuthorizeHttpRequestsCustomizer::class.java,
         )
+        val policy = context.getBean(ApplicationOpenEndpointPolicy::class.java)
         val orderedCustomizers =
             context.getBeanProvider(AuthorizeHttpRequestsCustomizer::class.java)
                 .orderedStream()
@@ -33,6 +35,7 @@ class TransferApplicationSecurityBeanRegistrarTest {
 
         assertThat(transferCustomizer).isInstanceOf(PrioritizedAuthorizeHttpRequestsCustomizer::class.java)
         assertThat(defaultCustomizer).isInstanceOf(PrioritizedAuthorizeHttpRequestsCustomizer::class.java)
+        assertThat(policy.includeHealth).isTrue()
         assertThat((transferCustomizer as Ordered).order).isLessThan((defaultCustomizer as Ordered).order)
         assertThat(orderedCustomizers).containsExactly(transferCustomizer, defaultCustomizer)
 
