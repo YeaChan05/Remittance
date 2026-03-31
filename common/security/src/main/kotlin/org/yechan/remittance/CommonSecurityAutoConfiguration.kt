@@ -60,7 +60,7 @@ class CommonSecurityBeanRegistrar :
             )
         }
 
-        registerBean<AuthorizeHttpRequestsCustomizer>("defaultAuthorizeHttpRequestsCustomizer") {
+        registerBean<AuthorizeHttpRequestsCustomizer> {
             PrioritizedAuthorizeHttpRequestsCustomizer(
                 Ordered.LOWEST_PRECEDENCE,
             ) { registry -> registry.anyRequest().authenticated() }
