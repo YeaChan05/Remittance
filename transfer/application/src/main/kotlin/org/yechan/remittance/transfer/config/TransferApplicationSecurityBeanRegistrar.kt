@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.core.Ordered
 import org.yechan.remittance.AuthorizeHttpRequestsCustomizer
 import org.yechan.remittance.PrioritizedAuthorizeHttpRequestsCustomizer
+import org.yechan.remittance.applicationOpenEndpointsCustomizer
 
 @Configuration
 class TransferApplicationSecurityBeanRegistrar :
@@ -12,19 +13,7 @@ class TransferApplicationSecurityBeanRegistrar :
         registerBean<AuthorizeHttpRequestsCustomizer>("transferApplicationAuthorizeHttpRequestsCustomizer") {
             PrioritizedAuthorizeHttpRequestsCustomizer(
                 Ordered.HIGHEST_PRECEDENCE,
-            ) { registry ->
-                registry
-                    .requestMatchers(
-                        "/swagger-ui/**",
-                        "/swagger-ui.html",
-                        "/v3/api-docs",
-                        "/v3/api-docs/**",
-                        "/v3/api-docs.yaml",
-                        "/swagger-resources/**",
-                        "/webjars/**",
-                        "/swagger/**",
-                        "/actuator/health",
-                    ).permitAll()
-            }
+                applicationOpenEndpointsCustomizer(includeHealth = true),
+            )
         }
     })
