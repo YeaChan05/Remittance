@@ -18,10 +18,10 @@ class MemberApplicationSecurityBeanRegistrar :
             StaticApplicationOpenEndpointPolicy(
                 includeHealth = true,
                 additionalMatchers =
-                    listOf(
-                        OpenEndpointMatcher(HttpMethod.POST, "/login"),
-                        OpenEndpointMatcher(HttpMethod.POST, "/members"),
-                    ),
+                listOf(
+                    OpenEndpointMatcher(HttpMethod.POST, "/login"),
+                    OpenEndpointMatcher(HttpMethod.POST, "/members"),
+                ),
             )
         }
 
