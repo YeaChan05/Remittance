@@ -17,10 +17,10 @@ class AggregateSecurityBeanRegistrar :
                 Ordered.HIGHEST_PRECEDENCE,
                 applicationOpenEndpointsCustomizer(
                     additionalMatchers =
-                        listOf(
-                            OpenEndpointMatcher(HttpMethod.POST, "/login"),
-                            OpenEndpointMatcher(HttpMethod.POST, "/members"),
-                        ),
+                    listOf(
+                        OpenEndpointMatcher(HttpMethod.POST, "/login"),
+                        OpenEndpointMatcher(HttpMethod.POST, "/members"),
+                    ),
                 ),
             )
         }

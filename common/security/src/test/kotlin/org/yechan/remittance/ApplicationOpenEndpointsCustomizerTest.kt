@@ -44,10 +44,10 @@ class ApplicationOpenEndpointsCustomizerTest {
 
         applicationOpenEndpointsCustomizer(
             additionalMatchers =
-                listOf(
-                    OpenEndpointMatcher(HttpMethod.POST, "/login"),
-                    OpenEndpointMatcher(pattern = "/internal/open"),
-                ),
+            listOf(
+                OpenEndpointMatcher(HttpMethod.POST, "/login"),
+                OpenEndpointMatcher(pattern = "/internal/open"),
+            ),
         ).customize(registry)
 
         verify(registry).requestMatchers(HttpMethod.POST, "/login")
