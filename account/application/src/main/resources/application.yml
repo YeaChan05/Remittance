@@ -6,7 +6,7 @@ spring:
   docker:
     compose:
       enabled: true
-      lifecycle-management: start-and-stop
+      lifecycle-management: start-only
   datasource:
     url: jdbc:tc:mysql:8.4.8:///account?TC_DAEMON=true&user=root&password=test&useInformationSchema=true
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
