@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Run the SHIP stage for the Remittance repo: finalize docs, summarize release readiness, list risks and verification evidence, and prepare go-live handoff. Use when the team says /ship.
+description: Run the SHIP stage for the Remittance repo:finalize docs, summarize release readiness, list risks and verification evidence, and prepare go-live handoff. Use when the team says /ship.
 ---
 
 # Ship
