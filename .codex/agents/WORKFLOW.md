@@ -26,15 +26,15 @@ flowchart LR
 
 ## Stage Contract
 
-| Stage    | Team Command           | Primary Outcome                            | Exit Criteria | Default Surface |
-|----------|------------------------|--------------------------------------------|---------------|-----------------|
-| DEFINE   | `/spec`                | 문제 정의, 범위, acceptance 기준, open question 정리 | acceptance criteria / 비목표 / open question이 정리되어 PLAN 입력으로 넘길 수 있음 | explicit skill: `spec` |
-| PLAN     | `/plan`                | PRD / test-spec / 구현 순서 확정                 | 구현 순서, 검증 전략, 리스크가 고정되고 필요 시 `.omx/plans/prd-*.md`, `.omx/plans/test-spec-*.md` 생성 | explicit skill: `plan`, 필요 시 `ralplan`, design agents |
-| BUILD    | `/build`               | 승인된 범위의 최소 구현                              | 승인된 범위의 최소 구현 완료 + 좁은 failing test가 해소됨 | explicit skill: `build`, `implementer`, `executor` |
-| VERIFY   | `/test`                | 좁은 테스트 통과, 디버깅 완료, 증거 수집                   | 관련 테스트 green + 실패 원인 설명 가능 + 핵심 증거 수집 완료 | explicit skill: `test`, `debugger`, `verifier` |
-| REVIEW   | `/review`              | QA gate, spec 적합성, 위험 점검                   | blocking issue 없음, non-blocking issue는 명시적 기록 완료 | explicit skill: `review`, `code-review`, `spec-conformance-auditor` |
-| DOCUMENT | implicit pre-ship gate | 변경된 계약/흐름/구조 문서 동기화                        | 영향 문서 확인 완료 + 필요 문서 수정 또는 no-op 근거 기록 완료 | explicit skill: `docs-sync-writer`, 필요 시 `writer` |
-| SHIP     | `/ship`                | 릴리즈 readiness, 배포 또는 go-live handoff       | VERIFY green + REVIEW pass + DOCUMENT complete + 최종 보고 준비 완료 | explicit skill: `ship` |
+| Stage    | Team Command           | Primary Outcome                            | Exit Criteria                                                                      | Default Surface                                                     |
+|----------|------------------------|--------------------------------------------|------------------------------------------------------------------------------------|---------------------------------------------------------------------|
+| DEFINE   | `/spec`                | 문제 정의, 범위, acceptance 기준, open question 정리 | acceptance criteria / 비목표 / open question이 정리되어 PLAN 입력으로 넘길 수 있음                  | explicit skill: `spec`                                              |
+| PLAN     | `/plan`                | PRD / test-spec / 구현 순서 확정                 | 구현 순서, 검증 전략, 리스크가 고정되고 필요 시 `.omx/plans/prd-*.md`, `.omx/plans/test-spec-*.md` 생성 | explicit skill: `plan`, 필요 시 `ralplan`, design agents               |
+| BUILD    | `/build`               | 승인된 범위의 최소 구현                              | 승인된 범위의 최소 구현 완료 + 좁은 failing test가 해소됨                                            | explicit skill: `build`, `implementer`, `executor`                  |
+| VERIFY   | `/test`                | 좁은 테스트 통과, 디버깅 완료, 증거 수집                   | 관련 테스트 green + 실패 원인 설명 가능 + 핵심 증거 수집 완료                                           | explicit skill: `test`, `debugger`, `verifier`                      |
+| REVIEW   | `/review`              | QA gate, spec 적합성, 위험 점검                   | blocking issue 없음, non-blocking issue는 명시적 기록 완료                                   | explicit skill: `review`, `code-review`, `spec-conformance-auditor` |
+| DOCUMENT | implicit pre-ship gate | 변경된 계약/흐름/구조 문서 동기화                        | 영향 문서 확인 완료 + 필요 문서 수정 또는 no-op 근거 기록 완료                                           | explicit skill: `docs-sync-writer`, 필요 시 `writer`                   |
+| SHIP     | `/ship`                | 릴리즈 readiness, 배포 또는 go-live handoff       | VERIFY green + REVIEW pass + DOCUMENT complete + 최종 보고 준비 완료                       | explicit skill: `ship`                                              |
 
 ## Agent Mapping
 
