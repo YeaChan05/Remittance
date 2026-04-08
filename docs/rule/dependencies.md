@@ -184,6 +184,7 @@ dependencies {
 
     - `common:security`
     - `{domain}:api`
+    - `{domain}:api-internal` (해당 application이 internal endpoint를 직접 노출할 때)
     - `{domain}:repository-{type}`
     - `{domain}:schema`
     - `{domain}:mq-rabbitmq` (필요 시)
@@ -193,6 +194,7 @@ dependencies {
 dependencies {
     implementation(project(":common:security"))
     implementation(project(":{domain}:api"))
+    implementation(project(":{domain}:api-internal"))
     implementation(project(":{domain}:repository-{repository-type}"))
     implementation(project(":{domain}:schema"))
     implementation(project(":{domain}:mq-rabbitmq"))
@@ -201,6 +203,8 @@ dependencies {
 
 현재는 `member:application`, `account:application`, `transfer:application`이 각 도메인 application 역할을 가진다.
 `aggregate`는 전체 조합을 로컬에서 띄워 보기 위한 runnable application으로만 둔다.
+`aggregate`는 same-process 조합을 위해 provider-side `api-internal` bean을 직접 포함할 수 있지만,
+이 예외를 core/service/infrastructure 의존 허용으로 해석하면 안 된다.
 ---
 
 ## 4. 의존성 Diagram (Mermaid)
