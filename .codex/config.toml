@@ -5,6 +5,7 @@ developer_instructions = "You have oh-my-codex installed. AGENTS.md is your orch
 model = "gpt-5.4"
 model_context_window = 1000000
 model_auto_compact_token_limit = 900000
+approvals_reviewer = "user"
 
 [agents]
 max_threads = 6
@@ -28,6 +29,15 @@ args = ["/opt/homebrew/lib/node_modules/oh-my-codex/dist/mcp/state-server.js"]
 enabled = true
 startup_timeout_sec = 5
 
+[mcp_servers.omx_state.tools.state_read]
+approval_mode = "approve"
+
+[mcp_servers.omx_state.tools.state_write]
+approval_mode = "approve"
+
+[mcp_servers.omx_state.tools.state_clear]
+approval_mode = "approve"
+
 # OMX Project Memory MCP Server
 [mcp_servers.omx_memory]
 command = "node"
@@ -35,12 +45,18 @@ args = ["/opt/homebrew/lib/node_modules/oh-my-codex/dist/mcp/memory-server.js"]
 enabled = true
 startup_timeout_sec = 5
 
+[mcp_servers.omx_memory.tools.notepad_write_working]
+approval_mode = "approve"
+
 # OMX Code Intelligence MCP Server (LSP diagnostics, AST search)
 [mcp_servers.omx_code_intel]
 command = "node"
 args = ["/opt/homebrew/lib/node_modules/oh-my-codex/dist/mcp/code-intel-server.js"]
 enabled = true
 startup_timeout_sec = 10
+
+[mcp_servers.omx_code_intel.tools.lsp_diagnostics]
+approval_mode = "approve"
 
 # OMX Trace MCP Server (agent flow timeline & statistics)
 [mcp_servers.omx_trace]
@@ -55,5 +71,20 @@ command = "node"
 args = ["/opt/homebrew/lib/node_modules/oh-my-codex/dist/mcp/team-server.js"]
 enabled = true
 startup_timeout_sec = 5
+
+[mcp_servers.omx_team_run.tools.omx_run_team_start]
+approval_mode = "approve"
+
+[mcp_servers.omx_team_run.tools.omx_run_team_status]
+approval_mode = "approve"
+
+[projects."/Users/shinyechan/IdeaProjects/remittance"]
+trust_level = "trusted"
+
+[plugins."github@openai-curated"]
+enabled = true
+
+[notice]
+hide_full_access_warning = true
 # ============================================================
 # End oh-my-codex
