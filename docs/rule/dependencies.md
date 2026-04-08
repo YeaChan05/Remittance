@@ -11,6 +11,10 @@
 - `service -> other-domain:infrastructure` 는 금지한다.
 - `service -> other-domain:api-internal` 도 금지한다.
 - 내부 통신은 `consumer:infrastructure -> provider:api-internal.internal.contract` 경로만 허용한다.
+- 내부 통신 계약은 Spring HTTP interface(`@HttpExchange`)로 정의하고, consumer는 Spring HTTP Service proxy로 호출한다.
+- 내부 사용자 컨텍스트가 필요하면 consumer `infrastructure`가 transport header(예: `X-Internal-User-Id`)를 전파하고,
+  provider는 `/internal/**` 전용 필터 + 기존 controller argument resolver 패턴으로 해석한다.
+- 외부 공개 경로에서는 internal user header를 사용자 신원으로 해석하지 않는다.
 - 예외: 인증/암호화가 필요한 유스케이스는 `common:security` 의존을 허용한다.
 - `api` 와 `implementation` 은 다음 의미를 가진다.
 
@@ -244,6 +248,7 @@ graph LR
 - model은 아무것도 의존하지 않는다
 - service는 계약(infrastructure)만 안다
 - 내부 통신은 consumer infrastructure가 provider api-internal을 감싼다
+- provider application은 `/internal/**` endpoint를 노출하고, 내부 호출 인증은 shared internal token으로 처리한다
 - repository는 구현이지만 core를 거꾸로 끌어오지 않는다
 - api는 orchestration을 하지 않는다
 - application은 조립만 한다

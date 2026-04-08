@@ -33,15 +33,27 @@
 `transfer:service -> transfer:infrastructure -> member|account:api-internal.internal.contract` 구조를
 따른다.
 
+현재 `api-internal.internal.contract`는 Spring HTTP interface(`@HttpExchange`)로 정의된다.
+provider application은 `/internal/**` endpoint를 노출하고, consumer는 Spring HTTP Service proxy로 호출한다.
+
 ## common:security 의 역할
 
 `common:security`는 공통 보안 기술 구현을 제공한다.
 
 - `TokenParser`, `TokenVerifier`, `TokenGenerator`
 - `JwtAuthenticationFilter`
+- `InternalServiceAuthenticationFilter`
 - `AuthenticationEntryPoint`, `AccessDeniedHandler`
 - 기본 `SecurityFilterChain`
 - 기본 `AuthorizeHttpRequestsCustomizer`
+
+도메인 간 `/internal/**` 호출은 기본적으로 `X-Internal-Token` shared secret을 유지한다.
+추가로, 사용자 컨텍스트가 필요한 내부 호출은 `X-Internal-User-Id` 헤더로 caller memberId를 전달한다.
+
+provider 쪽 `/internal/**` 전용 필터는 이 헤더를 읽어 내부 요청의 `Authentication.name`에 memberId를 세팅할 수 있다.
+이 값은 `/internal/**` 체인에서만 해석하며, 외부 공개 경로에서는 절대 사용자 신원으로 해석하지 않는다.
+
+기존 internal caller와의 mixed-mode 전환 기간에는 `X-Internal-User-Id`가 없는 호출도 임시 호환하되, 경고 로그를 남긴다.
 
 각 API 모듈은 자신만의 `AuthorizeHttpRequestsCustomizer`를 추가 등록해 공개 경로를 선언한다.
 
@@ -81,5 +93,6 @@ auth:
 
 - `aggregate`는 로컬 조합용 runnable application이며, 정규 API 통합 테스트의 기준점은 아니다.
 - `/login` 책임과 회원 인증 책임은 모두 `member` 도메인이 가진다.
+- 내부 사용자 식별자 전달은 AOP 대신 기존 `@LoginUserId` / `LoginUserIdArgumentResolver` 패턴 재사용을 우선한다.
 - 인증 정책 문서를 수정할 때는 `AggregateSecurityConfiguration`, `CommonSecurityAutoConfiguration`,
   `member:api/MemberLoginController`를 함께 확인한다.
