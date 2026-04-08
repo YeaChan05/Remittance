@@ -15,6 +15,7 @@ class AccountInternalUpdateServiceTest {
         val useCase = AccountInternalUpdateService(repository)
 
         val applied = useCase.applyBalanceChange(
+            10L,
             AccountInternalBalanceChangeCommand(
                 fromAccountId = 1L,
                 toAccountId = 2L,
@@ -37,6 +38,7 @@ class AccountInternalUpdateServiceTest {
         val useCase = AccountInternalUpdateService(repository)
 
         val applied = useCase.applyBalanceChange(
+            10L,
             AccountInternalBalanceChangeCommand(
                 fromAccountId = 1L,
                 toAccountId = 1L,

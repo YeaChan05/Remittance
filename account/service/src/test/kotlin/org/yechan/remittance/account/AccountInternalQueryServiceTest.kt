@@ -12,7 +12,7 @@ class AccountInternalQueryServiceTest {
         )
         val useCase = AccountInternalQueryService(repository)
 
-        val result = useCase.get(1L)
+        val result = useCase.get(10L, 1L)
 
         assertThat(result).isEqualTo(AccountInternalSnapshotValue(1L, 10L, BigDecimal("1000")))
     }
@@ -27,7 +27,7 @@ class AccountInternalQueryServiceTest {
         )
         val useCase = AccountInternalQueryService(repository)
 
-        val result = useCase.lock(2L, 1L)
+        val result = useCase.lock(10L, 2L, 1L)
 
         assertThat(repository.lockedIds).containsExactly(1L, 2L)
         assertThat(result?.fromAccount?.accountId).isEqualTo(2L)
@@ -41,7 +41,7 @@ class AccountInternalQueryServiceTest {
         )
         val useCase = AccountInternalQueryService(repository)
 
-        val result = useCase.lock(1L, 1L)
+        val result = useCase.lock(10L, 1L, 1L)
 
         assertThat(repository.lockedIds).containsExactly(1L)
         assertThat(result?.fromAccount).isEqualTo(result?.toAccount)

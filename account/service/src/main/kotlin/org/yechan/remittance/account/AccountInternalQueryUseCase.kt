@@ -1,11 +1,19 @@
 package org.yechan.remittance.account
 
+import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 
 interface AccountInternalQueryUseCase {
-    fun get(accountId: Long): AccountInternalSnapshotValue?
+    fun get(
+        memberId: Long,
+        accountId: Long,
+    ): AccountInternalSnapshotValue?
 
-    fun lock(fromAccountId: Long, toAccountId: Long): AccountInternalLockValue?
+    fun lock(
+        memberId: Long,
+        fromAccountId: Long,
+        toAccountId: Long,
+    ): AccountInternalLockValue?
 }
 
 data class AccountInternalSnapshotValue(
@@ -19,12 +27,18 @@ data class AccountInternalLockValue(
     val toAccount: AccountInternalSnapshotValue,
 )
 
-class AccountInternalQueryService(
+open class AccountInternalQueryService(
     private val accountRepository: AccountRepository,
 ) : AccountInternalQueryUseCase {
-    override fun get(accountId: Long): AccountInternalSnapshotValue? = accountRepository.findById(AccountId(accountId))?.toSnapshot()
+    @Transactional(readOnly = true)
+    override fun get(
+        memberId: Long,
+        accountId: Long,
+    ): AccountInternalSnapshotValue? = accountRepository.findById(AccountId(accountId))?.toSnapshot()
 
+    @Transactional
     override fun lock(
+        memberId: Long,
         fromAccountId: Long,
         toAccountId: Long,
     ): AccountInternalLockValue? {
