@@ -3,7 +3,10 @@ package org.yechan.remittance.transfer
 import java.math.BigDecimal
 
 interface TransferAccountClient {
-    fun get(accountId: Long): TransferAccountSnapshot?
+    fun get(
+        memberId: Long,
+        accountId: Long,
+    ): TransferAccountSnapshot?
 
     fun lock(command: TransferAccountLockCommand): TransferLockedAccounts?
 
@@ -17,6 +20,7 @@ data class TransferAccountSnapshot(
 )
 
 data class TransferAccountLockCommand(
+    val memberId: Long,
     val fromAccountId: Long,
     val toAccountId: Long,
 )
@@ -27,6 +31,7 @@ data class TransferLockedAccounts(
 )
 
 data class TransferBalanceChangeCommand(
+    val memberId: Long,
     val fromAccountId: Long,
     val toAccountId: Long,
     val fromBalance: BigDecimal,

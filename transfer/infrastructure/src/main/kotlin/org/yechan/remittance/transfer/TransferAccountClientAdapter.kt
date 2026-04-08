@@ -10,9 +10,13 @@ import org.yechan.remittance.account.internal.contract.AccountSnapshotResponse
 class TransferAccountClientAdapter(
     private val accountInternalApi: AccountInternalApi,
 ) : TransferAccountClient {
-    override fun get(accountId: Long): TransferAccountSnapshot? = accountInternalApi.get(AccountGetRequest(accountId))?.toSnapshot()
+    override fun get(
+        memberId: Long,
+        accountId: Long,
+    ): TransferAccountSnapshot? = accountInternalApi.get(memberId, AccountGetRequest(accountId))?.toSnapshot()
 
     override fun lock(command: TransferAccountLockCommand): TransferLockedAccounts? = accountInternalApi.lock(
+        command.memberId,
         AccountLockRequest(
             fromAccountId = command.fromAccountId,
             toAccountId = command.toAccountId,
@@ -21,6 +25,7 @@ class TransferAccountClientAdapter(
 
     override fun applyBalanceChange(command: TransferBalanceChangeCommand) {
         accountInternalApi.applyBalanceChange(
+            command.memberId,
             AccountBalanceChangeRequest(
                 fromAccountId = command.fromAccountId,
                 toAccountId = command.toAccountId,
