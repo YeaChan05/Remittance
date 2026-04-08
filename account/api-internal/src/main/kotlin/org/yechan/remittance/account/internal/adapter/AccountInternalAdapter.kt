@@ -17,12 +17,26 @@ class AccountInternalAdapter(
     private val accountInternalQueryUseCase: AccountInternalQueryUseCase,
     private val accountInternalUpdateUseCase: AccountInternalUpdateUseCase,
 ) : AccountInternalApi {
-    override fun get(request: AccountGetRequest): AccountSnapshotResponse? = accountInternalQueryUseCase.get(request.accountId)?.toResponse()
+    override fun get(
+        memberId: Long,
+        request: AccountGetRequest,
+    ): AccountSnapshotResponse? = accountInternalQueryUseCase.get(memberId, request.accountId)?.toResponse()
 
-    override fun lock(request: AccountLockRequest): AccountLockResponse? = accountInternalQueryUseCase.lock(request.fromAccountId, request.toAccountId)?.toResponse()
+    override fun lock(
+        memberId: Long,
+        request: AccountLockRequest,
+    ): AccountLockResponse? = accountInternalQueryUseCase.lock(
+        memberId,
+        request.fromAccountId,
+        request.toAccountId,
+    )?.toResponse()
 
-    override fun applyBalanceChange(request: AccountBalanceChangeRequest): AccountBalanceChangeResponse = AccountBalanceChangeResponse(
+    override fun applyBalanceChange(
+        memberId: Long,
+        request: AccountBalanceChangeRequest,
+    ): AccountBalanceChangeResponse = AccountBalanceChangeResponse(
         accountInternalUpdateUseCase.applyBalanceChange(
+            memberId,
             AccountInternalBalanceChangeCommand(
                 request.fromAccountId,
                 request.toAccountId,

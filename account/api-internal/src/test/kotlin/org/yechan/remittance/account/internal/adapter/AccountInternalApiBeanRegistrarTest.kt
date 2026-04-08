@@ -11,21 +11,37 @@ import org.yechan.remittance.account.AccountInternalSnapshotValue
 import org.yechan.remittance.account.AccountInternalUpdateUseCase
 import org.yechan.remittance.account.internal.contract.AccountBalanceChangeRequest
 import org.yechan.remittance.account.internal.contract.AccountGetRequest
-import org.yechan.remittance.account.internal.contract.AccountInternalApi
 import java.math.BigDecimal
 
 class AccountInternalApiBeanRegistrarTest {
     @Test
-    fun `자동 설정은 계좌 내부 API 빈을 등록한다`() {
+    fun `자동 설정은 계좌 내부 controller 빈을 등록한다`() {
+        val capturedMemberIds = mutableListOf<Long>()
         val queryUseCase = object : AccountInternalQueryUseCase {
-            override fun get(accountId: Long): AccountInternalSnapshotValue = AccountInternalSnapshotValue(accountId, 3L, BigDecimal("1000"))
+            override fun get(
+                memberId: Long,
+                accountId: Long,
+            ): AccountInternalSnapshotValue {
+                capturedMemberIds += memberId
+                return AccountInternalSnapshotValue(accountId, 3L, BigDecimal("1000"))
+            }
 
-            override fun lock(fromAccountId: Long, toAccountId: Long): AccountInternalLockValue = AccountInternalLockValue(
-                AccountInternalSnapshotValue(fromAccountId, 3L, BigDecimal("900")),
-                AccountInternalSnapshotValue(toAccountId, 4L, BigDecimal("100")),
-            )
+            override fun lock(
+                memberId: Long,
+                fromAccountId: Long,
+                toAccountId: Long,
+            ): AccountInternalLockValue {
+                capturedMemberIds += memberId
+                return AccountInternalLockValue(
+                    AccountInternalSnapshotValue(fromAccountId, 3L, BigDecimal("900")),
+                    AccountInternalSnapshotValue(toAccountId, 4L, BigDecimal("100")),
+                )
+            }
         }
-        val updateUseCase = AccountInternalUpdateUseCase { true }
+        val updateUseCase = AccountInternalUpdateUseCase { memberId, _ ->
+            capturedMemberIds += memberId
+            true
+        }
         val context = AnnotationConfigApplicationContext().apply {
             beanFactory.registerSingleton("accountInternalQueryUseCase", queryUseCase)
             beanFactory.registerSingleton("accountInternalUpdateUseCase", updateUseCase)
@@ -33,11 +49,11 @@ class AccountInternalApiBeanRegistrarTest {
             refresh()
         }
 
-        val api = context.getBean(AccountInternalApi::class.java)
+        val controller = context.getBean(AccountInternalController::class.java)
 
-        assertThat(api.get(AccountGetRequest(10L))?.memberId).isEqualTo(3L)
         assertThat(
-            api.applyBalanceChange(
+            controller.applyBalanceChange(
+                7L,
                 AccountBalanceChangeRequest(
                     fromAccountId = 1L,
                     toAccountId = 2L,
@@ -46,11 +62,13 @@ class AccountInternalApiBeanRegistrarTest {
                 ),
             ).applied,
         ).isTrue()
+        assertThat(controller.get(7L, AccountGetRequest(10L))?.memberId).isEqualTo(3L)
+        assertThat(capturedMemberIds).containsOnly(7L)
 
         context.close()
     }
 
     @Configuration(proxyBeanMethods = false)
-    @Import(AccountInternalApiBeanRegistrar::class)
+    @Import(AccountInternalApiBeanRegistrar::class, AccountInternalController::class)
     class TestConfiguration
 }
