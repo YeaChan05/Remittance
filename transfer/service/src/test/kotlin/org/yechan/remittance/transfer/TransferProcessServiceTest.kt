@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
-import org.yechan.remittance.account.AccountIdentifier
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -26,6 +25,7 @@ class TransferProcessServiceTest {
         assertThat(fixture.accountClient.applyBalanceChangeCallCount).isEqualTo(1)
         assertThat(fixture.accountClient.appliedBalanceChange).isEqualTo(
             TransferBalanceChangeCommand(
+                memberId = 10L,
                 fromAccountId = 1L,
                 toAccountId = 2L,
                 fromBalance = BigDecimal("899"),
@@ -69,6 +69,7 @@ class TransferProcessServiceTest {
         assertThat(fixture.dailyLimitUsageRepository.findOrCreateCallCount).isZero()
         assertThat(fixture.accountClient.appliedBalanceChange).isEqualTo(
             TransferBalanceChangeCommand(
+                memberId = 10L,
                 fromAccountId = 1L,
                 toAccountId = 1L,
                 fromBalance = BigDecimal("1100"),
@@ -104,6 +105,7 @@ class TransferProcessServiceTest {
         assertThat(fixture.dailyLimitUsageRepository.findOrCreateCallCount).isEqualTo(1)
         assertThat(fixture.accountClient.appliedBalanceChange).isEqualTo(
             TransferBalanceChangeCommand(
+                memberId = 10L,
                 fromAccountId = 1L,
                 toAccountId = 1L,
                 fromBalance = BigDecimal("900"),
@@ -332,7 +334,10 @@ class TransferProcessServiceTest {
         var lockCallCount: Int = 0
         var applyBalanceChangeCallCount: Int = 0
 
-        override fun get(accountId: Long): TransferAccountSnapshot? = accounts[accountId]
+        override fun get(
+            memberId: Long,
+            accountId: Long,
+        ): TransferAccountSnapshot? = accounts[accountId]
 
         override fun lock(command: TransferAccountLockCommand): TransferLockedAccounts? {
             lockCallCount += 1
@@ -379,12 +384,12 @@ class TransferProcessServiceTest {
         override fun findById(identifier: TransferIdentifier): TransferModel? = null
 
         override fun findCompletedByAccountId(
-            identifier: AccountIdentifier,
+            identifier: TransferAccountIdentifier,
             condition: TransferQueryCondition,
         ): List<TransferModel> = emptyList()
 
         override fun sumAmountByFromAccountIdAndScopeBetween(
-            identifier: AccountIdentifier,
+            identifier: TransferAccountIdentifier,
             scope: TransferProps.TransferScopeValue,
             from: LocalDateTime,
             to: LocalDateTime,
@@ -478,7 +483,7 @@ class TransferProcessServiceTest {
         var findOrCreateCallCount: Int = 0
 
         override fun findOrCreateForUpdate(
-            identifier: AccountIdentifier,
+            identifier: TransferAccountIdentifier,
             scope: TransferProps.TransferScopeValue,
             usageDate: LocalDate,
         ): DailyLimitUsageModel {

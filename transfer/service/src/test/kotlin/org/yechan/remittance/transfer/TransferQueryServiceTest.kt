@@ -3,7 +3,6 @@ package org.yechan.remittance.transfer
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
-import org.yechan.remittance.account.AccountIdentifier
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -13,7 +12,10 @@ class TransferQueryServiceTest {
         val transferRepository = FakeTransferRepository()
         val service = TransferQueryService(
             transferAccountClient = object : TransferAccountClient {
-                override fun get(accountId: Long): TransferAccountSnapshot = TransferAccountSnapshot(accountId, 10L, BigDecimal("1000"))
+                override fun get(
+                    memberId: Long,
+                    accountId: Long,
+                ): TransferAccountSnapshot = TransferAccountSnapshot(accountId, 10L, BigDecimal("1000"))
 
                 override fun lock(command: TransferAccountLockCommand): TransferLockedAccounts? = null
 
@@ -32,7 +34,10 @@ class TransferQueryServiceTest {
     fun `계좌가 없으면 ACCOUNT_NOT_FOUND를 반환한다`() {
         val service = TransferQueryService(
             transferAccountClient = object : TransferAccountClient {
-                override fun get(accountId: Long): TransferAccountSnapshot? = null
+                override fun get(
+                    memberId: Long,
+                    accountId: Long,
+                ): TransferAccountSnapshot? = null
 
                 override fun lock(command: TransferAccountLockCommand): TransferLockedAccounts? = null
 
@@ -51,7 +56,10 @@ class TransferQueryServiceTest {
     fun `계좌 소유자가 다르면 INVALID_REQUEST를 반환한다`() {
         val service = TransferQueryService(
             transferAccountClient = object : TransferAccountClient {
-                override fun get(accountId: Long): TransferAccountSnapshot = TransferAccountSnapshot(accountId, 99L, BigDecimal("1000"))
+                override fun get(
+                    memberId: Long,
+                    accountId: Long,
+                ): TransferAccountSnapshot = TransferAccountSnapshot(accountId, 99L, BigDecimal("1000"))
 
                 override fun lock(command: TransferAccountLockCommand): TransferLockedAccounts? = null
 
@@ -72,7 +80,7 @@ class TransferQueryServiceTest {
         override fun findById(identifier: TransferIdentifier): TransferModel? = null
 
         override fun findCompletedByAccountId(
-            identifier: AccountIdentifier,
+            identifier: TransferAccountIdentifier,
             condition: TransferQueryCondition,
         ): List<TransferModel> = listOf(
             Transfer(
@@ -88,7 +96,7 @@ class TransferQueryServiceTest {
         )
 
         override fun sumAmountByFromAccountIdAndScopeBetween(
-            identifier: AccountIdentifier,
+            identifier: TransferAccountIdentifier,
             scope: TransferProps.TransferScopeValue,
             from: LocalDateTime,
             to: LocalDateTime,

@@ -1,7 +1,6 @@
 package org.yechan.remittance.transfer
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.yechan.remittance.account.AccountIdentifier
 
 fun interface TransferQueryUseCase {
     fun query(
@@ -24,7 +23,7 @@ class TransferQueryService(
     ): List<TransferModel> {
         log.info { "transfer.query.start memberId=$memberId accountId=$accountId" }
         val account =
-            transferAccountClient.get(accountId)
+            transferAccountClient.get(memberId, accountId)
                 ?: run {
                     log.warn { "transfer.query.account_not_found accountId=$accountId" }
                     throw TransferFailedException(
@@ -47,5 +46,5 @@ class TransferQueryService(
 
     private data class AccountId(
         override val accountId: Long?,
-    ) : AccountIdentifier
+    ) : TransferAccountIdentifier
 }

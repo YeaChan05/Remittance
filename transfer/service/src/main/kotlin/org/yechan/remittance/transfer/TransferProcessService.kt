@@ -2,7 +2,6 @@ package org.yechan.remittance.transfer
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.transaction.annotation.Transactional
-import org.yechan.remittance.account.AccountIdentifier
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -26,10 +25,10 @@ open class TransferProcessService(
     ): TransferResult {
         log.info { "transfer.process.start memberId=$memberId scope=${props.scope}" }
         validateTransferRequest(props)
-        val accounts = lockAccounts(props)
+        val accounts = lockAccounts(memberId, props)
         validateOwner(memberId, accounts)
         validateDailyLimit(props, now)
-        val balanceChange = calculateBalanceChange(props, accounts)
+        val balanceChange = calculateBalanceChange(memberId, props, accounts)
         transferAccountClient.applyBalanceChange(balanceChange)
         return persistTransfer(memberId, idempotencyKey, props, now)
     }
@@ -43,8 +42,12 @@ open class TransferProcessService(
         }
     }
 
-    private fun lockAccounts(props: TransferRequestProps): AccountPair = transferAccountClient.lock(
+    private fun lockAccounts(
+        memberId: Long,
+        props: TransferRequestProps,
+    ): AccountPair = transferAccountClient.lock(
         TransferAccountLockCommand(
+            memberId = memberId,
             fromAccountId = props.fromAccountId,
             toAccountId = props.toAccountId,
         ),
@@ -79,12 +82,14 @@ open class TransferProcessService(
     }
 
     private fun calculateBalanceChange(
+        memberId: Long,
         props: TransferRequestProps,
         accounts: AccountPair,
     ): TransferBalanceChangeCommand {
         if (props.scope == TransferProps.TransferScopeValue.DEPOSIT) {
             val balance = accounts.toAccount.balance.add(props.amount)
             return TransferBalanceChangeCommand(
+                memberId = memberId,
                 fromAccountId = accounts.fromAccount.accountId,
                 toAccountId = accounts.toAccount.accountId,
                 fromBalance = balance,
@@ -102,6 +107,7 @@ open class TransferProcessService(
         if (props.scope == TransferProps.TransferScopeValue.WITHDRAW) {
             val balance = accounts.fromAccount.balance.subtract(debit)
             return TransferBalanceChangeCommand(
+                memberId = memberId,
                 fromAccountId = accounts.fromAccount.accountId,
                 toAccountId = accounts.toAccount.accountId,
                 fromBalance = balance,
@@ -109,6 +115,7 @@ open class TransferProcessService(
             )
         }
         return TransferBalanceChangeCommand(
+            memberId = memberId,
             fromAccountId = accounts.fromAccount.accountId,
             toAccountId = accounts.toAccount.accountId,
             fromBalance = accounts.fromAccount.balance.subtract(debit),
@@ -177,10 +184,10 @@ open class TransferProcessService(
         val fromAccount: TransferAccountSnapshot,
         val toAccount: TransferAccountSnapshot,
     ) {
-        fun isInsufficient(debit: BigDecimal): Boolean = fromAccount.balance.compareTo(debit) < 0
+        fun isInsufficient(debit: BigDecimal): Boolean = fromAccount.balance < debit
     }
 
-    private data class AccountId(override val accountId: Long?) : AccountIdentifier
+    private data class AccountId(override val accountId: Long?) : TransferAccountIdentifier
 
     private companion object {
         val WITHDRAW_DAILY_LIMIT: BigDecimal = BigDecimal.valueOf(1_000_000)
