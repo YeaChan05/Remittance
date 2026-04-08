@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.client.expectBody
 import org.yechan.remittance.TokenGenerator
 import org.yechan.remittance.TokenVerifier
 import org.yechan.remittance.transfer.TransferApiApplication
+import org.yechan.remittance.transfer.config.TransferInternalApiStubSupport
 import org.yechan.remittance.transfer.dto.IdempotencyKeyCreateResponse
 import java.time.LocalDateTime
 import java.util.UUID
@@ -19,7 +20,7 @@ import java.util.UUID
     classes = [TransferApiApplication::class],
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 )
-class PostSpecs {
+class PostSpecs : TransferInternalApiStubSupport() {
     @Autowired
     lateinit var restTestClient: RestTestClient
 

@@ -18,8 +18,8 @@ import org.springframework.test.web.servlet.client.expectBody
 import org.yechan.remittance.TransferTestFixtures
 import org.yechan.remittance.TransferTestFixtures.LedgerRow
 import org.yechan.remittance.TransferTestFixturesConfig
-import org.yechan.remittance.account.AccountIdentifier
 import org.yechan.remittance.transfer.IdempotencyKeyProps
+import org.yechan.remittance.transfer.TransferAccountIdentifier
 import org.yechan.remittance.transfer.TransferApiApplication
 import org.yechan.remittance.transfer.TransferIdentifier
 import org.yechan.remittance.transfer.TransferModel
@@ -27,6 +27,7 @@ import org.yechan.remittance.transfer.TransferProps
 import org.yechan.remittance.transfer.TransferQueryCondition
 import org.yechan.remittance.transfer.TransferRepository
 import org.yechan.remittance.transfer.TransferRequestProps
+import org.yechan.remittance.transfer.config.TransferInternalApiStubSupport
 import org.yechan.remittance.transfer.dto.DepositRequest
 import org.yechan.remittance.transfer.dto.IdempotencyKeyCreateResponse
 import org.yechan.remittance.transfer.dto.TransferRequest
@@ -42,7 +43,7 @@ import java.util.concurrent.atomic.AtomicBoolean
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 )
 @Import(TransferTestFixturesConfig::class, PostSpecs.TransferFailureConfig::class)
-class PostSpecs {
+class PostSpecs : TransferInternalApiStubSupport() {
     @Autowired
     lateinit var restTestClient: RestTestClient
 
@@ -1017,12 +1018,12 @@ class PostSpecs {
         override fun findById(identifier: TransferIdentifier): TransferModel? = delegate.findById(identifier)
 
         override fun findCompletedByAccountId(
-            identifier: AccountIdentifier,
+            identifier: TransferAccountIdentifier,
             condition: TransferQueryCondition,
         ): List<TransferModel> = delegate.findCompletedByAccountId(identifier, condition)
 
         override fun sumAmountByFromAccountIdAndScopeBetween(
-            identifier: AccountIdentifier,
+            identifier: TransferAccountIdentifier,
             scope: TransferProps.TransferScopeValue,
             from: LocalDateTime,
             to: LocalDateTime,

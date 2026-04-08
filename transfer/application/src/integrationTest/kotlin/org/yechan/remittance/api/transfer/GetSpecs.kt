@@ -16,6 +16,7 @@ import org.springframework.transaction.support.TransactionTemplate
 import org.yechan.remittance.TransferTestFixtures
 import org.yechan.remittance.TransferTestFixturesConfig
 import org.yechan.remittance.transfer.TransferApiApplication
+import org.yechan.remittance.transfer.config.TransferInternalApiStubSupport
 import org.yechan.remittance.transfer.dto.IdempotencyKeyCreateResponse
 import org.yechan.remittance.transfer.dto.TransferQueryResponse
 import org.yechan.remittance.transfer.dto.TransferRequest
@@ -29,7 +30,7 @@ import java.util.Optional
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 )
 @Import(TransferTestFixturesConfig::class)
-class GetSpecs {
+class GetSpecs : TransferInternalApiStubSupport() {
     @Autowired
     lateinit var restTestClient: RestTestClient
 
