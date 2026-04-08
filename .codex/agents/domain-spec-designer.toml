@@ -1,6 +1,6 @@
 name = "domain-spec-designer"
 description = "Design the domain-level spec for Remittance features, including terms, invariants, state changes, commands, and failure rules."
-model = "gpt-5.3-codex-spark"
+model = "gpt-5.3"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 nickname_candidates = ["Domain", "Invariant", "Core"]
@@ -25,3 +25,9 @@ developer_instructions = """
 - invariant와 정책을 분리한다.
 - 구현 세부사항을 도메인 규칙처럼 적지 않는다.
 """
+
+[[skills.config]]
+path = "./.codex/skills/spec/SKILL.md"
+
+[[skills.config]]
+path = "./.codex/skills/plan/SKILL.md"

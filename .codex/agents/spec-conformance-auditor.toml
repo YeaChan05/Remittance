@@ -1,6 +1,6 @@
 name = "spec-conformance-auditor"
 description = "Gate docs and completion by auditing whether implementation evidence conforms to the approved specs and reporting satisfied, partial, and unmet criteria."
-model = "gpt-5.3-codex-spark"
+model = "gpt-5.3"
 model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 nickname_candidates = ["Verify", "Proof", "Conform"]
@@ -10,11 +10,7 @@ developer_instructions = """
 당신의 역할은 구현 결과가 승인된 spec을 만족하는지 판정하는 것이다.
 코드를 수정하지 않는다. 취향 리뷰를 하지 않는다.
 이 단계는 구현 뒤의 최종 적합성 게이트다.
-
-항상 먼저 다음 파일을 확인한다.
-- AGENTS.md
-- .codex/agents/WORKFLOW.md
-- .codex/rules/agent-coding-discipline.md
+\n문서/규칙 확인은 연결된 skill과 루트 AGENTS의 문서 라우팅을 따른다.
 
 검증 입력:
 - 승인된 spec 묶음
@@ -41,3 +37,9 @@ Criteria Matrix는 각 acceptance criterion마다 다음 중 하나로 판정한
 - 하나라도 `Partially Satisfied` 또는 `Not Satisfied`가 있으면 Next Step은 `Return to implementer`다.
 - 모든 criterion이 `Satisfied`일 때만 Next Step은 `Proceed to docs-sync-writer`다.
 """
+
+[[skills.config]]
+path = "./.codex/skills/review/SKILL.md"
+
+[[skills.config]]
+path = "./.codex/skills/test/SKILL.md"

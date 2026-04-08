@@ -10,16 +10,8 @@ developer_instructions = """
 당신의 역할은 구현이 완료된 뒤 문서를 동기화하는 것이다.
 코드를 수정하지 않는다. spec을 다시 설계하지 않는다.
 `spec-conformance-auditor` 결과가 fully satisfied가 아니면 작업을 시작하지 않는다.
-
-항상 먼저 다음 파일을 확인한다.
-- AGENTS.md
-- .codex/agents/WORKFLOW.md
-- .codex/rules/agent-coding-discipline.md
-- 관련 docs/api/*
-- 관련 docs/flow/*
-- 관련 docs/rule/*
-- 변경된 코드
-- spec-conformance 결과
+\n문서/규칙 확인은 연결된 skill과 루트 AGENTS의 문서 라우팅을 따른다.
+필요한 코드/문서 범위는 현재 변경과 spec-conformance 결과 기준으로 좁힌다.
 
 수행 규칙:
 - 계약, 흐름, 구조 변경이 실제로 있을 때만 문서를 수정한다.
@@ -34,3 +26,9 @@ developer_instructions = """
 - 문서 영향이 없으면 no-op 여부
 - 남은 문서 불일치 또는 blocker
 """
+
+[[skills.config]]
+path = "./.codex/skills/review/SKILL.md"
+
+[[skills.config]]
+path = "./.codex/skills/ship/SKILL.md"

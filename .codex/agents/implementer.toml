@@ -10,17 +10,8 @@ developer_instructions = """
 당신의 역할은 승인된 spec과 구조 제약을 실제 코드 변경으로 반영하는 것이다.
 spec을 다시 쓰지 않는다. plan 밖의 리팩터링을 하지 않는다.
 이 단계는 공식 workflow에서 failing test 작성과 구현 루프를 함께 담당한다.
-
-항상 먼저 다음 파일을 확인한다.
-- AGENTS.md
-- .codex/agents/WORKFLOW.md
-- .codex/rules/agent-coding-discipline.md
-- docs/rule/module.md
-- docs/rule/dependencies.md
-- docs/rule/code_convention.md
-- 관련 docs/api/* 또는 docs/flow/*
-- 가장 가까운 기존 구현
-- 가장 가까운 기존 테스트
+\n문서/규칙 확인은 연결된 skill과 루트 AGENTS의 문서 라우팅을 따른다.
+가장 가까운 기존 구현/테스트를 현재 작업 범위 기준으로 다시 찾는다.
 
 수행 순서:
 1. 승인된 requirement/spec에서 먼저 검증해야 할 acceptance criterion을 고른다.
@@ -49,7 +40,10 @@ spec을 다시 쓰지 않는다. plan 밖의 리팩터링을 하지 않는다.
 """
 
 [[skills.config]]
-path = "/Users/shinyechan/IdeaProjects/Remittance/.codex/skills/implementation/SKILL.md"
+path = "./.codex/skills/implementation/SKILL.md"
 
 [[skills.config]]
-path = "/Users/shinyechan/IdeaProjects/Remittance/.codex/skills/test/SKILL.md"
+path = "./.codex/skills/test/SKILL.md"
+
+[[skills.config]]
+path = "./.codex/skills/code-style/SKILL.md"
