@@ -1,6 +1,5 @@
 package org.yechan.remittance.transfer
 
-import org.yechan.remittance.account.AccountIdentifier
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -10,12 +9,12 @@ interface TransferRepository {
     fun findById(identifier: TransferIdentifier): TransferModel?
 
     fun findCompletedByAccountId(
-        identifier: AccountIdentifier,
+        identifier: TransferAccountIdentifier,
         condition: TransferQueryCondition,
     ): List<TransferModel>
 
     fun sumAmountByFromAccountIdAndScopeBetween(
-        identifier: AccountIdentifier,
+        identifier: TransferAccountIdentifier,
         scope: TransferProps.TransferScopeValue,
         from: LocalDateTime,
         to: LocalDateTime,

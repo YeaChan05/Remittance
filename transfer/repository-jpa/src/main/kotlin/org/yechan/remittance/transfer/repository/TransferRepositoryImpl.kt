@@ -2,7 +2,7 @@ package org.yechan.remittance.transfer.repository
 
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
-import org.yechan.remittance.account.AccountIdentifier
+import org.yechan.remittance.transfer.TransferAccountIdentifier
 import org.yechan.remittance.transfer.TransferIdentifier
 import org.yechan.remittance.transfer.TransferModel
 import org.yechan.remittance.transfer.TransferProps
@@ -20,7 +20,7 @@ class TransferRepositoryImpl(
     override fun findById(identifier: TransferIdentifier): TransferModel? = repository.findById(requireNotNull(identifier.transferId)).orElse(null)
 
     override fun findCompletedByAccountId(
-        identifier: AccountIdentifier,
+        identifier: TransferAccountIdentifier,
         condition: TransferQueryCondition,
     ): List<TransferModel> {
         val limit = condition.limit
@@ -35,7 +35,7 @@ class TransferRepositoryImpl(
     }
 
     override fun sumAmountByFromAccountIdAndScopeBetween(
-        identifier: AccountIdentifier,
+        identifier: TransferAccountIdentifier,
         scope: TransferProps.TransferScopeValue,
         from: LocalDateTime,
         to: LocalDateTime,

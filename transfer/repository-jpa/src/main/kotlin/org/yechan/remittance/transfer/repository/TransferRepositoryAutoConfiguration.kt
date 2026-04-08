@@ -53,6 +53,9 @@ class TransferRepositoryBeanRegistrar :
         }
 
         registerBean<DailyLimitUsageRepository> {
-            DailyLimitUsageRepositoryImpl(bean())
+            DailyLimitUsageRepositoryImpl(
+                bean(),
+                bean(),
+            )
         }
     })
