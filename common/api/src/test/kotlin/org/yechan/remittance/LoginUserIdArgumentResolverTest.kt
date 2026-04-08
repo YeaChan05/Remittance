@@ -24,7 +24,7 @@ class LoginUserIdArgumentResolverTest {
 
     @Test
     fun `어노테이션이 붙은 Long 파라미터를 지원한다`() {
-        val parameter = MethodParameter(method("handlerWithLong", java.lang.Long::class.java), 0)
+        val parameter = MethodParameter(method("handlerWithLong", Long::class.javaObjectType), 0)
 
         assertThat(resolver.supportsParameter(parameter)).isTrue()
     }
@@ -40,7 +40,7 @@ class LoginUserIdArgumentResolverTest {
     @Test
     fun `어노테이션이 없는 파라미터는 지원하지 않는다`() {
         val parameter =
-            MethodParameter(method("handlerWithoutAnnotation", java.lang.Long::class.java), 0)
+            MethodParameter(method("handlerWithoutAnnotation", Long::class.javaObjectType), 0)
 
         assertThat(resolver.supportsParameter(parameter)).isFalse()
     }
@@ -53,7 +53,7 @@ class LoginUserIdArgumentResolverTest {
                 "credentials",
                 listOf(SimpleGrantedAuthority("ROLE_USER")),
             )
-        val parameter = MethodParameter(method("handlerWithLong", java.lang.Long::class.java), 0)
+        val parameter = MethodParameter(method("handlerWithLong", Long::class.javaObjectType), 0)
 
         val result = resolver.resolveArgument(parameter, ModelAndViewContainer(), webRequest, null)
 
@@ -62,7 +62,7 @@ class LoginUserIdArgumentResolverTest {
 
     @Test
     fun `인증 정보가 없으면 unauthorized를 던진다`() {
-        val parameter = MethodParameter(method("handlerWithLong", java.lang.Long::class.java), 0)
+        val parameter = MethodParameter(method("handlerWithLong", Long::class.javaObjectType), 0)
 
         assertThatThrownBy {
             resolver.resolveArgument(parameter, ModelAndViewContainer(), webRequest, null)
@@ -79,7 +79,7 @@ class LoginUserIdArgumentResolverTest {
                 "anonymous",
                 listOf(SimpleGrantedAuthority("ROLE_ANONYMOUS")),
             )
-        val parameter = MethodParameter(method("handlerWithLong", java.lang.Long::class.java), 0)
+        val parameter = MethodParameter(method("handlerWithLong", Long::class.javaObjectType), 0)
 
         assertThatThrownBy {
             resolver.resolveArgument(parameter, ModelAndViewContainer(), webRequest, null)
@@ -96,7 +96,7 @@ class LoginUserIdArgumentResolverTest {
                 "credentials",
                 listOf(SimpleGrantedAuthority("ROLE_USER")),
             )
-        val parameter = MethodParameter(method("handlerWithLong", java.lang.Long::class.java), 0)
+        val parameter = MethodParameter(method("handlerWithLong", Long::class.javaObjectType), 0)
 
         assertThatThrownBy {
             resolver.resolveArgument(parameter, ModelAndViewContainer(), webRequest, null)

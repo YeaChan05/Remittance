@@ -10,17 +10,14 @@ import org.springframework.web.method.support.ModelAndViewContainer
 
 class LoginUserIdArgumentResolver : HandlerMethodArgumentResolver {
     override fun supportsParameter(parameter: MethodParameter): Boolean = parameter.hasParameterAnnotation(LoginUserId::class.java) &&
-        (
-            parameter.parameterType == java.lang.Long::class.java ||
-                parameter.parameterType == Long::class.javaPrimitiveType
-            )
+        (parameter.parameterType == Long::class.javaObjectType || parameter.parameterType == Long::class.javaPrimitiveType)
 
     override fun resolveArgument(
         parameter: MethodParameter,
         mavContainer: ModelAndViewContainer?,
         webRequest: NativeWebRequest,
         binderFactory: WebDataBinderFactory?,
-    ): Any? {
+    ): Any {
         val authentication = SecurityContextHolder.getContext().authentication
         if (authentication == null || authentication is AnonymousAuthenticationToken) {
             throw BusinessException(Status.AUTHENTICATION_FAILED, "Unauthorized")
