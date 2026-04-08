@@ -60,8 +60,8 @@ class InternalServiceAuthenticationFilter(
     }
 
     companion object {
-        const val INTERNAL_TOKEN_HEADER = "X-Internal-Token"
-        const val INTERNAL_USER_ID_HEADER = "X-Internal-User-Id"
+        const val INTERNAL_TOKEN_HEADER = InternalRequestHeaders.TOKEN
+        const val INTERNAL_USER_ID_HEADER = InternalRequestHeaders.USER_ID
         private const val INTERNAL_PRINCIPAL = "internal-service"
     }
 }
