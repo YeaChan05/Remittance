@@ -15,7 +15,10 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.access.AccessDeniedHandler
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
-@EnableConfigurationProperties(AuthTokenProperties::class)
+@EnableConfigurationProperties(
+    AuthTokenProperties::class,
+    InternalServiceAuthProperties::class,
+)
 class CommonSecurityAutoConfiguration
 
 @AutoConfiguration(
@@ -60,6 +63,13 @@ class CommonSecurityBeanRegistrar :
             )
         }
 
+        registerBean<InternalServiceAuthenticationFilter> {
+            InternalServiceAuthenticationFilter(
+                bean(),
+                bean(),
+            )
+        }
+
         registerBean<AuthorizeHttpRequestsCustomizer> {
             PrioritizedAuthorizeHttpRequestsCustomizer(
                 Ordered.LOWEST_PRECEDENCE,
@@ -87,6 +97,10 @@ class CommonSecurityBeanRegistrar :
                 .addFilterBefore(
                     bean<JwtAuthenticationFilter>(),
                     UsernamePasswordAuthenticationFilter::class.java,
+                )
+                .addFilterBefore(
+                    bean<InternalServiceAuthenticationFilter>(),
+                    JwtAuthenticationFilter::class.java,
                 )
                 .build()
         }

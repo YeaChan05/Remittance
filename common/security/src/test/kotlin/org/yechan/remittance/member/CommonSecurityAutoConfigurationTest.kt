@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.context.WebApplicationContext
 import org.yechan.remittance.AuthorizeHttpRequestsCustomizer
+import org.yechan.remittance.InternalServiceAuthenticationFilter
 import org.yechan.remittance.PrioritizedAuthorizeHttpRequestsCustomizer
 import org.yechan.remittance.TokenGenerator
 
@@ -33,6 +34,7 @@ import org.yechan.remittance.TokenGenerator
         "auth.token.salt=test-salt",
         "auth.token.access-expires-in=3600",
         "auth.token.refresh-expires-in=7200",
+        "auth.internal.token=test-internal-token",
     ],
 )
 class CommonSecurityAutoConfigurationTest {
@@ -73,6 +75,46 @@ class CommonSecurityAutoConfigurationTest {
     }
 
     @Test
+    fun `internal requests with valid internal token are allowed`() {
+        restTestClient.get()
+            .uri("/internal/secure")
+            .header(InternalServiceAuthenticationFilter.INTERNAL_TOKEN_HEADER, "test-internal-token")
+            .header(InternalServiceAuthenticationFilter.INTERNAL_USER_ID_HEADER, "7")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody<String>()
+            .isEqualTo("7")
+    }
+
+    @Test
+    fun `internal requests without user id keep temporary compatibility`() {
+        restTestClient.get()
+            .uri("/internal/secure")
+            .header(InternalServiceAuthenticationFilter.INTERNAL_TOKEN_HEADER, "test-internal-token")
+            .exchange()
+            .expectStatus().isOk
+            .expectBody<String>()
+            .isEqualTo("internal-service")
+    }
+
+    @Test
+    fun `internal requests without internal token are unauthorized`() {
+        restTestClient.get()
+            .uri("/internal/secure")
+            .exchange()
+            .expectStatus().isUnauthorized
+    }
+
+    @Test
+    fun `external requests do not trust internal user id header`() {
+        restTestClient.get()
+            .uri("/secure")
+            .header(InternalServiceAuthenticationFilter.INTERNAL_USER_ID_HEADER, "7")
+            .exchange()
+            .expectStatus().isUnauthorized
+    }
+
+    @Test
     fun `additional customizers are applied before default closing rule`() {
         restTestClient.get()
             .uri("/open")
@@ -97,6 +139,9 @@ class CommonSecurityAutoConfigurationTest {
 
             @GetMapping("/secure")
             fun secure(authentication: Authentication): String = authentication.name
+
+            @GetMapping("/internal/secure")
+            fun internalSecure(authentication: Authentication): String = authentication.name
         }
     }
 
