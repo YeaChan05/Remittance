@@ -1,5 +1,5 @@
 server:
-  port: 0
+  port: ${SERVER_PORT:18082}
 spring:
   autoconfigure:
     exclude: org.springframework.boot.security.autoconfigure.actuate.web.servlet.ManagementWebSecurityAutoConfiguration
@@ -33,3 +33,5 @@ auth:
     salt: remittance-token-salt
     access-expires-in: ${AUTH_TOKEN_ACCESS_EXPIRES_IN:3600}
     refresh-expires-in: ${AUTH_TOKEN_REFRESH_EXPIRES_IN:604800}
+  internal:
+    token: ${AUTH_INTERNAL_TOKEN:remittance-internal-token}

@@ -9,6 +9,7 @@ testcontainers {
 dependencies {
     implementation(project(":common:security"))
     implementation(project(":account:api"))
+    implementation(project(":account:api-internal"))
     implementation(project(":account:repository-jpa"))
     implementation(project(":account:schema"))
     implementation(project(":account:mq-rabbitmq"))
