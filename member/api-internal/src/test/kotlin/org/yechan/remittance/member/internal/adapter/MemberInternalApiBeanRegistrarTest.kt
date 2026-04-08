@@ -8,13 +8,11 @@ import org.springframework.context.annotation.Import
 import org.yechan.remittance.member.MemberAuthenticationQueryUseCase
 import org.yechan.remittance.member.MemberAuthenticationResult
 import org.yechan.remittance.member.MemberExistenceQueryUseCase
-import org.yechan.remittance.member.internal.contract.MemberAuthenticationInternalApi
 import org.yechan.remittance.member.internal.contract.MemberAuthenticationRequest
-import org.yechan.remittance.member.internal.contract.MemberExistenceInternalApi
 
 class MemberInternalApiBeanRegistrarTest {
     @Test
-    fun `자동 설정은 회원 내부 계약 빈을 등록한다`() {
+    fun `자동 설정은 회원 내부 controller 빈을 등록한다`() {
         val memberAuthQueryUseCase =
             MemberAuthenticationQueryUseCase { MemberAuthenticationResult(true, 3L) }
         val memberExistenceQueryUseCase = MemberExistenceQueryUseCase { it == 3L }
@@ -28,11 +26,13 @@ class MemberInternalApiBeanRegistrarTest {
             refresh()
         }
 
-        val memberInternalApi = context.getBean(MemberAuthenticationInternalApi::class.java)
-        val memberExistenceInternalApi = context.getBean(MemberExistenceInternalApi::class.java)
+        val memberAuthenticationController =
+            context.getBean(MemberAuthenticationInternalController::class.java)
+        val memberExistenceController =
+            context.getBean(MemberExistenceInternalController::class.java)
 
         assertThat(
-            memberInternalApi.verify(
+            memberAuthenticationController.verify(
                 MemberAuthenticationRequest(
                     "user@example.com",
                     "password",
@@ -40,10 +40,8 @@ class MemberInternalApiBeanRegistrarTest {
             ).memberId,
         ).isEqualTo(3L)
         assertThat(
-            memberExistenceInternalApi.exists(
-                org.yechan.remittance.member.internal.contract.MemberExistsRequest(
-                    3L,
-                ),
+            memberExistenceController.exists(
+                org.yechan.remittance.member.internal.contract.MemberExistsRequest(3L),
             ).exists,
         ).isTrue()
 
@@ -51,6 +49,10 @@ class MemberInternalApiBeanRegistrarTest {
     }
 
     @Configuration(proxyBeanMethods = false)
-    @Import(MemberInternalApiBeanRegistrar::class)
+    @Import(
+        MemberInternalApiBeanRegistrar::class,
+        MemberAuthenticationInternalController::class,
+        MemberExistenceInternalController::class,
+    )
     class TestConfiguration
 }
