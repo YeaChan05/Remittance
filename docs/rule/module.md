@@ -226,11 +226,13 @@ Spring bean / 설정 규칙
 * 각 adapter들의 Bean을 조립하기 위해 auto-configuration 의존을 둔다.
 * 현재는 로컬에서 전체 도메인을 함께 띄워 보는 조립용 런타임 역할만 가진다.
 * 정규 API 통합 테스트의 소유자는 각 도메인 `application` 모듈이다.
+* 같은 프로세스 조합이 필요한 경우 provider-side `api-internal` bean을 직접 조립할 수 있다.
 
 의존(일반)
 
 * `common:security`
 * `{domain}:api`
+* `{domain}:api-internal` (해당 application이 internal endpoint를 직접 노출할 때)
 * `{domain}:repository-jpa`
 * `{domain}:schema`
 * `{domain}:mq-{type}`
@@ -239,10 +241,12 @@ Spring bean / 설정 규칙
 
 * 도메인 규칙/로직 구현 x
 * auto-configuration을 통한 bean 등록을 위해 의존만
+* same-process 조립 예외를 core/service/infrastructure 규칙 완화로 확장 x
 
 Spring bean / 설정 규칙
 
 * 실행 모듈에서 필요한 공통 bean(`Clock` 등)은 `BeanRegistrarDsl` 기반 registrar로 등록한다.
+* 단독 application은 HTTP client adapter bean을 조립할 수 있고, `aggregate`는 same-process provider-side bean을 조합할 수 있다.
 * `repository-jpa` auto-configuration은 JPA ordering과 direct `@Import` 테스트 경로 때문에
   `@Import({Domain}RepositoryBeanRegistrar::class)` + `@AutoConfiguration(before = [...])` 패턴을 예외로
   유지한다.
