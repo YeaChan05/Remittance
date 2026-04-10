@@ -101,7 +101,7 @@ USE CODEX NATIVE SUBAGENTS FOR INDEPENDENT PARALLEL SUBTASKS WHEN THAT IMPROVES 
 
 ## 10. 하위 규칙 안내
 - `.codex/skills/AGENTS.md`: 로컬 skill 작성/분해/포맷 규칙
-- `domain/AGENTS.md`: 도메인 특화 internal call / assembly / internal user context 규칙
+- `{domain}/AGENTS.md`: 도메인 특화 internal call / assembly / internal user context 규칙
 
 <!-- OMX:RUNTIME:START -->
 <!-- OMX:RUNTIME:END -->
