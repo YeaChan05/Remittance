@@ -25,9 +25,10 @@ class TestcontainersPlugin : Plugin<Project> {
         val taskRegistrations = linkedMapOf<String, SharedContainerTaskRegistration>()
         val selectedTaskPathsByStack = ConcurrentHashMap<String, Set<String>>()
 
-        project.gradle.buildFinished {
+        project.tasks.register("afterBuild") {
             sharedContainerService.orNull?.close()
         }
+
         project.gradle.taskGraph.whenReady(
             object : Action<TaskExecutionGraph> {
                 override fun execute(taskGraph: TaskExecutionGraph) {
@@ -74,6 +75,17 @@ class TestcontainersPlugin : Plugin<Project> {
 
                     val taskProvider = tasks.named(taskSpec.name, Task::class.java)
                     val stackKey = resolveStackKey(currentProject, taskSpec)
+                    val taskPath = "${currentProject.path}:${taskSpec.name}"
+                    val declaredContainerKeys = taskSpec.containerKeys.toSet()
+                    val coordinates = TestcontainersRuntimeCoordinatesResolver.resolve(currentProject, extension)
+                    val runtimeClasspathByProviderKey =
+                        SharedContainerRegistry.resolve(declaredContainerKeys).associate { provider ->
+                            provider.key to TestcontainersRuntimeClasspathResolver.resolveConfiguration(
+                                project = currentProject,
+                                coordinates = coordinates,
+                                provider = provider,
+                            ).files.toSet()
+                        }
                     val taskRegistration = SharedContainerTaskRegistration(
                         projectPath = currentProject.path,
                         taskName = taskSpec.name,
@@ -102,14 +114,16 @@ class TestcontainersPlugin : Plugin<Project> {
                     taskProvider.configure {
                         finalizedBy(releaseTaskProvider)
                     }
-                    TaskContainerBinder(
+                    bindSharedContainers(
                         taskProvider = taskProvider,
-                        extension = extension,
-                        taskSpec = taskSpec,
                         sharedContainerService = sharedContainerService,
                         stackLockService = stackLockService,
                         stackKey = stackKey,
-                    ).bind()
+                        taskPath = taskPath,
+                        declaredContainerKeys = declaredContainerKeys,
+                        coordinates = coordinates,
+                        runtimeClasspathByProviderKey = runtimeClasspathByProviderKey,
+                    )
                 }
             }
         }

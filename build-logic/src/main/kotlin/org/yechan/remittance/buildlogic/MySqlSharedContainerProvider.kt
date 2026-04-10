@@ -8,7 +8,7 @@ import java.sql.Connection
 
 internal object MySqlSharedContainerProvider : SharedContainerProvider {
     override val key: String = "mysql"
-    override val validatedModuleNames: Set<String> = setOf("mysql", "testcontainers-mysql")
+    override val validatedModuleNames: Set<String> = setOf("testcontainers-mysql")
 
     override fun runtimeDependencies(
         project: Project,
@@ -37,7 +37,7 @@ internal object MySqlSharedContainerProvider : SharedContainerProvider {
     ) : ClasspathBackedSharedContainerRuntime(classpath) {
         private val container = withContextClassLoader { createContainer() }
 
-        override fun prepare(project: Project, taskPath: String) {
+        override fun prepare(taskPath: String) {
             val databaseName = databaseNameFor(taskPath)
             withContextClassLoader {
                 createConnection().use { connection ->
@@ -48,7 +48,7 @@ internal object MySqlSharedContainerProvider : SharedContainerProvider {
             }
         }
 
-        override fun applyTo(target: JavaForkOptions, project: Project, taskPath: String) {
+        override fun applyTo(target: JavaForkOptions, taskPath: String) {
             val databaseName = databaseNameFor(taskPath)
             target.systemProperty(SPRING_DATASOURCE_URL, jdbcUrl(databaseName))
             target.systemProperty(SPRING_DATASOURCE_USERNAME, username())

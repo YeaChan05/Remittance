@@ -4,6 +4,7 @@ import org.gradle.api.Project
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
 import org.gradle.process.JavaForkOptions
+import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -29,24 +30,24 @@ abstract class SharedContainerService :
     }
 
     internal fun prepare(
-        project: Project,
         taskPath: String,
         stackKey: String,
         coordinates: TestcontainersRuntimeCoordinates,
         provider: SharedContainerProvider,
+        runtimeClasspath: Set<File>,
     ) {
-        runtime(project, stackKey, coordinates, provider).prepare(project, taskPath)
+        runtime(stackKey, coordinates, provider, runtimeClasspath).prepare(taskPath)
     }
 
     internal fun applyTo(
         target: JavaForkOptions,
-        project: Project,
         taskPath: String,
         stackKey: String,
         coordinates: TestcontainersRuntimeCoordinates,
         provider: SharedContainerProvider,
+        runtimeClasspath: Set<File>,
     ) {
-        runtime(project, stackKey, coordinates, provider).applyTo(target, project, taskPath)
+        runtime(stackKey, coordinates, provider, runtimeClasspath).applyTo(target, taskPath)
     }
 
     internal fun registerExecutionPlan(
@@ -101,20 +102,14 @@ abstract class SharedContainerService :
     }
 
     private fun runtime(
-        project: Project,
         stackKey: String,
         coordinates: TestcontainersRuntimeCoordinates,
         provider: SharedContainerProvider,
+        runtimeClasspath: Set<File>,
     ): SharedContainerRuntime {
         val key = SharedContainerRuntimeKey(provider.key, stackKey, coordinates)
         return runtimes.computeIfAbsent(key) {
-            provider.createRuntime(
-                TestcontainersRuntimeClasspathResolver.resolve(
-                    project = project,
-                    coordinates = coordinates,
-                    provider = provider,
-                ),
-            )
+            provider.createRuntime(runtimeClasspath)
         }
     }
 

@@ -21,9 +21,9 @@ internal interface SharedContainerProvider {
 }
 
 internal interface SharedContainerRuntime : AutoCloseable {
-    fun prepare(project: Project, taskPath: String) {}
+    fun prepare(taskPath: String) {}
 
-    fun applyTo(target: JavaForkOptions, project: Project, taskPath: String)
+    fun applyTo(target: JavaForkOptions, taskPath: String)
 }
 
 internal object SharedContainerRegistry {

@@ -1,46 +1,48 @@
 package org.yechan.remittance.buildlogic
 
+import org.gradle.api.GradleException
 import org.gradle.api.Task
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.tasks.testing.Test
 import org.gradle.process.JavaForkOptions
+import java.io.File
 
-internal class TaskContainerBinder(
-    private val taskProvider: TaskProvider<Task>,
-    private val extension: TestcontainersExtension,
-    private val taskSpec: TestcontainersTaskSpec,
-    private val sharedContainerService: Provider<SharedContainerService>,
-    private val stackLockService: Provider<SharedContainerStackLockService>,
-    private val stackKey: String,
+internal fun bindSharedContainers(
+    taskProvider: TaskProvider<Task>,
+    sharedContainerService: Provider<SharedContainerService>,
+    stackLockService: Provider<SharedContainerStackLockService>,
+    stackKey: String,
+    taskPath: String,
+    declaredContainerKeys: Set<String>,
+    coordinates: TestcontainersRuntimeCoordinates,
+    runtimeClasspathByProviderKey: Map<String, Set<File>>,
 ) {
-    fun bind() {
-        taskProvider.configure {
-            val boundTask = this
-            usesService(sharedContainerService)
-            usesService(stackLockService)
+    taskProvider.configure {
+        usesService(sharedContainerService)
+        usesService(stackLockService)
 
-            doFirst {
-                val javaForkTask = boundTask as? JavaForkOptions
-                    ?: error("Shared testcontainers support requires JavaForkOptions task: ${boundTask.path}")
-                val providers = SharedContainerRegistry.resolve(taskSpec.containerKeys)
-                val coordinates =
-                    TestcontainersRuntimeCoordinatesResolver.resolve(project, extension)
+        doFirst {
+            val javaForkTask = this as? JavaForkOptions
+                ?: error("Shared testcontainers support requires JavaForkOptions task: $taskPath")
+            val testTask = this as? Test
+                ?: error("Shared testcontainers support requires Test task: $taskPath")
+            val providers = SharedContainerRegistry.resolve(declaredContainerKeys)
+            TestcontainersDependencyValidator.findMismatchMessage(
+                taskPath = taskPath,
+                declaredContainerKeys = declaredContainerKeys,
+                coordinates = coordinates,
+                providers = providers,
+                runtimeClasspathFiles = testTask.classpath.files,
+            )?.let(::GradleException)?.let { throw it }
 
-                TestcontainersDependencyValidator.validate(
-                    project = project,
-                    taskName = name,
-                    taskSpec = taskSpec,
-                    coordinates = coordinates,
-                    providers = providers,
-                )
+            val service = sharedContainerService.get()
+            service.ensureDockerReady()
 
-                val service = sharedContainerService.get()
-                service.ensureDockerReady()
-
-                providers.forEach { provider ->
-                    service.prepare(project, path, stackKey, coordinates, provider)
-                    service.applyTo(javaForkTask, project, path, stackKey, coordinates, provider)
-                }
+            providers.forEach { provider ->
+                val runtimeClasspath = runtimeClasspathByProviderKey.getValue(provider.key)
+                service.prepare(taskPath, stackKey, coordinates, provider, runtimeClasspath)
+                service.applyTo(javaForkTask, taskPath, stackKey, coordinates, provider, runtimeClasspath)
             }
         }
     }

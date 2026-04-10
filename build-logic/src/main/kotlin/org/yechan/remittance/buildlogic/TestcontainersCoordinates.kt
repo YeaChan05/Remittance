@@ -2,6 +2,7 @@ package org.yechan.remittance.buildlogic
 
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import java.io.File
@@ -37,17 +38,17 @@ internal object TestcontainersRuntimeCoordinatesResolver {
 }
 
 internal object TestcontainersRuntimeClasspathResolver {
-    fun resolve(
+    fun resolveConfiguration(
         project: Project,
         coordinates: TestcontainersRuntimeCoordinates,
         provider: SharedContainerProvider,
-    ): Set<File> {
+    ): Configuration {
         val dependencies = mutableListOf<Dependency>()
         dependencies += project.dependencies.enforcedPlatform(coordinates.bomCoordinate)
         dependencies += project.dependencies.create(TESTCONTAINERS_CORE)
         dependencies += provider.runtimeDependencies(project, coordinates)
 
-        return project.configurations.detachedConfiguration(*dependencies.toTypedArray()).resolve()
+        return project.configurations.detachedConfiguration(*dependencies.toTypedArray())
     }
 
     private const val TESTCONTAINERS_CORE = "org.testcontainers:testcontainers"

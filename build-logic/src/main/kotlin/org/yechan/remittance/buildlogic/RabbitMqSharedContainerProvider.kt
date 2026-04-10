@@ -7,7 +7,7 @@ import java.io.File
 
 internal object RabbitMqSharedContainerProvider : SharedContainerProvider {
     override val key: String = "rabbitmq"
-    override val validatedModuleNames: Set<String> = setOf("rabbitmq", "testcontainers-rabbitmq")
+    override val validatedModuleNames: Set<String> = setOf("testcontainers-rabbitmq")
 
     override fun runtimeDependencies(
         project: Project,
@@ -23,7 +23,7 @@ internal object RabbitMqSharedContainerProvider : SharedContainerProvider {
     ) : ClasspathBackedSharedContainerRuntime(classpath) {
         private val container = withContextClassLoader { createContainer() }
 
-        override fun applyTo(target: JavaForkOptions, project: Project, taskPath: String) {
+        override fun applyTo(target: JavaForkOptions, taskPath: String) {
             target.systemProperty(SPRING_RABBITMQ_HOST, host())
             target.systemProperty(SPRING_RABBITMQ_PORT, port())
             target.systemProperty(SPRING_RABBITMQ_USERNAME, username())

@@ -1,46 +1,52 @@
 package org.yechan.remittance.buildlogic
 
-import org.gradle.api.GradleException
-import org.gradle.api.Project
+import java.io.File
 
 internal object TestcontainersDependencyValidator {
-    fun validate(
-        project: Project,
-        taskName: String,
-        taskSpec: TestcontainersTaskSpec,
+    fun findMismatchMessage(
+        taskPath: String,
+        declaredContainerKeys: Collection<String>,
         coordinates: TestcontainersRuntimeCoordinates,
         providers: Collection<SharedContainerProvider>,
-    ) {
+        runtimeClasspathFiles: Set<File>,
+    ): String? {
         val validatedModules = buildSet {
             add("testcontainers")
             providers.forEach { addAll(it.validatedModuleNames) }
         }
 
-        val runtimeClasspath =
-            project.configurations.findByName("${taskName}RuntimeClasspath") ?: return
-        val mismatches = runtimeClasspath.incoming.resolutionResult.allComponents
+        val moduleNames = validatedModules.sortedByDescending(String::length)
+        val mismatches = runtimeClasspathFiles
             .asSequence()
-            .mapNotNull { it.moduleVersion }
-            .filter { it.group == ORG_TESTCONTAINERS }
-            .filterNot { it.version == coordinates.bomVersion }
-            .filter { it.name in validatedModules }
-            .map { "${it.group}:${it.name}:${it.version}" }
+            .mapNotNull { file ->
+                val name = file.name.removeSuffix(".jar")
+                val module =
+                    moduleNames.firstOrNull { candidate ->
+                        name.startsWith("$candidate-")
+                    } ?: return@mapNotNull null
+                val version = name.removePrefix("$module-")
+                if (version.isEmpty() || !version.first().isDigit()) {
+                    return@mapNotNull null
+                }
+                if (version == coordinates.bomVersion) {
+                    return@mapNotNull null
+                }
+                "org.testcontainers:$module:$version"
+            }
             .distinct()
             .toList()
 
-        if (mismatches.isNotEmpty()) {
-            throw GradleException(
-                buildString {
-                    appendLine("Testcontainers BOM mismatch detected for ${project.path}:$taskName.")
-                    appendLine("Declared BOM: ${coordinates.bomCoordinate}")
-                    appendLine("Declared shared containers: ${taskSpec.containerKeys.joinToString(", ")}")
-                    appendLine("Resolved modules:")
-                    mismatches.forEach { appendLine("- $it") }
-                    append("Align the module dependencies with testcontainers { bom(\"${coordinates.bomCoordinate}\") }.")
-                },
-            )
+        if (mismatches.isEmpty()) {
+            return null
+        }
+
+        return buildString {
+            appendLine("Testcontainers BOM mismatch detected for $taskPath.")
+            appendLine("Declared BOM: ${coordinates.bomCoordinate}")
+            appendLine("Declared shared containers: ${declaredContainerKeys.joinToString(", ")}")
+            appendLine("Resolved modules:")
+            mismatches.forEach { appendLine("- $it") }
+            append("Align the module dependencies with testcontainers { bom(\"${coordinates.bomCoordinate}\") }.")
         }
     }
-
-    private const val ORG_TESTCONTAINERS = "org.testcontainers"
 }
