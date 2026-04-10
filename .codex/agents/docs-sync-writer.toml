@@ -29,7 +29,7 @@ developer_instructions = """
 """
 
 [[skills.config]]
-path = "./.codex/skills/review/SKILL.md"
+path = "./.codex/skills/explain-change/SKILL.md"
 
 [[skills.config]]
 path = "./.codex/skills/ship/SKILL.md"

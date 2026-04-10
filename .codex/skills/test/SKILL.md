@@ -31,6 +31,12 @@ description: Use when the job is to add or update repo-style tests and run the s
 
 ## Execution Result
 
+## Next Handoff
+
+* Input: 검증 대상 동작, 관련 테스트 파일, 필요 시 프로덕션 diff
+* Output: `/review` 또는 후속 설명이 사용할 테스트 결과와 남은 gap
+* Failure Route: 테스트 실패 원인이 구현 문제면 BUILD로, 검증 자체가 부족하면 VERIFY 안에서 보강한다
+
 # Done
 
 * 필요한 테스트가 올바른 source set에 배치됐다

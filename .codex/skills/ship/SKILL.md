@@ -13,12 +13,13 @@ description: Use when verify and review are complete and you need a release-read
 
 * release 대상 범위 또는 변경 diff
 * review verdict
+* DOCUMENT 완료 여부 또는 no-op 근거
 * 실행된 검증 결과
 * 문서 반영 여부와 남은 운영 TODO
 
 # Steps
 
-1. 문서 반영 여부와 누락된 handoff 항목을 확인한다.
+1. REVIEW 결과만이 아니라 DOCUMENT 완료 여부 또는 no-op 근거를 먼저 확인한다.
 2. release 범위와 검증 근거를 운영 관점으로 묶는다.
 3. 남은 리스크, 미실행 검증, 수동 절차를 구분해 적는다.
 4. 실제 배포를 하지 않았다면 readiness 정리까지만 했다고 명시한다.
@@ -30,6 +31,12 @@ description: Use when verify and review are complete and you need a release-read
 ## Evidence
 
 ## Remaining Risks
+
+## Failure Route
+
+* Input: review verdict, DOCUMENT 확인 결과, 검증 증거
+* Output: 운영 handoff 가능한 readiness summary
+* Failure Route: DOCUMENT 미완료면 DOCUMENT로, blocking risk가 남으면 REVIEW 또는 BUILD로 되돌린다
 
 # Done
 

@@ -32,6 +32,12 @@ description: Use when an approved spec or plan already exists and one acceptance
 
 ## Verification
 
+## Next Handoff
+
+* Input: 승인된 plan과 이번 루프의 acceptance criterion
+* Output: `/test`가 검증할 코드 변경과 좁은 검증 결과
+* Failure Route: 구현이 검증을 통과하지 못하면 BUILD 단계에서 같은 criterion으로 반복한다
+
 # Done
 
 * 선택한 acceptance criterion이 코드와 테스트에 반영됐다

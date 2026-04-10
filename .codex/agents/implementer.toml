@@ -41,7 +41,10 @@ spec을 다시 쓰지 않는다. plan 밖의 리팩터링을 하지 않는다.
 """
 
 [[skills.config]]
-path = "./.codex/skills/implementation/SKILL.md"
+path = "./.codex/skills/build/SKILL.md"
+
+[[skills.config]]
+path = "./.codex/skills/update-bean-wiring/SKILL.md"
 
 [[skills.config]]
 path = "./.codex/skills/test/SKILL.md"

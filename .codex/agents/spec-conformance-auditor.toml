@@ -44,3 +44,6 @@ path = "./.codex/skills/review/SKILL.md"
 
 [[skills.config]]
 path = "./.codex/skills/test/SKILL.md"
+
+[[skills.config]]
+path = "./.codex/skills/explain-verification/SKILL.md"

@@ -30,6 +30,12 @@ description: Use when requirements are already clear enough to turn into an exec
 
 ## Verification Strategy
 
+## Next Handoff
+
+* Input: spec / PRD / acceptance criteria
+* Output: `/build`가 바로 사용할 구현 순서와 `/test` 기준 검증 전략
+* Failure Route: 범위/리스크가 정리되지 않으면 DEFINE 또는 plan-consensus / review-plan으로 되돌린다
+
 # Done
 
 * 구현자가 다시 범위를 묻지 않고 바로 착수할 수 있다

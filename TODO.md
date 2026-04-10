@@ -31,3 +31,4 @@ flowchart
   - 옳다고 볼 수 있는가?
 - application간 호출 구조
   - 계약을 하나의 모듈에서 관리 어떻게 생각?
+- 구현 skills 세분화 reference

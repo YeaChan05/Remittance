@@ -34,4 +34,4 @@ developer_instructions = """
 path = "./.codex/skills/module-design-check/SKILL.md"
 
 [[skills.config]]
-path = "./.codex/skills/code-style/SKILL.md"
+path = "./.codex/skills/review-architecture/SKILL.md"

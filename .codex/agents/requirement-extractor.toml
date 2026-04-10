@@ -1,8 +1,8 @@
 enabled = true
 name = "requirement-extractor"
 description = "Extract normalized requirements, actors, triggers, constraints, assumptions, and open questions from user requests and existing Remittance context."
-model = "gpt-5.3"
-model_reasoning_effort = "medium"
+model = "gpt-5.4"
+model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 nickname_candidates = ["Req", "Scope", "Input"]
 developer_instructions = """

@@ -30,7 +30,7 @@ flowchart LR
 |----------|------------------------|--------------------------------------------|------------------------------------------------------------------------------------|---------------------------------------------------------------------|
 | DEFINE   | `/spec`                | 문제 정의, 범위, acceptance 기준, open question 정리 | acceptance criteria / 비목표 / open question이 정리되어 PLAN 입력으로 넘길 수 있음                  | explicit skill: `spec`                                              |
 | PLAN     | `/plan`                | PRD / test-spec / 구현 순서 확정                 | 구현 순서, 검증 전략, 리스크가 고정되고 필요 시 `.omx/plans/prd-*.md`, `.omx/plans/test-spec-*.md` 생성 | explicit skill: `plan`, 필요 시 `ralplan`, design agents               |
-| BUILD    | `/build`               | 승인된 범위의 최소 구현                              | 승인된 범위의 최소 구현 완료 + 좁은 failing test가 해소됨                                            | explicit skill: `build`, `implementer`, `executor`                  |
+| BUILD    | `/build`               | 승인된 범위의 최소 구현                              | 승인된 범위의 최소 구현 완료 + 좁은 failing test가 해소됨                                            | explicit skill: `build`, `implementer`, 필요 시 `code-simplifier`     |
 | VERIFY   | `/test`                | 좁은 테스트 통과, 디버깅 완료, 증거 수집                   | 관련 테스트 green + 실패 원인 설명 가능 + 핵심 증거 수집 완료                                           | explicit skill: `test`, `debugger`, `verifier`                      |
 | REVIEW   | `/review`              | QA gate, spec 적합성, 위험 점검                   | blocking issue 없음, non-blocking issue는 명시적 기록 완료                                   | explicit skill: `review`, `code-review`, `spec-conformance-auditor` |
 | DOCUMENT | implicit pre-ship gate | 변경된 계약/흐름/구조 문서 동기화                        | 영향 문서 확인 완료 + 필요 문서 수정 또는 no-op 근거 기록 완료                                           | explicit skill: `docs-sync-writer`, 필요 시 `writer`                   |
@@ -41,7 +41,6 @@ flowchart LR
 ### 1. DEFINE
 
 - `requirement-extractor`
-- 필요 시 `deep-interview`
 
 실행 규칙:
 
@@ -52,7 +51,6 @@ flowchart LR
 
 ### 2. PLAN
 
-- `planner`
 - `domain-spec-designer`
 - `application-flow-designer`
 - `architecture-rule-auditor`
@@ -67,7 +65,7 @@ flowchart LR
 ### 3. BUILD
 
 - `implementer`
-- `executor`
+- 필요 시 `code-simplifier`
 
 실행 규칙:
 
@@ -75,6 +73,8 @@ flowchart LR
 - 첫 동작은 가장 작은 failing test를 선택하거나 보강하는 것이다.
 - 그 다음 최소 프로덕션 코드만 수정한다.
 - 구현 중 불필요한 구조 변경이나 plan 밖 리팩터링은 금지한다.
+- cleanup / refactor가 목적이거나 review에서 cleanup-only finding이 돌아오면 `code-simplifier`를 사용할 수 있다.
+- `code-simplifier`는 behavior-preserving 범위에서만 움직이며, 필요 시 가장 좁은 regression protection부터 추가한다.
 
 내부 루프:
 
@@ -82,6 +82,14 @@ flowchart LR
 2. 최소 구현
 3. 좁은 검증 실행
 4. 실패 시 같은 단계 반복
+
+cleanup 전용 루프:
+
+1. 줄일 smell 하나를 고정
+2. 가장 좁은 regression protection 확보
+3. 삭제 / 단순화 / 책임 정리 중심 수정
+4. 좁은 검증 실행
+5. 실패 시 같은 smell 범위에서만 반복
 
 ### 4. VERIFY
 
@@ -101,7 +109,7 @@ flowchart LR
 - `review`
 - `code-reviewer`
 - `spec-conformance-auditor`
-- 필요 시 `security-reviewer`, `architecture-rule-auditor`
+- 필요 시 `security-reviewer`, `architecture-rule-auditor`, `code-simplifier`
 
 실행 규칙:
 
@@ -109,7 +117,7 @@ flowchart LR
 - findings-first 원칙을 따른다.
 - 테스트가 통과해도 spec 불충족, 경계 위반, 문서 누락이 있으면 통과시킬 수 없다.
 - **blocking issue**: spec 불충족, 구조/경계 위반, 보안 문제, 문서 계약 누락. 발견 시 BUILD로 되돌아간다.
-- **non-blocking issue**: naming, 표현, 후속 정리 권고. 구현을 막지는 않지만 최종 보고에 남긴다.
+- **non-blocking issue**: naming, 표현, 후속 정리 권고. 구현을 막지는 않지만 필요하면 `code-simplifier`로 cleanup 후 VERIFY/REVIEW에 재진입할 수 있다.
 
 ### 6. DOCUMENT
 
@@ -147,7 +155,7 @@ flowchart LR
    - 테스트 실패, 런타임 오류, wiring 오류는 BUILD <-> VERIFY 사이에서 해결한다.
 2. REVIEW 실패 루프
    - blocking issue(spec 미충족, QA finding, 구조 위반)는 REVIEW 결과를 기준으로 BUILD로 되돌아간다.
-   - non-blocking issue는 기록 후 DOCUMENT/SHIP으로 넘길 수 있다.
+   - non-blocking issue는 기록 후 DOCUMENT/SHIP으로 넘길 수 있고, cleanup 가치가 크면 `code-simplifier`를 거쳐 VERIFY/REVIEW로 재진입할 수 있다.
 3. DOCUMENT 실패 루프
    - 문서 누락, 설명 불일치, 운영 handoff 부족은 먼저 DOCUMENT에서 수정한다.
    - 문서가 구현/검토 결과와 충돌하면 REVIEW로 되돌아간다.
@@ -159,11 +167,6 @@ flowchart LR
 - DOCUMENT complete
 
 ## Parallelism
-
-현재 설정 기준:
-
-- `max_threads = 6`
-- `max_depth = 1`
 
 병렬성이 가장 큰 구간은 PLAN이다.
 

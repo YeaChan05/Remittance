@@ -25,6 +25,7 @@ description: Use when the task is to align already-changed files with nearby Rem
 # Output Format
 
 ## Reference Files
+`docs/rule/code_convention.md`
 
 ## Alignment Changes
 

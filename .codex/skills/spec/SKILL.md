@@ -30,6 +30,12 @@ description: Use when the request is still an idea or problem statement and you 
 
 ## Open Questions
 
+## Next Handoff
+
+* Input: 사용자 요청, 관련 문서/현행 동작
+* Output: `/plan`이 바로 사용할 문제 정의, 범위, acceptance criteria
+* Failure Route: acceptance criteria나 범위가 고정되지 않으면 DEFINE 단계에 머문다
+
 # Done
 
 * `/plan` 단계가 바로 사용할 수 있는 입력이 생겼다
