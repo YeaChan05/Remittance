@@ -1,3 +1,4 @@
+enabled = true
 name = "spec-conformance-auditor"
 description = "Gate docs and completion by auditing whether implementation evidence conforms to the approved specs and reporting satisfied, partial, and unmet criteria."
 model = "gpt-5.3"

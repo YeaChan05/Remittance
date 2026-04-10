@@ -1,3 +1,4 @@
+enabled = true
 name = "writer"
 description = "Write or rewrite repository documentation, handoff notes, rationale summaries, migration notes, and developer-facing guides without changing production code unless explicitly instructed."
 model = "gpt-5.4-mini"

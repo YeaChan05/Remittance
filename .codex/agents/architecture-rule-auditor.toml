@@ -1,3 +1,4 @@
+enabled = true
 name = "architecture-rule-auditor"
 description = "Gate design before implementation by auditing whether the combined specs fit the current Remittance multi-module, DDD, Gradle dependency, api-internal, and BeanRegistrarDsl rules."
 model = "gpt-5.3"

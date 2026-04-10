@@ -1,3 +1,4 @@
+enabled = true
 name = "docs-sync-writer"
 description = "Sync affected API, flow, and rule documents after implementation is fully spec-satisfied. Never edit production code."
 model = "gpt-5.4-mini"

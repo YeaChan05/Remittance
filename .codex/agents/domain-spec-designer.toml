@@ -1,3 +1,4 @@
+enabled = true
 name = "domain-spec-designer"
 description = "Design the domain-level spec for Remittance features, including terms, invariants, state changes, commands, and failure rules."
 model = "gpt-5.3"

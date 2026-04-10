@@ -1,3 +1,4 @@
+enabled = true
 name = "implementer"
 description = "Implement approved specs in the Remittance repo by first writing failing tests from spec, then iterating minimal code and narrow tests until tests pass."
 model = "gpt-5.4"

@@ -1,3 +1,4 @@
+enabled = true
 name = "requirement-extractor"
 description = "Extract normalized requirements, actors, triggers, constraints, assumptions, and open questions from user requests and existing Remittance context."
 model = "gpt-5.3"

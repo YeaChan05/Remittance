@@ -6,6 +6,7 @@ model = "gpt-5.4"
 model_context_window = 1000000
 model_auto_compact_token_limit = 900000
 approvals_reviewer = "user"
+service_tier = "fast"
 
 [agents]
 max_threads = 6
@@ -14,6 +15,7 @@ max_depth = 1
 multi_agent = true
 child_agents_md = true
 
+codex_hooks = true
 [env]
 USE_OMX_EXPLORE_CMD = "1"
 
@@ -32,7 +34,7 @@ startup_timeout_sec = 5
 [mcp_servers.omx_state.tools.state_list_active]
 approval_mode = "approve"
 
-[mcp_servers.omx_state.tools.state_read]
+[mcp_servers.omx_state.tools.state_write]
 approval_mode = "approve"
 
 # OMX Project Memory MCP Server
@@ -42,10 +44,10 @@ args = ["/opt/homebrew/lib/node_modules/oh-my-codex/dist/mcp/memory-server.js"]
 enabled = true
 startup_timeout_sec = 5
 
-[mcp_servers.omx_memory.tools.notepad_read]
+[mcp_servers.omx_memory.tools.project_memory_read]
 approval_mode = "approve"
 
-[mcp_servers.omx_memory.tools.project_memory_read]
+[mcp_servers.omx_memory.tools.notepad_read]
 approval_mode = "approve"
 
 [mcp_servers.omx_memory.tools.notepad_write_working]

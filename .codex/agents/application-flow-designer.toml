@@ -1,3 +1,4 @@
+enabled = true
 name = "application-flow-designer"
 description = "Design the application/service-level flow for a Remittance feature, including orchestration steps, transaction boundaries, external calls, and idempotency handling."
 model = "gpt-5.3"
