@@ -1,39 +1,37 @@
 ---
 name: plan
-description: Turn a defined problem into an approved PRD, task breakdown, architecture-safe execution order, and test-spec for the Remittance repo. Use for the PLAN stage or when the team says /plan.
+description: Use when requirements are already clear enough to turn into an execution plan for the `/plan` stage. Do not use for vague idea discovery, expert-consensus planning, or plan review; use `spec`, `plan-consensus`, or `review-plan` instead.
 ---
 
-# Plan
+# When to Use
 
-## Language
+* DEFINE 산출물이 있고 구현 순서와 검증 전략만 정리하면 되는 경우
+* 하나의 작업 범위를 실행 가능한 단계로 나눠야 하는 경우
+* 요구사항이 아직 모호하거나 기존 plan을 평가하는 작업이면 쓰지 않는다
 
-모든 응답은 한국어로 작성한다.
+# Inputs
 
-## 목적
+* spec / PRD / acceptance criteria
+* 관련 문서와 영향 범위
+* 구현 제약, 리스크, 이미 알려진 open question
 
-`/plan` 단계는 DEFINE 결과를 구현 가능한 실행 계획으로 바꾸는 단계다.
-이 단계의 핵심은 "무엇을 만들지"가 아니라 "어떤 순서와 경계로 만들지"를 확정하는 것이다.
+# Steps
 
-## 먼저 확인할 것
+1. 목표, 범위, 제약을 실행 관점으로 다시 정리한다.
+2. 구현 단계를 실제 파일/모듈 단위로 순서화한다.
+3. 각 단계에 필요한 검증 전략과 선행 조건을 붙인다.
+4. 남은 리스크와 open question을 plan 밖으로 분리한다.
 
-1. `AGENTS.md`
-2. `.codex/agents/WORKFLOW.md`
-3. `.codex/rules/agent-coding-discipline.md`
-4. `docs/rule/module.md`
-5. `docs/rule/dependencies.md`
-6. `docs/rule/code_convention.md`
-7. 관련 `docs/api/*`, `docs/flow/*`
+# Output Format
 
-## 수행 순서
+## Plan Summary
 
-1. DEFINE 산출물을 받아 범위와 acceptance criteria를 다시 고정한다.
-2. PRD 수준의 목표, 비목표, 제약, 구현 단위를 정리한다.
-3. 모듈 경계, BeanRegistrarDsl, `api-internal`, 테스트 위치를 먼저 설계한다.
-4. BUILD가 바로 착수할 수 있도록 작업 순서와 검증 순서를 정한다.
-5. 필요하면 `.omx/plans/prd-*.md`, `.omx/plans/test-spec-*.md` 형태의 아티팩트로 남긴다.
+## Implementation Steps
 
-## 종료 기준
+## Verification Strategy
 
-- BUILD가 바로 시작 가능한 task sequence가 있다.
-- 구조 위반 가능성이 미리 드러났다.
-- 어떤 테스트부터 실패시켜야 하는지 설명 가능하다.
+# Done
+
+* 구현자가 다시 범위를 묻지 않고 바로 착수할 수 있다
+* 단계별 검증 방법이 명시돼 있다
+* 남은 리스크와 open question이 숨겨지지 않았다

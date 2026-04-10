@@ -1,53 +1,37 @@
 ---
 name: spec
-description: Refine an idea into a clear problem statement, scope, constraints, acceptance criteria, and PRD handoff for the Remittance repo. Use for the DEFINE stage or when the team says /spec.
+description: Use when the request is still an idea or problem statement and you need DEFINE-stage scope, constraints, and acceptance criteria. Do not use for already-approved implementation planning or code changes.
 ---
 
-# Spec
+# When to Use
 
-## Language
+* 구현 전에 문제 정의, 범위, acceptance criteria를 먼저 고정해야 하는 경우
+* `/spec` 단계처럼 아이디어를 plan 입력으로 정리해야 하는 경우
+* 이미 요구사항이 확정됐거나 바로 구현/검증만 남은 경우에는 쓰지 않는다
 
-모든 응답은 한국어로 작성한다.
+# Inputs
 
-## 목적
+* 사용자 요청
+* 현재 동작 또는 문제를 보여 주는 문서/코드/운영 정보
+* 알려진 제약과 이해관계자 요구
 
-`/spec` 단계는 아이디어를 구현 가능한 입력으로 정리하는 단계다.
-바로 설계나 구현으로 넘어가지 말고 아래를 먼저 고정한다.
+# Steps
 
-- 문제 정의
-- 목표 / 비목표
-- 사용자 또는 호출 주체
-- 제약과 가정
-- acceptance criteria
-- open question
+1. 요청을 문제 정의와 목표 중심으로 다시 적는다.
+2. in scope / out of scope / 제약 / 가정을 분리한다.
+3. acceptance criteria를 검증 가능한 문장으로 정리한다.
+4. 아직 확정되지 않은 질문을 open question으로 분리한다.
 
-## 먼저 확인할 것
+# Output Format
 
-1. `AGENTS.md`
-2. `.codex/agents/WORKFLOW.md`
-3. `.codex/rules/agent-coding-discipline.md`
-4. 관련 `docs/api/*`, `docs/flow/*`, `docs/rule/*`
-5. 가장 가까운 기존 구현 또는 운영 문서
+## Problem Statement
 
-## 수행 순서
+## Scope and Criteria
 
-1. 요청을 구현 관점이 아니라 문제 관점으로 다시 정리한다.
-2. 범위를 `in scope` / `out of scope`로 분리한다.
-3. 사용자 가치와 실패 조건을 분명히 적는다.
-4. acceptance criteria를 검증 가능한 문장으로 만든다.
-5. unresolved question이 있으면 숨기지 말고 별도 섹션으로 남긴다.
-6. 다음 단계 `/plan`이 바로 사용할 수 있도록 PRD 초안 또는 동등한 산출물을 남긴다.
+## Open Questions
 
-## 산출물
+# Done
 
-- 문제 정의
-- 목표 / 비목표
-- acceptance criteria
-- open question
-- `/plan` 단계로 넘길 요약
-
-## 종료 기준
-
-- 구현자가 "무엇을 만들지"를 다시 묻지 않아도 된다.
-- acceptance criteria가 테스트 가능한 수준이다.
-- 큰 모호점이 남아 있으면 그대로 표시했다.
+* `/plan` 단계가 바로 사용할 수 있는 입력이 생겼다
+* acceptance criteria가 테스트 가능한 수준이다
+* 남은 모호점이 숨겨지지 않았다

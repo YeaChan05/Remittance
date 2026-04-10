@@ -1,41 +1,37 @@
 ---
 name: ship
-description: Run the SHIP stage for the Remittance repo:finalize docs, summarize release readiness, list risks and verification evidence, and prepare go-live handoff. Use when the team says /ship.
+description: Use when verify and review are complete and you need a release-readiness or handoff summary. Do not use for implementation, review, or real deployment execution unless the user explicitly asks for deployment.
 ---
 
-# Ship
+# When to Use
 
-## Language
+* release readiness, go-live handoff, 운영 전달사항을 정리해야 하는 경우
+* 변경 범위와 검증 근거를 배포 직전 관점으로 묶어야 하는 경우
+* 실제 배포 수행, 구현, 리뷰 단계 자체가 목적이면 쓰지 않는다
 
-모든 응답은 한국어로 작성한다.
+# Inputs
 
-## 목적
+* release 대상 범위 또는 변경 diff
+* review verdict
+* 실행된 검증 결과
+* 문서 반영 여부와 남은 운영 TODO
 
-`/ship` 단계는 최종 go-live readiness를 정리하는 단계다.
-기본값은 release handoff이며, 실제 배포 명령 실행은 별도 요청 또는 운영 절차가 있을 때만 한다.
+# Steps
 
-## 전제 조건
+1. 문서 반영 여부와 누락된 handoff 항목을 확인한다.
+2. release 범위와 검증 근거를 운영 관점으로 묶는다.
+3. 남은 리스크, 미실행 검증, 수동 절차를 구분해 적는다.
+4. 실제 배포를 하지 않았다면 readiness 정리까지만 했다고 명시한다.
 
-- VERIFY green
-- REVIEW gate pass 또는 승인된 예외만 남음
+# Output Format
 
-## 수행 순서
+## Release Scope
 
-1. 변경으로 영향받는 문서가 있으면 동기화한다.
-2. 최종 검증 근거를 짧게 모은다.
-3. 남은 리스크와 미실행 항목을 정리한다.
-4. 배포/릴리즈 필요 시 필요한 명령 또는 운영 handoff를 제시한다.
-5. 실제 배포를 하지 않았다면 readiness까지만 했다고 명확히 적는다.
+## Evidence
 
-## 최종 보고 포함 항목
+## Remaining Risks
 
-- ship 범위 요약
-- 실행한 검증
-- 문서 반영 여부
-- 남은 리스크
-- 실제 배포 여부
+# Done
 
-## 종료 기준
-
-- 다른 사람이 그대로 운영 handoff를 받을 수 있다.
-- 완료와 미완료가 구분돼 있다.
+* 운영자가 바로 이어받을 수 있는 handoff 정보가 있다
+* 실제 수행한 것과 미수행한 것이 구분돼 있다

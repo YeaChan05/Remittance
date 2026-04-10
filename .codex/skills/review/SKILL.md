@@ -1,45 +1,38 @@
 ---
 name: review
-description: Run the REVIEW stage QA gate for the Remittance repo after tests are green. Check findings first, spec conformance, boundary rules, documentation impact, and release risk. Use when the team says /review.
+description: Use when changed code has already been verified and you need a post-verify QA gate for the whole diff. Do not use for architecture-only review, risk-only review, or plan review.
 ---
 
-# Review
+# When to Use
 
-## Language
+* `/review` 단계처럼 변경 diff 전체에 대해 pass / partial / fail을 판단해야 하는 경우
+* acceptance criteria 충족 여부와 blocking finding을 같이 봐야 하는 경우
+* 구조만 따로 보거나 release risk만 정리하는 작업이면 다른 review skill을 쓴다
 
-모든 응답은 한국어로 작성한다.
+# Inputs
 
-## 목적
+* 변경 diff
+* 실행된 테스트 / lint / diagnostics 결과
+* 승인된 spec / acceptance criteria
+* 문서 동기화 여부 판단에 필요한 파일 목록
 
-`/review` 단계는 테스트 green 이후 최종 QA gate다.
-통과 여부를 결정하는 단계이며, 요약보다 findings가 우선이다.
+# Steps
 
-## 먼저 확인할 것
+1. blocking finding 후보를 먼저 찾는다.
+2. 승인된 요구사항과 실제 구현을 대조한다.
+3. 누락된 검증, 문서 동기화 필요, 후속 review 필요성을 판단한다.
+4. pass / partial / fail 중 하나로 게이트 결론을 낸다.
 
-1. `AGENTS.md`
-2. `.codex/agents/WORKFLOW.md`
-3. `.codex/rules/agent-coding-discipline.md`
-4. 관련 spec / PRD / test-spec
-5. 변경 파일 diff
-6. 실행된 테스트와 그 결과
+# Output Format
 
-## 수행 순서
+## Findings
 
-1. 버그, 회귀, 경계 위반, 누락 테스트를 우선 찾는다.
-2. 승인된 spec / acceptance criteria를 실제 코드가 만족하는지 대조한다.
-3. 문서 동기화 필요성을 점검한다.
-4. 보안 또는 아키텍처 영향이 있으면 그 관점의 추가 검토 필요 여부를 판단한다.
-5. 통과 / 부분 통과 / 반려를 명시한다.
+## Gate Decision
 
-## 출력 규칙
+## Follow-ups
 
-- findings first
-- 파일/근거를 붙인다
-- finding이 없으면 명시적으로 없다고 적는다
-- 남은 리스크와 미실행 검증을 숨기지 않는다
+# Done
 
-## 종료 기준
-
-- 주요 finding이 없거나, 있으면 BUILD로 되돌릴 명확한 이유가 있다.
-- spec 적합성에 대한 판단 근거가 있다.
-- SHIP으로 넘겨도 되는지 결정됐다.
+* finding 유무와 심각도가 구분돼 있다
+* 게이트 결론에 근거가 붙어 있다
+* SHIP으로 넘길 수 있는지 여부가 명확하다

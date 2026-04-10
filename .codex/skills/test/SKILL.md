@@ -1,77 +1,38 @@
 ---
 name: test
-description: Write repo-style unit or integration tests, place them in the correct source set, and run the smallest relevant Gradle test task. Use when adding or updating tests for service, API, JPA, security, MQ, BeanRegistrarDsl wiring, or aggregate flows.
+description: Use when the job is to add or update repo-style tests and run the smallest relevant Gradle test task. Do not use for full code review, release handoff, or pure production-code implementation without test work.
 ---
 
-# Test
+# When to Use
 
-## 먼저 읽을 문서
+* 버그 재현, 회귀 방지, wiring 확인을 위해 테스트를 추가/수정해야 하는 경우
+* 가장 좁은 `test` 또는 `integrationTest` 명령으로 증거를 만들어야 하는 경우
+* 테스트 없이 구현만 하거나 release summary만 작성하는 경우에는 쓰지 않는다
 
-- [../../rules/agent-coding-discipline.md](../../rules/agent-coding-discipline.md)
+# Inputs
 
-## Language
+* 검증할 동작 또는 버그 설명
+* 대상 모듈/클래스/flow
+* 가장 가까운 기존 테스트 파일
+* 필요 시 관련 프로덕션 diff
 
-모든 응답은 한국어로 작성한다.
+# Steps
 
-## 수행 규칙
+1. 순수 로직인지 통합 흐름인지 판단해 source set을 고른다.
+2. 가장 가까운 기존 테스트 패턴을 복제해 테스트를 추가/수정한다.
+3. 필요한 최소 구현 변경이 있으면 테스트와 같은 범위 안에서만 반영한다.
+4. 가장 좁은 Gradle 테스트 명령을 실행하고 결과를 기록한다.
 
-- 가장 가까운 기존 테스트를 복제한다.
-- 테스트 위치와 source set을 먼저 정한다.
-- 실행하지 않은 테스트는 실행했다고 적지 않는다.
-- `agent-coding-discipline.md`의 TDD, source set, 좁은 Gradle 검증 규율을 우선한다.
+# Output Format
 
-## 참고 코드 사용 규칙
+## Test Scope
 
-- 테스트 패턴으로 언급하는 소스 경로는 현재 시점의 참고 예시다.
-- 예시 파일은 언제든 이동하거나 바뀔 수 있으므로, 고정 템플릿처럼 사용하지 않는다.
-- 항상 작업 시점의 실제 테스트 코드에서 가장 가까운 예시를 다시 찾는다.
+## Test Changes
 
-## source set 선택
+## Execution Result
 
-- `src/test`
-    - 순수 비즈니스 로직
-    - 계산
-    - 예외 분기
-    - Spring 없이 직접 생성 가능한 대상
+# Done
 
-- `src/integrationTest`
-    - Spring MVC
-    - Security
-    - JPA / DB
-    - MQ
-    - Testcontainers
-    - BeanRegistrarDsl wiring
-    - 직렬화 / 설정 / 전체 흐름
-
-## 절차
-
-1. 가장 가까운 기존 테스트 파일을 찾는다.
-2. 같은 패키지, fixture, 메서드 스타일을 복제한다.
-3. 실패하는 테스트를 먼저 작성한다.
-4. 필요한 경우 최소 구현 변경과 함께 유지한다.
-5. 가장 좁은 Gradle 태스크를 실행한다.
-
-## 실행 규칙
-
-- 단위 테스트는 대상 모듈 `test`를 우선 실행한다.
-- 통합 테스트는 대상 모듈 `integrationTest`를 우선 실행한다.
-- 예:
-    - `./gradlew :member:service:test`
-    - `./gradlew :transfer:repository-jpa:integrationTest`
-    - `./gradlew :aggregate:integrationTest`
-
-## 빠른 패턴
-
-- 테스트 메서드명은 백틱으로 감싼 한국어 설명을 사용한다.
-- 단위 테스트는 Spring 없이 fake, stub, fixture를 우선 사용한다.
-- 통합 테스트는 repository, MVC, security, 전체 흐름 검증에만 사용한다.
-- aggregate API 흐름은 `aggregate/src/integrationTest` 패턴을 우선 복제한다.
-- registrar wiring 테스트는 테스트용 `@Configuration(proxyBeanMethods = false)`를 두고
-  `@Import(Registrar::class)`로 올리는 현재 패턴을 우선 복제한다.
-- registrar-only 부팅 구조를 검증할 때는 실제 imports 등록 여부까지 함께 확인한다.
-
-## 최소 보고
-
-- 추가 또는 수정한 테스트 파일
-- 실행한 Gradle 명령
-- 실패한 assertion 또는 미실행 항목
+* 필요한 테스트가 올바른 source set에 배치됐다
+* 가장 좁은 관련 Gradle 검증 결과가 있다
+* 미실행 검증이 있으면 분리해서 적었다

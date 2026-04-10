@@ -1,45 +1,38 @@
 ---
 name: module-generator
-description: Generate standard Remittance domain modules and submodules with the repo scaffold, sync settings.gradle.kts, and create only the requested folders and files. Use when adding a new domain module or optional submodule.
+description: Use when a new Remittance domain module scaffold must be created and `settings.gradle.kts` must be synced without adding business logic. Do not use for changing existing module architecture, writing production code, or running broad validation.
 ---
 
-# Module Generator
+# When to Use
 
-## Language
+* 새 도메인이나 표준 하위 모듈 scaffold를 생성해야 하는 경우
+* `module_generator.sh` 또는 동등한 최소 scaffold 작업만 필요한 경우
+* 기존 모듈 리팩터링, 비즈니스 로직 작성, 검증 확대가 목적이면 쓰지 않는다
 
-모든 응답은 한국어로 작성한다.
+# Inputs
 
-## 입력
+* 도메인 이름
+* 최상위 package/group 정보
+* application 타입 또는 생성할 표준 하위 모듈 목록
+* 선택 adapter 모듈 목록(`api-internal`, `repository-jpa`, `schema`, `mq-rabbitmq` 등)
 
-- 도메인 이름
-- 최상위 패키지
-- 생성할 하위 모듈 목록
-- 선택 모듈 목록: `api-internal`, `repository-jpa`, `schema`, `mq-rabbitmq`
+# Steps
 
-## 절차
+1. 요청한 모듈 구성이 기존 표준 구조와 맞는지 확인한다.
+2. 가능하면 `module_generator.sh`를 사용해 요청된 scaffold만 만든다.
+3. `settings.gradle.kts`, 각 모듈 디렉터리, `build.gradle.kts` 생성 여부를 확인한다.
+4. 추가 dependency 판단이 필요하면 `references/dependencies.md`를 기준으로 누락만 기록한다.
 
-1. 가능하면 `module_generator.sh`를 사용한다.
-2. 요청된 모듈만 생성한다.
-3. `settings.gradle.kts`에 `include(":{domain}:{module}")`를 맞춘다.
-4. 각 모듈에 `build.gradle.kts`가 있는지 확인한다.
-5. 표준 소스셋만 만든다.
+# Output Format
 
-- `src/main/kotlin`
-- `src/test/kotlin`
-- 필요 시 `src/integrationTest/kotlin`, `src/integrationTest/resources`
+## Generated Modules
 
-6. 여기서 멈춘다.
+## Settings Changes
 
-- 빌드와 테스트는 요청이 있을 때만 실행한다.
+## Deferred Work
 
-## 제한
+# Done
 
-- 표준 모듈 이름 외의 디렉터리를 만들지 않는다.
-- 불필요한 기술 모듈을 미리 만들지 않는다.
-- 비즈니스 로직이나 예제 코드를 넣지 않는다.
-
-## 최소 보고
-
-- 생성한 모듈 목록
-- 수정한 `settings.gradle.kts` 항목
-- 미실행 검증 항목
+* 요청된 모듈/디렉터리/기본 build 파일이 생성됐다
+* `settings.gradle.kts` include가 동기화됐다
+* 비즈니스 로직이나 예제 코드를 추가하지 않았다
