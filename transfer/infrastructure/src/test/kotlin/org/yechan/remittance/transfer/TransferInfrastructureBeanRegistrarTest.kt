@@ -56,11 +56,18 @@ class TransferInfrastructureBeanRegistrarTest {
             start()
         }
         val context = AnnotationConfigApplicationContext().apply {
-            beanFactory.registerSingleton("internalServiceAuthProperties", InternalServiceAuthProperties("test-internal-token"))
+            beanFactory.registerSingleton(
+                "internalServiceAuthProperties",
+                InternalServiceAuthProperties("test-internal-token"),
+            )
             TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
                 this,
-                "spring.http.serviceclient.account-internal.base-url=${accountServer.url("/").toString().removeSuffix("/")}",
-                "spring.http.serviceclient.member-internal.base-url=${memberServer.url("/").toString().removeSuffix("/")}",
+                "spring.http.serviceclient.account-internal.base-url=${
+                    accountServer.url("/").toString().removeSuffix("/")
+                }",
+                "spring.http.serviceclient.member-internal.base-url=${
+                    memberServer.url("/").toString().removeSuffix("/")
+                }",
             )
             register(TestConfiguration::class.java)
             refresh()
@@ -71,7 +78,15 @@ class TransferInfrastructureBeanRegistrarTest {
             val memberClient = context.getBean(TransferMemberClient::class.java)
 
             assertThat(accountClient.get(99L, 10L)?.memberId).isEqualTo(7L)
-            assertThat(accountClient.lock(TransferAccountLockCommand(99L, 10L, 20L))?.toAccount?.memberId).isEqualTo(8L)
+            assertThat(
+                accountClient.lock(
+                    TransferAccountLockCommand(
+                        99L,
+                        10L,
+                        20L,
+                    ),
+                )?.toAccount?.memberId,
+            ).isEqualTo(8L)
             accountClient.applyBalanceChange(
                 TransferBalanceChangeCommand(
                     memberId = 99L,

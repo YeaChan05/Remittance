@@ -149,7 +149,8 @@ private class AccountInternalDispatcher(
         val payload = body(request)
         store.apply(
             TransferBalanceChangeCommand(
-                memberId = request.getHeader(InternalServiceAuthenticationFilter.INTERNAL_USER_ID_HEADER)?.toLongOrNull() ?: 0L,
+                memberId = request.getHeader(InternalServiceAuthenticationFilter.INTERNAL_USER_ID_HEADER)
+                    ?.toLongOrNull() ?: 0L,
                 fromAccountId = payload.get("fromAccountId").longValue(),
                 toAccountId = payload.get("toAccountId").longValue(),
                 fromBalance = payload.get("fromBalance").decimalValue(),
@@ -178,7 +179,8 @@ private class MemberInternalDispatcher(
 ) : Dispatcher() {
     override fun dispatch(request: RecordedRequest): MockResponse = when (request.requestUrl?.encodedPath) {
         "/internal/members/existence" -> {
-            val memberId = objectMapper.readTree(request.body.readUtf8()).get("memberId").longValue()
+            val memberId =
+                objectMapper.readTree(request.body.readUtf8()).get("memberId").longValue()
             MockResponse()
                 .setHeader("Content-Type", "application/json")
                 .setBody(objectMapper.writeValueAsString(mapOf("exists" to store.exists(memberId))))

@@ -29,6 +29,9 @@ dependencies {
     developmentOnly("org.testcontainers:testcontainers-jdbc")
     developmentOnly("org.testcontainers:testcontainers-mysql")
 
+    testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")
+    testImplementation(project(":common:exception"))
+
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
     integrationTestImplementation(testFixtures(project(":common:application-api")))
     integrationTestImplementation(project(":account:service"))
