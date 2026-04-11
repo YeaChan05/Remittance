@@ -4,6 +4,7 @@ testcontainers {
         stack("transfer")
         use("mysql")
         use("rabbitmq")
+        liquibase("classpath:/db/changelog/db.changelog-master.yaml")
     }
 }
 

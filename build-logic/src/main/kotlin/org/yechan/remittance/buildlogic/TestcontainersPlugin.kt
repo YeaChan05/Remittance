@@ -120,6 +120,7 @@ class TestcontainersPlugin : Plugin<Project> {
                         stackLockService = stackLockService,
                         stackKey = stackKey,
                         taskPath = taskPath,
+                        liquibaseChangeLog = taskSpec.liquibaseChangeLog,
                         declaredContainerKeys = declaredContainerKeys,
                         coordinates = coordinates,
                         runtimeClasspathByProviderKey = runtimeClasspathByProviderKey,

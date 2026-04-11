@@ -14,6 +14,7 @@ internal fun bindSharedContainers(
     stackLockService: Provider<SharedContainerStackLockService>,
     stackKey: String,
     taskPath: String,
+    liquibaseChangeLog: String?,
     declaredContainerKeys: Set<String>,
     coordinates: TestcontainersRuntimeCoordinates,
     runtimeClasspathByProviderKey: Map<String, Set<File>>,
@@ -43,6 +44,19 @@ internal fun bindSharedContainers(
                 val runtimeClasspath = runtimeClasspathByProviderKey.getValue(provider.key)
                 service.prepare(taskPath, stackKey, coordinates, provider, runtimeClasspath)
                 service.applyTo(javaForkTask, taskPath, stackKey, coordinates, provider, runtimeClasspath)
+            }
+
+            liquibaseChangeLog?.let { changeLog ->
+                val systemProperties = javaForkTask.systemProperties
+                    .mapValues { (_, value) -> value ?: "" }
+                    .toMutableMap()
+                LiquibaseMigrationSupport.migrate(
+                    classpath = testTask.classpath.files,
+                    systemProperties = systemProperties,
+                    changeLog = changeLog,
+                )
+                LiquibaseMigrationSupport.disableSpringLiquibase(systemProperties)
+                javaForkTask.systemProperties(systemProperties)
             }
         }
     }

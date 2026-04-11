@@ -3,6 +3,7 @@ testcontainers {
     task("integrationTest") {
         stack("account")
         use("mysql")
+        liquibase("classpath:/db/changelog/account/db.changelog-initial-schema.yaml")
     }
 }
 

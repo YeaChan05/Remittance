@@ -28,6 +28,7 @@ open class TestcontainersTaskSpec internal constructor(
 ) {
     internal val containerKeys: MutableSet<String> = linkedSetOf()
     internal var stackKey: String? = null
+    internal var liquibaseChangeLog: String? = null
 
     fun stack(stackKey: String) {
         require(stackKey.isNotBlank()) {
@@ -43,6 +44,14 @@ open class TestcontainersTaskSpec internal constructor(
         }
 
         containerKeys += containerKey.lowercase(Locale.ROOT)
+    }
+
+    fun liquibase(changeLog: String) {
+        require(changeLog.isNotBlank()) {
+            "Liquibase changelog must not be blank."
+        }
+
+        liquibaseChangeLog = changeLog.trim()
     }
 
     @Deprecated("Use use(\"mysql\") instead.")
