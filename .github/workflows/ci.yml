@@ -7,52 +7,7 @@ on:
 
 jobs:
   build:
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: corretto
-          java-version-file: .sdkmanrc
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
-
-      - name: Package JARs
-        run: ./gradlew jar bootJar
-
-      - name: Test
-        run: ./gradlew test --parallel
-
-      - name: Integration Test
-        run: ./gradlew integrationTest --parallel
-
-      - name: Jacoco report
-        run: ./gradlew jacocoRootReport -x test -x integrationTest
-
-      - name: Upload coverage
-        uses: madrapps/jacoco-report@v1.2
-        with:
-          title: Jacoco Coverage Report
-          paths: ${{ github.workspace }}/build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 85
-
-  impact:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    outputs:
-      skip_run: ${{ steps.impacted.outputs.skip_run }}
-      full_run: ${{ steps.impacted.outputs.full_run }}
-      test_tasks: ${{ steps.impacted.outputs.test_tasks }}
-      integration_test_tasks: ${{ steps.impacted.outputs.integration_test_tasks }}
-      summary: ${{ steps.impacted.outputs.summary }}
 
     steps:
       - uses: actions/checkout@v6
@@ -60,13 +15,23 @@ jobs:
           fetch-depth: 0
 
       - name: Resolve git range
+        if: github.event_name == 'pull_request'
         id: git-range
         shell: bash
         run: |
-          echo "base_sha=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
-          echo "head_sha=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "base_sha=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+            echo "head_sha=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ github.event.before }}" == "0000000000000000000000000000000000000000" ]]; then
+            echo "base_sha=" >> "$GITHUB_OUTPUT"
+            echo "head_sha=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "base_sha=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
+            echo "head_sha=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Resolve impacted modules
+        if: github.event_name == 'pull_request'
         id: impacted
         shell: bash
         run: |
@@ -75,6 +40,7 @@ jobs:
             --head "${{ steps.git-range.outputs.head_sha }}"
 
       - name: Print impact summary
+        if: github.event_name == 'pull_request'
         shell: bash
         run: |
           cat <<'EOF'
@@ -82,61 +48,41 @@ jobs:
           EOF
 
       - name: Skip CI for non-functional changes
-        if: steps.impacted.outputs.skip_run == 'true'
+        if: github.event_name == 'pull_request' && steps.impacted.outputs.skip_run == 'true'
         run: echo "Skipping Gradle CI because only non-functional files changed."
 
-  unit-test:
-    if: github.event_name == 'pull_request' && needs.impact.outputs.skip_run != 'true'
-    needs: impact
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
       - name: Setup Java
+        if: github.event_name != 'pull_request' || steps.impacted.outputs.skip_run != 'true'
         uses: actions/setup-java@v5
         with:
           distribution: corretto
           java-version-file: .sdkmanrc
 
       - name: Setup Gradle
+        if: github.event_name != 'pull_request' || steps.impacted.outputs.skip_run != 'true'
         uses: gradle/actions/setup-gradle@v5
 
-      - name: Unit Test
-        shell: bash
-        run: |
-          if [[ "${{ needs.impact.outputs.full_run }}" == "true" ]]; then
-            ./gradlew test --parallel
-          else
-            ./gradlew ${{ needs.impact.outputs.test_tasks }} --parallel
-          fi
+      - name: Build
+        if: github.event_name != 'pull_request'
+        run: ./gradlew assemble
 
-  integration-test:
-    if: github.event_name == 'pull_request' && needs.impact.outputs.skip_run != 'true'
-    needs: impact
-    runs-on: ubuntu-latest
+      - name: Test
+        if: github.event_name != 'pull_request' || steps.impacted.outputs.full_run == 'true'
+        run: ./gradlew test --parallel
 
-    steps:
-      - uses: actions/checkout@v6
+      - name: Jacoco report
+        if: github.event_name != 'pull_request'
+        run: ./gradlew jacocoRootReport -x test -x integrationTest
+
+      - name: Upload coverage
+        if: github.event_name != 'pull_request'
+        uses: madrapps/jacoco-report@v1.2
         with:
-          fetch-depth: 0
+          title: Jacoco Coverage Report
+          paths: ${{ github.workspace }}/build/reports/jacoco/jacocoRootReport/jacocoRootReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 85
 
-      - name: Setup Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: corretto
-          java-version-file: .sdkmanrc
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v5
-
-      - name: Integration Test
-        shell: bash
-        run: |
-          if [[ "${{ needs.impact.outputs.full_run }}" == "true" ]]; then
-            ./gradlew integrationTest --parallel
-          else
-            ./gradlew ${{ needs.impact.outputs.integration_test_tasks }} --parallel
-          fi
+      - name: Selective test
+        if: github.event_name == 'pull_request' && steps.impacted.outputs.full_run != 'true' && steps.impacted.outputs.skip_run != 'true'
+        run: ./gradlew ${{ steps.impacted.outputs.test_tasks }} --parallel
