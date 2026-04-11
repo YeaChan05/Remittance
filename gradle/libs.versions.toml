@@ -2,7 +2,7 @@
 jspecify = "1.0.0"
 jjwt = "0.13.0"
 kotlin = "2.3.0"
-ktlint = "14.2.0"
+ktlint = "14.0.1"
 kotlin-logging = "7.0.3"
 mysql-connector = "9.5.0"
 testcontainers = "2.0.3"
