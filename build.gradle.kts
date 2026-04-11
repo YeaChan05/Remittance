@@ -1,3 +1,4 @@
+
 import com.linecorp.support.project.multi.recipe.configureByTypeExpression
 import com.linecorp.support.project.multi.recipe.configureByTypeHaving
 import com.linecorp.support.project.multi.recipe.configureByTypePrefix
@@ -55,7 +56,7 @@ configureByTypePrefix("kotlin") {
 
     extensions.configure<JavaPluginExtension> {
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(21))
+            languageVersion.set(JavaLanguageVersion.of(25))
         }
     }
 
@@ -208,9 +209,12 @@ subprojects {
     }
 
     plugins.withId("org.jetbrains.kotlin.jvm") {
+        tasks.withType<JavaCompile>().configureEach {
+            options.release.set(25)
+        }
         tasks.withType<KotlinCompile>().configureEach {
             compilerOptions {
-                jvmTarget.set(JvmTarget.JVM_21)
+                jvmTarget.set(JvmTarget.JVM_25)
             }
         }
     }
