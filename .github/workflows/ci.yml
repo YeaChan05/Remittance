@@ -64,11 +64,15 @@ jobs:
 
       - name: Build
         if: github.event_name != 'pull_request'
-        run: ./gradlew assemble
+        run: ./gradlew build --parallel -x test -x integrationTest
 
       - name: Test
         if: github.event_name != 'pull_request' || steps.impacted.outputs.full_run == 'true'
         run: ./gradlew test --parallel
+
+      - name: Integration Test
+        if: github.event_name != 'pull_request' || steps.impacted.outputs.full_run == 'true'
+        run: ./gradlew integrationTest --parallel
 
       - name: Jacoco report
         if: github.event_name != 'pull_request'
