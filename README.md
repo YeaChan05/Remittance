@@ -26,12 +26,15 @@
 ## 실행 방법
 
 - 전체 조합 로컬 실행: `./gradlew :aggregate:bootRun`
+- 전체 조합 통합 테스트: `./gradlew :aggregate:integrationTest`
 - 회원 도메인 로컬 실행: `./gradlew :member:application:bootRun`
 - 계좌 도메인 로컬 실행: `./gradlew :account:application:bootRun`
 - 송금 도메인 로컬 실행: `./gradlew :transfer:application:bootRun`
 - 로컬 공용 RabbitMQ는 루트 [compose.yml](/compose.yml)을 Spring Docker Compose support로 띄운다.
 - `aggregate`, `account:application`, `transfer:application`의 `bootRun`은 lifecycle을 `start-only`
   로 사용하므로, 애플리케이션 종료 시 RabbitMQ는 자동으로 내려가지 않는다.
+- `test`는 단위/모듈 테스트 경로로 유지하고, 통합 검증은 `integrationTest`를 별도로 실행한다.
+- CI는 `test`와 `integrationTest`를 분리 실행하며, `aggregate:integrationTest`는 통합 테스트 경로에 항상 포함된다.
 
 ## 애플리케이션 모듈
 

@@ -108,9 +108,6 @@ configureByTypePrefix("kotlin") {
         val integrationTestAnnotationProcessor by configurations.getting
 
         tasks {
-            val test by getting {
-                dependsOn("integrationTest")
-            }
             val integrationTest by getting
             val check by getting {
                 dependsOn("integrationTest")

@@ -274,9 +274,11 @@ print_summary() {
   elif [[ "$full_run" == "true" ]]; then
     echo "- ./gradlew assemble"
     echo "- ./gradlew test --parallel"
+    echo "- ./gradlew integrationTest --parallel"
   else
     echo "- ./gradlew $assemble_tasks"
     echo "- ./gradlew $test_tasks --parallel"
+    echo "- ./gradlew $integration_test_tasks --parallel"
   fi
 }
 
@@ -292,6 +294,7 @@ skip_run="false"
 full_run="false"
 assemble_tasks=""
 test_tasks=""
+integration_test_tasks=""
 
 if [[ ${#changed_files[@]} -eq 0 ]]; then
   skip_run="true"
@@ -302,8 +305,10 @@ elif [[ ${#touched_projects[@]} -eq 0 ]]; then
 else
   expand_impacted_projects
   mapfile -t impacted_list < <(sort_unique_lines "${!impacted_projects[@]}")
+  mapfile -t integration_impacted_list < <(sort_unique_lines "${!impacted_projects[@]}" ":aggregate")
   assemble_tasks="$(join_tasks "assemble" "${impacted_list[@]}")"
   test_tasks="$(join_tasks "test" "${impacted_list[@]}")"
+  integration_test_tasks="$(join_tasks "integrationTest" "${integration_impacted_list[@]}")"
 fi
 
 summary="$(print_summary)"
@@ -313,4 +318,5 @@ write_output "full_run" "$full_run"
 write_output "skip_run" "$skip_run"
 write_output "assemble_tasks" "$assemble_tasks"
 write_output "test_tasks" "$test_tasks"
+write_output "integration_test_tasks" "$integration_test_tasks"
 write_output "summary" "$summary"
