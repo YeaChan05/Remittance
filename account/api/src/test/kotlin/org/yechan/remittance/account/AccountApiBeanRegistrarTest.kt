@@ -25,7 +25,10 @@ class AccountApiBeanRegistrarTest {
 
         assertThat(context.getBean(AccountController::class.java)).isNotNull
         assertThat(context.getBean(NotificationApiController::class.java)).isNotNull
-        assertThat(context.getBean(NotificationSessionRegistry::class.java)).isNotNull
+        val registry = context.getBean(NotificationSessionRegistry::class.java)
+        assertThat(registry).isNotNull
+        assertThat(context.getBeansOfType(NotificationSubscriptionHandler::class.java)).hasSize(1)
+        assertThat(context.getBean(NotificationSubscriptionHandler::class.java)).isSameAs(registry)
         assertThat(context.getBean(NotificationPushPort::class.java)).isInstanceOf(
             NotificationPushAdapter::class.java,
         )

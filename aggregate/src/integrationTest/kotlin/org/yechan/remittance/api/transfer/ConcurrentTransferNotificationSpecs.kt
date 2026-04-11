@@ -365,7 +365,7 @@ class ConcurrentTransferNotificationSpecs {
 
     private fun count(query: String): Long = transactionTemplate.execute {
         entityManager.clear()
-        entityManager.createQuery(query, java.lang.Long::class.java)
+        entityManager.createQuery(query, Long::class.java)
             .singleResult
             .toLong()
     }
@@ -380,7 +380,7 @@ class ConcurrentTransferNotificationSpecs {
                   from OutboxEventEntity o
                  where o.status = :status
             """.trimIndent(),
-            java.lang.Long::class.java,
+            Long::class.java,
         )
             .setParameter("status", status)
             .singleResult

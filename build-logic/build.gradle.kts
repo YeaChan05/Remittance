@@ -10,7 +10,7 @@ java {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.release.set(24)
+    options.release.set(25)
 }
 
 repositories {

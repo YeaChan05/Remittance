@@ -126,7 +126,7 @@ class TransferTestFixtures(
              where o.aggregateType = :aggregateType
                and o.aggregateId = :aggregateId
         """.trimIndent(),
-        java.lang.Long::class.java,
+        Long::class.java,
     )
         .setParameter("aggregateType", "TRANSFER")
         .setParameter("aggregateId", transferId.toString())
@@ -148,12 +148,8 @@ class TransferTestFixtures(
         }
     }
 
-    fun countOutboxEvents(): Long {
-        val count =
-            em.createQuery("select count(o) from OutboxEventEntity o", java.lang.Long::class.java)
-                .singleResult
-        return count?.toLong() ?: 0L
-    }
+    fun countOutboxEvents(): Long = em.createQuery("select count(o) from OutboxEventEntity o", Long::class.java)
+        .singleResult
 
     fun loadBalance(accountId: Long): BigDecimal = accountStore.find(accountId)?.balance
         ?: throw IllegalStateException("Balance not found")
@@ -179,19 +175,11 @@ class TransferTestFixtures(
         }
     }
 
-    fun countLedgers(): Long {
-        val count =
-            em.createQuery("select count(l) from LedgerEntity l", java.lang.Long::class.java)
-                .singleResult
-        return count?.toLong() ?: 0L
-    }
+    fun countLedgers(): Long = em.createQuery("select count(l) from LedgerEntity l", Long::class.java)
+        .singleResult
 
-    fun countTransfers(): Long {
-        val count =
-            em.createQuery("select count(t) from TransferEntity t", java.lang.Long::class.java)
-                .singleResult
-        return count?.toLong() ?: 0L
-    }
+    fun countTransfers(): Long = em.createQuery("select count(t) from TransferEntity t", Long::class.java)
+        .singleResult
 
     fun markIdempotencyInProgress(
         memberId: Long,
@@ -238,7 +226,7 @@ class TransferTestFixtures(
             .executeUpdate()
         em.flush()
         updated
-    } ?: 0
+    }
 
     data class AccountSeed(
         val accountId: Long,
