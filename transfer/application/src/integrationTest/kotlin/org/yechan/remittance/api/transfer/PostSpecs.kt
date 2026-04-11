@@ -6,27 +6,18 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
-import org.springframework.context.annotation.Primary
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.web.servlet.client.RestTestClient
 import org.springframework.test.web.servlet.client.expectBody
+import org.yechan.remittance.TransferFailureSwitch
 import org.yechan.remittance.TransferTestFixtures
 import org.yechan.remittance.TransferTestFixtures.LedgerRow
 import org.yechan.remittance.TransferTestFixturesConfig
 import org.yechan.remittance.transfer.IdempotencyKeyProps
-import org.yechan.remittance.transfer.TransferAccountIdentifier
 import org.yechan.remittance.transfer.TransferApiApplication
-import org.yechan.remittance.transfer.TransferIdentifier
-import org.yechan.remittance.transfer.TransferModel
-import org.yechan.remittance.transfer.TransferProps
-import org.yechan.remittance.transfer.TransferQueryCondition
-import org.yechan.remittance.transfer.TransferRepository
-import org.yechan.remittance.transfer.TransferRequestProps
 import org.yechan.remittance.transfer.config.TransferInternalApiStubSupport
 import org.yechan.remittance.transfer.dto.DepositRequest
 import org.yechan.remittance.transfer.dto.IdempotencyKeyCreateResponse
@@ -36,13 +27,12 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDateTime
 import java.util.Optional
-import java.util.concurrent.atomic.AtomicBoolean
 
 @SpringBootTest(
     classes = [TransferApiApplication::class],
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 )
-@Import(TransferTestFixturesConfig::class, PostSpecs.TransferFailureConfig::class)
+@Import(TransferTestFixturesConfig::class)
 class PostSpecs : TransferInternalApiStubSupport() {
     @Autowired
     lateinit var restTestClient: RestTestClient
@@ -976,59 +966,6 @@ class PostSpecs : TransferInternalApiStubSupport() {
         val transferId: Long?,
         val errorCode: String?,
     )
-
-    @TestConfiguration
-    class TransferFailureConfig {
-        @Bean
-        fun transferFailureSwitch(): TransferFailureSwitch = TransferFailureSwitch()
-
-        @Bean
-        @Primary
-        fun failureTransferRepository(
-            delegate: TransferRepository,
-            transferFailureSwitch: TransferFailureSwitch,
-        ): TransferRepository = FailureTransferRepository(delegate, transferFailureSwitch)
-    }
-
-    class TransferFailureSwitch {
-        private val enabled = AtomicBoolean(false)
-
-        fun enable() {
-            enabled.set(true)
-        }
-
-        fun disable() {
-            enabled.set(false)
-        }
-
-        fun shouldFail(): Boolean = enabled.get()
-    }
-
-    private class FailureTransferRepository(
-        private val delegate: TransferRepository,
-        private val failureSwitch: TransferFailureSwitch,
-    ) : TransferRepository {
-        override fun save(props: TransferRequestProps): TransferModel {
-            if (failureSwitch.shouldFail()) {
-                throw IllegalStateException("Transfer save failed")
-            }
-            return delegate.save(props)
-        }
-
-        override fun findById(identifier: TransferIdentifier): TransferModel? = delegate.findById(identifier)
-
-        override fun findCompletedByAccountId(
-            identifier: TransferAccountIdentifier,
-            condition: TransferQueryCondition,
-        ): List<TransferModel> = delegate.findCompletedByAccountId(identifier, condition)
-
-        override fun sumAmountByFromAccountIdAndScopeBetween(
-            identifier: TransferAccountIdentifier,
-            scope: TransferProps.TransferScopeValue,
-            from: LocalDateTime,
-            to: LocalDateTime,
-        ): BigDecimal = delegate.sumAmountByFromAccountIdAndScopeBetween(identifier, scope, from, to)
-    }
 
     private companion object {
         val TRANSFER_FEE_RATE: BigDecimal = BigDecimal("0.01")

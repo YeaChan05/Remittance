@@ -4,12 +4,14 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
 import org.springframework.http.HttpHeaders
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.web.servlet.client.RestTestClient
 import org.springframework.test.web.servlet.client.expectBody
 import org.yechan.remittance.TokenGenerator
 import org.yechan.remittance.TokenVerifier
+import org.yechan.remittance.TransferTestFixturesConfig
 import org.yechan.remittance.transfer.TransferApiApplication
 import org.yechan.remittance.transfer.config.TransferInternalApiStubSupport
 import org.yechan.remittance.transfer.dto.IdempotencyKeyCreateResponse
@@ -20,6 +22,7 @@ import java.util.UUID
     classes = [TransferApiApplication::class],
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 )
+@Import(TransferTestFixturesConfig::class)
 class PostSpecs : TransferInternalApiStubSupport() {
     @Autowired
     lateinit var restTestClient: RestTestClient
