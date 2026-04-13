@@ -174,7 +174,8 @@
 * Controller + request/response DTO만 포함한다.
 * 비즈니스 로직 금지.
 * 호출 대상은 `service` 또는 `api-internal`로 제한한다.
-* Spring MVC controller import와 bean 등록 wiring은 분리한다.
+* controller는 application component scan으로 로딩한다.
+* api 모듈에 별도 helper bean이 필요할 때만 registrar wiring을 추가한다.
 
 의존
 
@@ -189,10 +190,10 @@
 
 Spring bean / 설정 규칙
 
-* controller import 전용 클래스는 `{Domain}ApiRegistrar` 이름을 사용한다.
-* api 모듈에서 `BeanRegistrarDsl` wiring이 필요하면 `{Domain}ApiBeanRegistrar`를 별도로 둔다.
+* controller 등록만을 위한 별도 auto-configuration은 두지 않는다.
+* api 모듈에서 `BeanRegistrarDsl` wiring이 필요하면 `{Domain}ApiBeanRegistrar`를 둔다.
 * `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`에는 실제로 로딩해야 하는
-  registrar / bean registrar 클래스를 모두 등록한다.
+  bean registrar만 등록한다.
 * web 기술 타입(`SseEmitter` 등)을 다루는 helper는 api 모듈에 두되, `UseCase` 대신 `Handler` / `Registry` / `Adapter`
   이름을 사용한다.
 
