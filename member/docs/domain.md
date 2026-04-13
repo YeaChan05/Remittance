@@ -61,6 +61,6 @@
 
 ## Related Docs
 
-- `docs/api/member-signup.md`
-- `docs/api/login.md`
-- `docs/filter_arch.md`
+- [[docs/api/member-signup.md]]
+- [[docs/api/login.md]]
+- [[docs/filter_arch.md]]

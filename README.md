@@ -4,13 +4,16 @@
 
 ## 문서
 
-- [코드 컨벤션](docs/rule/code_convention.md)
-- [모듈 구조](docs/rule/module.md)
-- [의존성 규칙](docs/rule/dependencies.md)
-- [외부 라이브러리|오픈소스](docs/opensource.md)
-- [API 문서](docs/api)
-- [모듈 및 코드 의존 가이드라인](architecture_guide.puml)
-
+- [[docs/rule/code_convention|코드 컨벤션]]
+- [[docs/rule/module|모듈 구조]]
+- [[docs/rule/dependencies|의존성 규칙]]
+- [[docs/opensource|외부 라이브러리 / 오픈소스]]
+- [[api_docs|API 문서]]
+- [[architecture_guide.puml|모듈 및 코드 의존 가이드라인]]
+- 도메인 명세
+	- [[transfer/docs/domain|transport]]
+	- [[member/docs/domain|member]]
+	- [[account/docs/domain|account]]
 ## API 요약
 
 - 회원가입 `POST /members`
@@ -30,7 +33,7 @@
 - 회원 도메인 로컬 실행: `./gradlew :member:application:bootRun`
 - 계좌 도메인 로컬 실행: `./gradlew :account:application:bootRun`
 - 송금 도메인 로컬 실행: `./gradlew :transfer:application:bootRun`
-- 로컬 공용 RabbitMQ는 루트 [compose.yml](/compose.yml)을 Spring Docker Compose support로 띄운다.
+- 로컬 공용 RabbitMQ는 루트 [[compose.yml]]을 Spring Docker Compose support로 띄운다.
 - `aggregate`, `account:application`, `transfer:application`의 `bootRun`은 lifecycle을 `start-only`
   로 사용하므로, 애플리케이션 종료 시 RabbitMQ는 자동으로 내려가지 않는다.
 - `test`는 단위/모듈 테스트 경로로 유지하고, 통합 검증은 `integrationTest`를 별도로 실행한다.

@@ -204,4 +204,4 @@ flowchart TD
 - 요청 body 검증 실패, 멱등키 만료, 멱등키 body conflict는 `400 Bad Request`다.
 - 멱등키 미존재는 `404 Not Found`다.
 
-추가 후처리와 소비 흐름은 [transfer-notification.md](transfer-notification.md)를 따른다.
+추가 후처리와 소비 흐름은 [[docs/flow/transfer-notification|transfer-notification.md]]를 따른다.

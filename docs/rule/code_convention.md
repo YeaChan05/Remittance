@@ -203,6 +203,7 @@
 - Bean 조립, 설정, 실행만 담당
 
 현재는 aggregate만 runnable
+
 ---
 
 ## 6. 요약
@@ -212,3 +213,7 @@
 - Exception은 항상 BusinessException 계층
 - Adapter만 기술을 안다
 - 이름으로 역할·경계·의존성 방향을 유추할 수 있게 한다
+
+---
+### Reference
+[[docs/rule/architecture_guide.puml]]

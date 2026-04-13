@@ -260,3 +260,7 @@ graph LR
 
 이 규칙을 지키면,
 모듈 수가 늘어나도 의존 방향은 절대 무너지지 않는다.
+
+
+### Reference
+[[docs/rule/architecture_guide.puml]]

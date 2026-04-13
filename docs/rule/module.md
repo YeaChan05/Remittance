@@ -339,3 +339,7 @@ Spring bean / 설정 규칙
       `account|member:api-internal`, `account|transfer|member:repository-jpa`,
       `account|transfer|member:schema`,
       `account|transfer:mq-rabbitmq`
+
+
+### Reference
+[[docs/rule/architecture_guide.puml]]
