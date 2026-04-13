@@ -96,9 +96,6 @@
 
     - `{Domain}Controller` (기본)
     - `{Domain}ApiController` (필요 시)
-- Controller import / web 설정
-
-    - `{Domain}ApiRegistrar`
 - BeanRegistrarDsl wiring
 
     - `{Domain}ApiBeanRegistrar`
