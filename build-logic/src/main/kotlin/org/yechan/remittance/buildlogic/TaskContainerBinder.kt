@@ -12,10 +12,10 @@ internal fun bindSharedContainers(
     taskProvider: TaskProvider<Task>,
     sharedContainerService: Provider<SharedContainerService>,
     stackLockService: Provider<SharedContainerStackLockService>,
-    stackKey: String,
     taskPath: String,
     liquibaseChangeLog: String?,
     declaredContainerKeys: Set<String>,
+    providerShareScopeKeys: Map<String, String>,
     coordinates: TestcontainersRuntimeCoordinates,
     runtimeClasspathByProviderKey: Map<String, Set<File>>,
 ) {
@@ -42,11 +42,12 @@ internal fun bindSharedContainers(
 
             providers.forEach { provider ->
                 val runtimeClasspath = runtimeClasspathByProviderKey.getValue(provider.key)
-                service.prepare(taskPath, stackKey, coordinates, provider, runtimeClasspath)
+                val providerShareScopeKey = providerShareScopeKeys.getValue(provider.key)
+                service.prepare(taskPath, providerShareScopeKey, coordinates, provider, runtimeClasspath)
                 service.applyTo(
                     javaForkTask,
                     taskPath,
-                    stackKey,
+                    providerShareScopeKey,
                     coordinates,
                     provider,
                     runtimeClasspath,

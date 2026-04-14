@@ -9,15 +9,20 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 internal data class SharedContainerRuntimeKey(
     val providerKey: String,
-    val stackKey: String,
+    val providerShareScopeKey: String,
     val coordinates: TestcontainersRuntimeCoordinates,
+)
+
+internal data class SharedContainerLifecycleOwner(
+    val providerKey: String,
+    val providerShareScopeKey: String,
 )
 
 abstract class SharedContainerService :
     BuildService<BuildServiceParameters.None>,
     AutoCloseable {
     private val runtimes = ConcurrentHashMap<SharedContainerRuntimeKey, SharedContainerRuntime>()
-    private val stackTracker = SharedContainerStackTracker()
+    private val scopeTracker = SharedContainerScopeTracker()
     private val dockerReadyInitialized = AtomicBoolean(false)
     private val dockerReady = AtomicBoolean(false)
     private val closed = AtomicBoolean(false)
@@ -30,27 +35,27 @@ abstract class SharedContainerService :
 
     internal fun prepare(
         taskPath: String,
-        stackKey: String,
+        providerShareScopeKey: String,
         coordinates: TestcontainersRuntimeCoordinates,
         provider: SharedContainerProvider,
         runtimeClasspath: Set<File>,
     ) {
-        runtime(stackKey, coordinates, provider, runtimeClasspath).prepare(taskPath)
+        runtime(providerShareScopeKey, coordinates, provider, runtimeClasspath).prepare(taskPath)
     }
 
     internal fun applyTo(
         target: JavaForkOptions,
         taskPath: String,
-        stackKey: String,
+        providerShareScopeKey: String,
         coordinates: TestcontainersRuntimeCoordinates,
         provider: SharedContainerProvider,
         runtimeClasspath: Set<File>,
     ) {
-        runtime(stackKey, coordinates, provider, runtimeClasspath).applyTo(target, taskPath)
+        runtime(providerShareScopeKey, coordinates, provider, runtimeClasspath).applyTo(target, taskPath)
     }
 
     internal fun registerExecutionPlan(
-        stackKey: String,
+        owner: SharedContainerLifecycleOwner,
         taskPaths: Set<String>,
     ) {
         if (taskPaths.isEmpty()) {
@@ -58,20 +63,20 @@ abstract class SharedContainerService :
         }
 
         synchronized(this) {
-            stackTracker.register(stackKey, taskPaths)
+            scopeTracker.register(owner, taskPaths)
         }
     }
 
     internal fun release(
-        stackKey: String,
+        owner: SharedContainerLifecycleOwner,
         taskPath: String,
     ) {
         val shouldClose = synchronized(this) {
-            stackTracker.release(stackKey, taskPath)
+            scopeTracker.release(owner, taskPath)
         }
 
         if (shouldClose) {
-            closeStack(stackKey)
+            closeScope(owner)
         }
     }
 
@@ -101,20 +106,23 @@ abstract class SharedContainerService :
     }
 
     private fun runtime(
-        stackKey: String,
+        providerShareScopeKey: String,
         coordinates: TestcontainersRuntimeCoordinates,
         provider: SharedContainerProvider,
         runtimeClasspath: Set<File>,
     ): SharedContainerRuntime {
-        val key = SharedContainerRuntimeKey(provider.key, stackKey, coordinates)
+        val key = SharedContainerRuntimeKey(provider.key, providerShareScopeKey, coordinates)
         return runtimes.computeIfAbsent(key) {
             provider.createRuntime(runtimeClasspath)
         }
     }
 
-    private fun closeStack(stackKey: String) {
+    private fun closeScope(owner: SharedContainerLifecycleOwner) {
         runtimes.keys
-            .filter { it.stackKey == stackKey }
+            .filter {
+                it.providerKey == owner.providerKey &&
+                    it.providerShareScopeKey == owner.providerShareScopeKey
+            }
             .forEach { key ->
                 runtimes.remove(key)?.close()
             }
@@ -136,28 +144,28 @@ abstract class SharedContainerStackLockService :
     override fun close() = Unit
 }
 
-internal class SharedContainerStackTracker {
-    private val expectedTaskPathsByStack = linkedMapOf<String, Set<String>>()
-    private val completedTaskPathsByStack = linkedMapOf<String, MutableSet<String>>()
+internal class SharedContainerScopeTracker {
+    private val expectedTaskPathsByOwner = linkedMapOf<SharedContainerLifecycleOwner, Set<String>>()
+    private val completedTaskPathsByOwner = linkedMapOf<SharedContainerLifecycleOwner, MutableSet<String>>()
 
     fun register(
-        stackKey: String,
+        owner: SharedContainerLifecycleOwner,
         taskPaths: Set<String>,
     ) {
-        expectedTaskPathsByStack[stackKey] = taskPaths.toSet()
-        completedTaskPathsByStack.remove(stackKey)
+        expectedTaskPathsByOwner[owner] = taskPaths.toSet()
+        completedTaskPathsByOwner.remove(owner)
     }
 
     fun release(
-        stackKey: String,
+        owner: SharedContainerLifecycleOwner,
         taskPath: String,
     ): Boolean {
-        val expectedTaskPaths = expectedTaskPathsByStack[stackKey] ?: return false
+        val expectedTaskPaths = expectedTaskPathsByOwner[owner] ?: return false
         if (taskPath !in expectedTaskPaths) {
             return false
         }
 
-        val completedTaskPaths = completedTaskPathsByStack.getOrPut(stackKey) {
+        val completedTaskPaths = completedTaskPathsByOwner.getOrPut(owner) {
             linkedSetOf()
         }
         completedTaskPaths += taskPath
@@ -166,8 +174,8 @@ internal class SharedContainerStackTracker {
             return false
         }
 
-        expectedTaskPathsByStack.remove(stackKey)
-        completedTaskPathsByStack.remove(stackKey)
+        expectedTaskPathsByOwner.remove(owner)
+        completedTaskPathsByOwner.remove(owner)
         return true
     }
 }

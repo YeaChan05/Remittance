@@ -1,3 +1,4 @@
+
 import com.linecorp.support.project.multi.recipe.configureByTypeExpression
 import com.linecorp.support.project.multi.recipe.configureByTypeHaving
 import com.linecorp.support.project.multi.recipe.configureByTypePrefix
@@ -118,8 +119,6 @@ configureByTypePrefix("kotlin") {
     dependencies {
         implementation(rootProject.libs.jspecify)
         implementation(rootProject.libs.kotlin.logging)
-        compileOnly(rootProject.libs.lombok)
-        annotationProcessor(rootProject.libs.lombok)
         testImplementation(enforcedPlatform(SpringBootPlugin.BOM_COORDINATES))
         testImplementation("org.springframework.boot:spring-boot-starter-test")
     }

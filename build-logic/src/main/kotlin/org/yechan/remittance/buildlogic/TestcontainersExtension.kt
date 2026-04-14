@@ -27,6 +27,7 @@ open class TestcontainersTaskSpec internal constructor(
     internal val name: String,
 ) {
     internal val containerKeys: MutableSet<String> = linkedSetOf()
+    internal val isolatedContainerKeys: MutableSet<String> = linkedSetOf()
     internal var stackKey: String? = null
     internal var liquibaseChangeLog: String? = null
 
@@ -44,6 +45,14 @@ open class TestcontainersTaskSpec internal constructor(
         }
 
         containerKeys += containerKey.lowercase(Locale.ROOT)
+    }
+
+    fun isolate(containerKey: String) {
+        require(containerKey.isNotBlank()) {
+            "Shared testcontainer key must not be blank."
+        }
+
+        isolatedContainerKeys += containerKey.lowercase(Locale.ROOT)
     }
 
     fun liquibase(changeLog: String) {

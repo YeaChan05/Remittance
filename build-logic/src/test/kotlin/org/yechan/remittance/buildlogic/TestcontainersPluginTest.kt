@@ -10,22 +10,26 @@ class TestcontainersPluginTest {
             SharedContainerTaskRegistration(
                 projectPath = ":member:repository-jpa",
                 taskName = "integrationTest",
-                stackKey = "member",
+                executionStackKey = "member",
+                providerShareScopeKeys = mapOf("mysql" to "mysql:non-aggregate"),
             ),
             SharedContainerTaskRegistration(
                 projectPath = ":member:application",
                 taskName = "integrationTest",
-                stackKey = "member",
+                executionStackKey = "member",
+                providerShareScopeKeys = mapOf("mysql" to "mysql:non-aggregate"),
             ),
             SharedContainerTaskRegistration(
                 projectPath = ":transfer:repository-jpa",
                 taskName = "integrationTest",
-                stackKey = "transfer",
+                executionStackKey = "transfer",
+                providerShareScopeKeys = mapOf("mysql" to "mysql:non-aggregate"),
             ),
             SharedContainerTaskRegistration(
                 projectPath = ":transfer:application",
                 taskName = "integrationTest",
-                stackKey = "transfer",
+                executionStackKey = "transfer",
+                providerShareScopeKeys = mapOf("mysql" to "mysql:non-aggregate"),
             ),
         )
 
@@ -44,7 +48,31 @@ class TestcontainersPluginTest {
             SharedContainerTaskRegistration(
                 projectPath = ":member:application",
                 taskName = "integrationTest",
-                stackKey = "member",
+                executionStackKey = "member",
+                providerShareScopeKeys = mapOf("mysql" to "mysql:non-aggregate"),
+            ),
+        )
+
+        assertEquals(
+            emptyList(),
+            repositoryBeforeApplicationPairs(taskRegistrations),
+        )
+    }
+
+    @Test
+    fun `같은 provider share scope라도 execution stack이 다르면 ordering pair를 만들지 않는다`() {
+        val taskRegistrations = listOf(
+            SharedContainerTaskRegistration(
+                projectPath = ":member:repository-jpa",
+                taskName = "integrationTest",
+                executionStackKey = "member",
+                providerShareScopeKeys = mapOf("mysql" to "mysql:non-aggregate"),
+            ),
+            SharedContainerTaskRegistration(
+                projectPath = ":account:application",
+                taskName = "integrationTest",
+                executionStackKey = "account",
+                providerShareScopeKeys = mapOf("mysql" to "mysql:non-aggregate"),
             ),
         )
 

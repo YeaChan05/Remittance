@@ -7,7 +7,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.tasks.TaskProvider
-import java.util.concurrent.ConcurrentHashMap
+import java.util.Locale
 
 @Suppress("unused")
 class TestcontainersPlugin : Plugin<Project> {
@@ -23,7 +23,6 @@ class TestcontainersPlugin : Plugin<Project> {
         val taskProvidersByPath = linkedMapOf<String, TaskProvider<Task>>()
         val releaseTaskProvidersByPath = linkedMapOf<String, TaskProvider<DefaultTask>>()
         val taskRegistrations = linkedMapOf<String, SharedContainerTaskRegistration>()
-        val selectedTaskPathsByStack = ConcurrentHashMap<String, Set<String>>()
 
         project.tasks.register("afterBuild") {
             sharedContainerService.orNull?.close()
@@ -32,21 +31,10 @@ class TestcontainersPlugin : Plugin<Project> {
         project.gradle.taskGraph.whenReady(
             object : Action<TaskExecutionGraph> {
                 override fun execute(taskGraph: TaskExecutionGraph) {
-                    taskRegistrations.values
-                        .groupBy(SharedContainerTaskRegistration::stackKey)
-                        .forEach { (stackKey, registrations) ->
-                            val selectedTaskPaths = registrations
-                                .map(SharedContainerTaskRegistration::taskPath)
-                                .filter(taskGraph::hasTask)
-                                .toSet()
-
-                            if (selectedTaskPaths.isEmpty()) {
-                                return@forEach
-                            }
-
-                            selectedTaskPathsByStack[stackKey] = selectedTaskPaths
+                    selectedTaskPathsByLifecycleOwner(taskRegistrations.values, taskGraph)
+                        .forEach { (owner, selectedTaskPaths) ->
                             sharedContainerService.get()
-                                .registerExecutionPlan(stackKey, selectedTaskPaths)
+                                .registerExecutionPlan(owner, selectedTaskPaths)
                         }
                 }
             },
@@ -74,9 +62,18 @@ class TestcontainersPlugin : Plugin<Project> {
                     }
 
                     val taskProvider = tasks.named(taskSpec.name, Task::class.java)
-                    val stackKey = resolveStackKey(currentProject, taskSpec)
+                    val executionStackKey = resolveStackKey(currentProject, taskSpec)
                     val taskPath = "${currentProject.path}:${taskSpec.name}"
                     val declaredContainerKeys = taskSpec.containerKeys.toSet()
+                    val providerShareScopeKeys = declaredContainerKeys.associateWith { providerKey ->
+                        resolveProviderShareScopeKey(
+                            projectPath = currentProject.path,
+                            taskName = taskSpec.name,
+                            executionStackKey = executionStackKey,
+                            taskSpec = taskSpec,
+                            providerKey = providerKey,
+                        )
+                    }
                     val coordinates =
                         TestcontainersRuntimeCoordinatesResolver.resolve(currentProject, extension)
                     val runtimeClasspathByProviderKey =
@@ -91,10 +88,11 @@ class TestcontainersPlugin : Plugin<Project> {
                     val taskRegistration = SharedContainerTaskRegistration(
                         projectPath = currentProject.path,
                         taskName = taskSpec.name,
-                        stackKey = stackKey,
+                        executionStackKey = executionStackKey,
+                        providerShareScopeKeys = providerShareScopeKeys,
                     )
                     val stackLockService = project.gradle.sharedServices.registerIfAbsent(
-                        "sharedContainerStackLockService-$stackKey",
+                        "sharedContainerStackLockService-$executionStackKey",
                         SharedContainerStackLockService::class.java,
                     ) {
                         maxParallelUsages.set(1)
@@ -106,8 +104,10 @@ class TestcontainersPlugin : Plugin<Project> {
                         usesService(sharedContainerService)
                         usesService(stackLockService)
                         doLast {
-                            sharedContainerService.get()
-                                .release(stackKey, taskRegistration.taskPath)
+                            taskRegistration.lifecycleOwners.forEach { owner ->
+                                sharedContainerService.get()
+                                    .release(owner, taskRegistration.taskPath)
+                            }
                         }
                     }
                     taskProvidersByPath[taskRegistration.taskPath] = taskProvider
@@ -120,10 +120,10 @@ class TestcontainersPlugin : Plugin<Project> {
                         taskProvider = taskProvider,
                         sharedContainerService = sharedContainerService,
                         stackLockService = stackLockService,
-                        stackKey = stackKey,
                         taskPath = taskPath,
                         liquibaseChangeLog = taskSpec.liquibaseChangeLog,
                         declaredContainerKeys = declaredContainerKeys,
+                        providerShareScopeKeys = providerShareScopeKeys,
                         coordinates = coordinates,
                         runtimeClasspathByProviderKey = runtimeClasspathByProviderKey,
                     )
@@ -143,9 +143,15 @@ class TestcontainersPlugin : Plugin<Project> {
 internal data class SharedContainerTaskRegistration(
     val projectPath: String,
     val taskName: String,
-    val stackKey: String,
+    val executionStackKey: String,
+    val providerShareScopeKeys: Map<String, String>,
 ) {
     val taskPath: String = "$projectPath:$taskName"
+    val lifecycleOwners: Set<SharedContainerLifecycleOwner> = providerShareScopeKeys
+        .map { (providerKey, providerShareScopeKey) ->
+            SharedContainerLifecycleOwner(providerKey, providerShareScopeKey)
+        }
+        .toSet()
 
     fun isRepositoryIntegrationTest(): Boolean = projectPath.endsWith(":repository-jpa") && taskName == INTEGRATION_TEST
 
@@ -159,7 +165,7 @@ internal data class SharedContainerTaskRegistration(
 internal fun repositoryBeforeApplicationPairs(
     taskRegistrations: Collection<SharedContainerTaskRegistration>,
 ): List<Pair<String, String>> = taskRegistrations
-    .groupBy(SharedContainerTaskRegistration::stackKey)
+    .groupBy(SharedContainerTaskRegistration::executionStackKey)
     .values
     .flatMap { registrations ->
         val repositoryTasks =
@@ -173,3 +179,40 @@ internal fun repositoryBeforeApplicationPairs(
             }
         }
     }
+
+internal const val MYSQL_PROVIDER_KEY = "mysql"
+internal const val NON_AGGREGATE_MYSQL_SHARE_SCOPE_KEY = "mysql:non-aggregate"
+
+internal fun resolveProviderShareScopeKey(
+    projectPath: String,
+    taskName: String,
+    executionStackKey: String,
+    taskSpec: TestcontainersTaskSpec,
+    providerKey: String,
+): String {
+    val normalizedProviderKey = providerKey.lowercase(Locale.ROOT)
+    if (normalizedProviderKey in taskSpec.isolatedContainerKeys) {
+        return "$projectPath:$taskName:$normalizedProviderKey:isolate"
+    }
+
+    return when {
+        normalizedProviderKey == MYSQL_PROVIDER_KEY && projectPath != AGGREGATE_PROJECT_PATH ->
+            NON_AGGREGATE_MYSQL_SHARE_SCOPE_KEY
+        else -> executionStackKey
+    }
+}
+
+internal fun selectedTaskPathsByLifecycleOwner(
+    taskRegistrations: Collection<SharedContainerTaskRegistration>,
+    taskGraph: TaskExecutionGraph,
+): Map<SharedContainerLifecycleOwner, Set<String>> = buildMap {
+    taskRegistrations
+        .filter { taskGraph.hasTask(it.taskPath) }
+        .forEach { registration ->
+            registration.lifecycleOwners.forEach { owner ->
+                put(owner, get(owner).orEmpty() + registration.taskPath)
+            }
+        }
+}
+
+private const val AGGREGATE_PROJECT_PATH = ":aggregate"

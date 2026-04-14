@@ -4,6 +4,8 @@ testcontainers {
         stack("aggregate")
         use("mysql")
         use("rabbitmq")
+        isolate("mysql")
+        isolate("rabbitmq")
         liquibase("classpath:/db/changelog/db.changelog-master.yaml")
     }
 }
