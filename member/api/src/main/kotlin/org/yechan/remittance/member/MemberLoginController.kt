@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import org.yechan.remittance.member.dto.MemberLoginRequest
 import org.yechan.remittance.member.dto.MemberLoginResponse
+import org.yechan.remittance.member.dto.toProps
 
 @RestController
 class MemberLoginController(
@@ -16,7 +17,7 @@ class MemberLoginController(
     override fun login(
         @RequestBody @Valid request: MemberLoginRequest,
     ): ResponseEntity<MemberLoginResponse> {
-        val token = memberQueryUseCase.login(request)
+        val token = memberQueryUseCase.login(request.toProps())
         val response = MemberLoginResponse.from(token)
         return ResponseEntity.ok(response)
     }

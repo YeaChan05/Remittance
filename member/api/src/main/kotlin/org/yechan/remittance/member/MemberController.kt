@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.yechan.remittance.member.dto.MemberRegisterRequest
 import org.yechan.remittance.member.dto.MemberRegisterResponse
+import org.yechan.remittance.member.dto.toProps
 
 @RestController
 @RequestMapping("/members")
@@ -18,7 +19,7 @@ class MemberController(
     override fun register(
         @RequestBody @Valid request: MemberRegisterRequest,
     ): ResponseEntity<MemberRegisterResponse> {
-        val model = memberCreateUseCase.register(request)
+        val model = memberCreateUseCase.register(request.toProps())
         return ResponseEntity.ok(MemberRegisterResponse(model.name))
     }
 }
