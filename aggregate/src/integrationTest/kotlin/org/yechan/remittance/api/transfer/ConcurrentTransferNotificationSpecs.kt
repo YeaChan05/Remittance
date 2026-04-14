@@ -151,7 +151,10 @@ class ConcurrentTransferNotificationSpecs {
             sentOutboxCountBefore = countSentOutboxEvents(),
             processedEventCountBefore = countProcessedEvents(),
             idempotencyKeys = List(requestCount) {
-                issueIdempotencyKey(sender.memberId, IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER)
+                issueIdempotencyKey(
+                    sender.memberId,
+                    IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
+                )
             },
         )
     }

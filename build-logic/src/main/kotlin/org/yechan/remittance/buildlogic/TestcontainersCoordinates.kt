@@ -5,7 +5,6 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.VersionCatalogsExtension
-import java.io.File
 
 internal data class TestcontainersRuntimeCoordinates(
     val bomCoordinate: String,

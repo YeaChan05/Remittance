@@ -32,7 +32,8 @@ class AccountInternalAdapterTest {
                 toAccountId: Long,
             ): AccountInternalLockValue? = null
         }
-        val adapter = AccountInternalAdapter(queryUseCase, AccountInternalUpdateUseCase { _, _ -> true })
+        val adapter =
+            AccountInternalAdapter(queryUseCase, AccountInternalUpdateUseCase { _, _ -> true })
 
         val response = adapter.get(7L, AccountGetRequest(10L))
 
@@ -63,7 +64,8 @@ class AccountInternalAdapterTest {
                 )
             }
         }
-        val adapter = AccountInternalAdapter(queryUseCase, AccountInternalUpdateUseCase { _, _ -> true })
+        val adapter =
+            AccountInternalAdapter(queryUseCase, AccountInternalUpdateUseCase { _, _ -> true })
 
         val response = adapter.lock(7L, AccountLockRequest(10L, 20L))
 

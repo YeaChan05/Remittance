@@ -78,7 +78,10 @@ class CommonSecurityAutoConfigurationTest {
     fun `internal requests with valid internal token are allowed`() {
         restTestClient.get()
             .uri("/internal/secure")
-            .header(InternalServiceAuthenticationFilter.INTERNAL_TOKEN_HEADER, "test-internal-token")
+            .header(
+                InternalServiceAuthenticationFilter.INTERNAL_TOKEN_HEADER,
+                "test-internal-token",
+            )
             .header(InternalServiceAuthenticationFilter.INTERNAL_USER_ID_HEADER, "7")
             .exchange()
             .expectStatus().isOk
@@ -90,7 +93,10 @@ class CommonSecurityAutoConfigurationTest {
     fun `internal requests without user id keep temporary compatibility`() {
         restTestClient.get()
             .uri("/internal/secure")
-            .header(InternalServiceAuthenticationFilter.INTERNAL_TOKEN_HEADER, "test-internal-token")
+            .header(
+                InternalServiceAuthenticationFilter.INTERNAL_TOKEN_HEADER,
+                "test-internal-token",
+            )
             .exchange()
             .expectStatus().isOk
             .expectBody<String>()

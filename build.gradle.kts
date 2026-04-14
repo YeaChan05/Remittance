@@ -1,4 +1,3 @@
-
 import com.linecorp.support.project.multi.recipe.configureByTypeExpression
 import com.linecorp.support.project.multi.recipe.configureByTypeHaving
 import com.linecorp.support.project.multi.recipe.configureByTypePrefix

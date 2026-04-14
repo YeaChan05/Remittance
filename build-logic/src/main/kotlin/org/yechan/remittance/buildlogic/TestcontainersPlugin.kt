@@ -77,15 +77,17 @@ class TestcontainersPlugin : Plugin<Project> {
                     val stackKey = resolveStackKey(currentProject, taskSpec)
                     val taskPath = "${currentProject.path}:${taskSpec.name}"
                     val declaredContainerKeys = taskSpec.containerKeys.toSet()
-                    val coordinates = TestcontainersRuntimeCoordinatesResolver.resolve(currentProject, extension)
+                    val coordinates =
+                        TestcontainersRuntimeCoordinatesResolver.resolve(currentProject, extension)
                     val runtimeClasspathByProviderKey =
-                        SharedContainerRegistry.resolve(declaredContainerKeys).associate { provider ->
-                            provider.key to TestcontainersRuntimeClasspathResolver.resolveConfiguration(
-                                project = currentProject,
-                                coordinates = coordinates,
-                                provider = provider,
-                            ).files.toSet()
-                        }
+                        SharedContainerRegistry.resolve(declaredContainerKeys)
+                            .associate { provider ->
+                                provider.key to TestcontainersRuntimeClasspathResolver.resolveConfiguration(
+                                    project = currentProject,
+                                    coordinates = coordinates,
+                                    provider = provider,
+                                ).files.toSet()
+                            }
                     val taskRegistration = SharedContainerTaskRegistration(
                         projectPath = currentProject.path,
                         taskName = taskSpec.name,

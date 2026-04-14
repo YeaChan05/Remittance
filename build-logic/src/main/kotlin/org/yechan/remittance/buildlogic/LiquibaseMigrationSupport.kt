@@ -37,20 +37,25 @@ internal object LiquibaseMigrationSupport {
                     username = username,
                     password = password,
                 ).use { connection ->
-                    val jdbcConnectionClass = classLoader.loadClass("liquibase.database.jvm.JdbcConnection")
-                    val databaseConnectionClass = classLoader.loadClass("liquibase.database.DatabaseConnection")
+                    val jdbcConnectionClass =
+                        classLoader.loadClass("liquibase.database.jvm.JdbcConnection")
+                    val databaseConnectionClass =
+                        classLoader.loadClass("liquibase.database.DatabaseConnection")
                     val jdbcConnection = jdbcConnectionClass
                         .getConstructor(java.sql.Connection::class.java)
                         .newInstance(connection)
 
-                    val databaseFactoryClass = classLoader.loadClass("liquibase.database.DatabaseFactory")
+                    val databaseFactoryClass =
+                        classLoader.loadClass("liquibase.database.DatabaseFactory")
                     val databaseFactory = databaseFactoryClass.getMethod("getInstance").invoke(null)
                     val database = databaseFactoryClass
                         .getMethod("findCorrectDatabaseImplementation", databaseConnectionClass)
                         .invoke(databaseFactory, jdbcConnection)
 
-                    val resourceAccessorClass = classLoader.loadClass("liquibase.resource.ResourceAccessor")
-                    val classLoaderResourceAccessorClass = classLoader.loadClass("liquibase.resource.ClassLoaderResourceAccessor")
+                    val resourceAccessorClass =
+                        classLoader.loadClass("liquibase.resource.ResourceAccessor")
+                    val classLoaderResourceAccessorClass =
+                        classLoader.loadClass("liquibase.resource.ClassLoaderResourceAccessor")
                     val resourceAccessor = classLoaderResourceAccessorClass
                         .getConstructor(ClassLoader::class.java)
                         .newInstance(classLoader)
@@ -59,7 +64,11 @@ internal object LiquibaseMigrationSupport {
                     val liquibaseClass = classLoader.loadClass("liquibase.Liquibase")
                     val liquibase = liquibaseClass
                         .getConstructor(String::class.java, resourceAccessorClass, databaseClass)
-                        .newInstance(changeLog.removePrefix("classpath:/"), resourceAccessor, database)
+                        .newInstance(
+                            changeLog.removePrefix("classpath:/"),
+                            resourceAccessor,
+                            database,
+                        )
 
                     val contextsClass = classLoader.loadClass("liquibase.Contexts")
                     val contexts = contextsClass.getConstructor().newInstance()

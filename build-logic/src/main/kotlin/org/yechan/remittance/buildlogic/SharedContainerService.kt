@@ -1,6 +1,5 @@
 package org.yechan.remittance.buildlogic
 
-import org.gradle.api.Project
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
 import org.gradle.process.JavaForkOptions

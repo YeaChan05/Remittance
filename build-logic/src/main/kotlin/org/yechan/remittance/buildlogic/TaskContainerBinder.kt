@@ -43,7 +43,14 @@ internal fun bindSharedContainers(
             providers.forEach { provider ->
                 val runtimeClasspath = runtimeClasspathByProviderKey.getValue(provider.key)
                 service.prepare(taskPath, stackKey, coordinates, provider, runtimeClasspath)
-                service.applyTo(javaForkTask, taskPath, stackKey, coordinates, provider, runtimeClasspath)
+                service.applyTo(
+                    javaForkTask,
+                    taskPath,
+                    stackKey,
+                    coordinates,
+                    provider,
+                    runtimeClasspath,
+                )
             }
 
             liquibaseChangeLog?.let { changeLog ->
