@@ -42,7 +42,7 @@ internal object LiquibaseMigrationSupport {
                     val databaseConnectionClass =
                         classLoader.loadClass("liquibase.database.DatabaseConnection")
                     val jdbcConnection = jdbcConnectionClass
-                        .getConstructor(java.sql.Connection::class.java)
+                        .getConstructor(Connection::class.java)
                         .newInstance(connection)
 
                     val databaseFactoryClass =

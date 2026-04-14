@@ -21,7 +21,7 @@ class AccountInternalAdapterTest {
             override fun get(
                 memberId: Long,
                 accountId: Long,
-            ): AccountInternalSnapshotValue? {
+            ): AccountInternalSnapshotValue {
                 capturedMemberId.set(memberId)
                 return AccountInternalSnapshotValue(accountId, 3L, BigDecimal("1000"))
             }
@@ -33,7 +33,7 @@ class AccountInternalAdapterTest {
             ): AccountInternalLockValue? = null
         }
         val adapter =
-            AccountInternalAdapter(queryUseCase, AccountInternalUpdateUseCase { _, _ -> true })
+            AccountInternalAdapter(queryUseCase) { _, _ -> true }
 
         val response = adapter.get(7L, AccountGetRequest(10L))
 
@@ -65,7 +65,7 @@ class AccountInternalAdapterTest {
             }
         }
         val adapter =
-            AccountInternalAdapter(queryUseCase, AccountInternalUpdateUseCase { _, _ -> true })
+            AccountInternalAdapter(queryUseCase) { _, _ -> true }
 
         val response = adapter.lock(7L, AccountLockRequest(10L, 20L))
 
