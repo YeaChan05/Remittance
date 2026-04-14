@@ -40,7 +40,6 @@ bin/
 
 
 ### vulnerable ###
-.omx/
 .codex/*
 !.codex/agents/
 !.codex/agents/**

@@ -29,7 +29,7 @@ flowchart LR
 | Stage    | Team Command           | Primary Outcome                            | Exit Criteria                                                                      | Default Surface                                                     |
 |----------|------------------------|--------------------------------------------|------------------------------------------------------------------------------------|---------------------------------------------------------------------|
 | DEFINE   | `/spec`                | 문제 정의, 범위, acceptance 기준, open question 정리 | acceptance criteria / 비목표 / open question이 정리되어 PLAN 입력으로 넘길 수 있음                  | explicit skill: `spec`                                              |
-| PLAN     | `/plan`                | PRD / test-spec / 구현 순서 확정                 | 구현 순서, 검증 전략, 리스크가 고정되고 필요 시 `.omx/plans/prd-*.md`, `.omx/plans/test-spec-*.md` 생성 | explicit skill: `plan`, 필요 시 `ralplan`, design agents               |
+| PLAN     | `/plan`                | PRD / test-spec / 구현 순서 확정                 | 구현 순서, 검증 전략, 리스크가 고정되고 필요 시 `.codex/plans/prd-*.md`, `.codex/plans/test-spec-*.md` 생성 | explicit skill: `plan`, 필요 시 `ralplan`, design agents               |
 | BUILD    | `/build`               | 승인된 범위의 최소 구현                              | 승인된 범위의 최소 구현 완료 + 좁은 failing test가 해소됨                                            | explicit skill: `build`, `implementer`, 필요 시 `code-simplifier`     |
 | VERIFY   | `/test`                | 좁은 테스트 통과, 디버깅 완료, 증거 수집                   | 관련 테스트 green + 실패 원인 설명 가능 + 핵심 증거 수집 완료                                           | explicit skill: `test`, `debugger`, `verifier`                      |
 | REVIEW   | `/review`              | QA gate, spec 적합성, 위험 점검                   | blocking issue 없음, non-blocking issue는 명시적 기록 완료                                   | explicit skill: `review`, `code-review`, `spec-conformance-auditor` |
@@ -60,7 +60,7 @@ flowchart LR
 - DEFINE에서 고정한 요구를 구현 가능한 PRD / task sequence로 바꾼다.
 - `domain-spec-designer`와 `application-flow-designer`는 병렬 가능하다.
 - 설계 결과는 반드시 `architecture-rule-auditor` 게이트를 통과해야 한다.
-- `ralph`를 사용할 경우 이 단계 완료 기준은 `.omx/plans/prd-*.md` 와 `.omx/plans/test-spec-*.md` 생성이다.
+- `ralph`를 사용할 경우 이 단계 완료 기준은 `.codex/plans/prd-*.md` 와 `.codex/plans/test-spec-*.md` 생성이다.
 
 ### 3. BUILD
 

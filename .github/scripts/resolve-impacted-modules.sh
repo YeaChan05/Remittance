@@ -149,7 +149,7 @@ resolve_touched_projects() {
         touch_reasons["$normalized -> :aggregate"]=1
         continue
         ;;
-      docs/*|.codex/*|.omx/*)
+      docs/*|.codex/*)
         touch_reasons["$normalized -> non-functional change"]=1
         continue
         ;;

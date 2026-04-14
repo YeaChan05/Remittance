@@ -1,5 +1,3 @@
-<!-- OMX:AGENTS-INIT:MANAGED -->
-<!-- Parent: ../AGENTS.md -->
 # account
 
 이 파일은 `account` 하위 작업에서 루트 `AGENTS.md`보다 우선한다.
@@ -28,6 +26,3 @@ account 특화 internal/provider 규칙만 둔다.
 - 가장 가까운 기존 구현/테스트부터 복제한다.
 - `account:service:test`, `account:api-internal:test`, 필요 시 `account:application:integrationTest`를 우선 검증 경로로 본다.
 - 문서 계약이 바뀌면 `docs/filter_arch.md`와 관련 API 문서를 함께 본다.
-
-<!-- OMX:TEAM:WORKER:START -->
-<!-- OMX:TEAM:WORKER:END -->

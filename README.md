@@ -6,7 +6,7 @@
 
 - [[docs/rule/code_convention|코드 컨벤션]]
 - [[docs/rule/module|모듈 구조]]
-- [[docs/rule/dependencies|의존성 규칙]]
+- [[dependencies|의존성 규칙]]
 - [[docs/opensource|외부 라이브러리 / 오픈소스]]
 - [[api_docs|API 문서]]
 - [[architecture_guide.puml|모듈 및 코드 의존 가이드라인]]
