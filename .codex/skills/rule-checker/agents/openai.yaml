@@ -1,0 +1,4 @@
+interface:
+  display_name: "Rule Checker"
+  short_description: "Check code against copied rule references"
+  default_prompt: "Check whether the current implementation complies with the copied rule references and report grounded violations only."
