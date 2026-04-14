@@ -96,9 +96,6 @@
 
     - `{Domain}Controller` (기본)
     - `{Domain}ApiController` (필요 시)
-- BeanRegistrarDsl wiring
-
-    - `{Domain}ApiBeanRegistrar`
 - DTO
 
     - `{Domain}{Action}Request`
@@ -137,7 +134,6 @@
 - 구현
 
     - `DomainInternalAdapter`
-    - `DomainInternalApiBeanRegistrar`
 
 규칙
 
@@ -177,7 +173,6 @@
 
     - `DomainJpaRepository`
 - 영속 엔티티
-
     - `DomainEntity`
 
 규칙
