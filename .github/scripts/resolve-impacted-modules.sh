@@ -272,13 +272,9 @@ print_summary() {
   if [[ "$skip_run" == "true" ]]; then
     echo "- (skip)"
   elif [[ "$full_run" == "true" ]]; then
-    echo "- ./gradlew assemble"
-    echo "- ./gradlew test --parallel"
-    echo "- ./gradlew integrationTest --parallel"
+    echo "- ./gradlew test integrationTest --parallel"
   else
-    echo "- ./gradlew $assemble_tasks"
-    echo "- ./gradlew $test_tasks --parallel"
-    echo "- ./gradlew $integration_test_tasks --parallel"
+    echo "- ./gradlew $verification_tasks --parallel"
   fi
 }
 
@@ -295,6 +291,7 @@ full_run="false"
 assemble_tasks=""
 test_tasks=""
 integration_test_tasks=""
+verification_tasks=""
 
 if [[ ${#changed_files[@]} -eq 0 ]]; then
   skip_run="true"
@@ -309,6 +306,7 @@ else
   assemble_tasks="$(join_tasks "assemble" "${impacted_list[@]}")"
   test_tasks="$(join_tasks "test" "${impacted_list[@]}")"
   integration_test_tasks="$(join_tasks "integrationTest" "${integration_impacted_list[@]}")"
+  verification_tasks="$(printf '%s %s' "$test_tasks" "$integration_test_tasks" | xargs)"
 fi
 
 summary="$(print_summary)"
@@ -319,4 +317,5 @@ write_output "skip_run" "$skip_run"
 write_output "assemble_tasks" "$assemble_tasks"
 write_output "test_tasks" "$test_tasks"
 write_output "integration_test_tasks" "$integration_test_tasks"
+write_output "verification_tasks" "$verification_tasks"
 write_output "summary" "$summary"

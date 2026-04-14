@@ -62,21 +62,13 @@ jobs:
         if: github.event_name != 'pull_request' || steps.impacted.outputs.skip_run != 'true'
         uses: gradle/actions/setup-gradle@v5
 
-      - name: Build
+      - name: Build and coverage
         if: github.event_name != 'pull_request'
-        run: ./gradlew build --parallel -x test -x integrationTest
+        run: ./gradlew build jacocoRootReport --parallel
 
-      - name: Test
-        if: github.event_name != 'pull_request' || steps.impacted.outputs.full_run == 'true'
-        run: ./gradlew test --parallel
-
-      - name: Integration Test
-        if: github.event_name != 'pull_request' || steps.impacted.outputs.full_run == 'true'
-        run: ./gradlew integrationTest --parallel
-
-      - name: Jacoco report
-        if: github.event_name != 'pull_request'
-        run: ./gradlew jacocoRootReport -x test -x integrationTest
+      - name: Full verification
+        if: github.event_name == 'pull_request' && steps.impacted.outputs.full_run == 'true'
+        run: ./gradlew test integrationTest --parallel
 
       - name: Upload coverage
         if: github.event_name != 'pull_request'
@@ -89,4 +81,4 @@ jobs:
 
       - name: Selective test
         if: github.event_name == 'pull_request' && steps.impacted.outputs.full_run != 'true' && steps.impacted.outputs.skip_run != 'true'
-        run: ./gradlew ${{ steps.impacted.outputs.test_tasks }} --parallel
+        run: ./gradlew ${{ steps.impacted.outputs.verification_tasks }} --parallel
