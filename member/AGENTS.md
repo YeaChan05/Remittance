@@ -1,5 +1,3 @@
-<!-- OMX:AGENTS-INIT:MANAGED -->
-<!-- Parent: ../AGENTS.md -->
 # member
 
 이 파일은 `member` 하위 작업에서 루트 `AGENTS.md`보다 우선한다.
@@ -27,6 +25,3 @@ member 특화 인증/provider 규칙만 둔다.
 - 가장 가까운 구현/테스트부터 복제한다.
 - `member:service:test`, `member:api-internal:test`, 필요 시 `member:application:integrationTest`를 우선 검증 경로로 본다.
 - 로그인/토큰 정책을 바꾸면 관련 API 문서도 함께 수정한다.
-
-<!-- OMX:TEAM:WORKER:START -->
-<!-- OMX:TEAM:WORKER:END -->

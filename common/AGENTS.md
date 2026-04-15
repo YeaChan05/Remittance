@@ -1,5 +1,3 @@
-<!-- OMX:AGENTS-INIT:MANAGED -->
-<!-- Parent: ../AGENTS.md -->
 # common
 
 이 파일은 `common` 하위 작업에서 루트 `AGENTS.md`보다 우선한다.
@@ -26,5 +24,3 @@
 - `common:api:test`, `common:security:test`를 우선 검증 경로로 본다.
 - 공통 모듈 변경은 하위 도메인 회귀에 영향이 크므로 관련 application/integration 경로까지 확인한다.
 
-<!-- OMX:TEAM:WORKER:START -->
-<!-- OMX:TEAM:WORKER:END -->
