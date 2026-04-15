@@ -51,7 +51,7 @@ class CommonSecurityAutoConfigurationTest {
     fun `requests without token are unauthorized`() {
         restTestClient.get()
             .uri("/secure")
-            .header("API-Version", "v1")
+            .header("X-API-Version", "v1")
             .exchange()
             .expectStatus().isUnauthorized
     }
@@ -60,7 +60,7 @@ class CommonSecurityAutoConfigurationTest {
     fun `requests with invalid token are unauthorized`() {
         restTestClient.get()
             .uri("/secure")
-            .header("API-Version", "v1")
+            .header("X-API-Version", "v1")
             .header(HttpHeaders.AUTHORIZATION, "Bearer invalid")
             .exchange()
             .expectStatus().isUnauthorized
@@ -72,7 +72,7 @@ class CommonSecurityAutoConfigurationTest {
 
         restTestClient.get()
             .uri("/secure")
-            .header("API-Version", "v1")
+            .header("X-API-Version", "v1")
             .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
             .exchange()
             .expectStatus().isOk
@@ -84,7 +84,7 @@ class CommonSecurityAutoConfigurationTest {
     fun `internal requests with valid internal token are allowed`() {
         restTestClient.get()
             .uri("/internal/secure")
-            .header("API-Version", "v1")
+            .header("X-API-Version", "v1")
             .header(
                 InternalServiceAuthenticationFilter.INTERNAL_TOKEN_HEADER,
                 "test-internal-token",
@@ -100,7 +100,7 @@ class CommonSecurityAutoConfigurationTest {
     fun `internal requests without user id keep temporary compatibility`() {
         restTestClient.get()
             .uri("/internal/secure")
-            .header("API-Version", "v1")
+            .header("X-API-Version", "v1")
             .header(
                 InternalServiceAuthenticationFilter.INTERNAL_TOKEN_HEADER,
                 "test-internal-token",
@@ -115,7 +115,7 @@ class CommonSecurityAutoConfigurationTest {
     fun `internal requests without internal token are unauthorized`() {
         restTestClient.get()
             .uri("/internal/secure")
-            .header("API-Version", "v1")
+            .header("X-API-Version", "v1")
             .exchange()
             .expectStatus().isUnauthorized
     }
@@ -124,7 +124,7 @@ class CommonSecurityAutoConfigurationTest {
     fun `external requests do not trust internal user id header`() {
         restTestClient.get()
             .uri("/secure")
-            .header("API-Version", "v1")
+            .header("X-API-Version", "v1")
             .header(InternalServiceAuthenticationFilter.INTERNAL_USER_ID_HEADER, "7")
             .exchange()
             .expectStatus().isUnauthorized
@@ -134,7 +134,7 @@ class CommonSecurityAutoConfigurationTest {
     fun `additional customizers are applied before default closing rule`() {
         restTestClient.get()
             .uri("/open")
-            .header("API-Version", "v1")
+            .header("X-API-Version", "v1")
             .exchange()
             .expectStatus().isOk
             .expectBody<String>()
@@ -142,7 +142,7 @@ class CommonSecurityAutoConfigurationTest {
 
         restTestClient.get()
             .uri("/secure")
-            .header("API-Version", "v1")
+            .header("X-API-Version", "v1")
             .exchange()
             .expectStatus().isUnauthorized
     }
@@ -173,7 +173,7 @@ class CommonSecurityAutoConfigurationTest {
                     .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
                     .build()
             return RestTestClient.bindTo(mockMvc)
-                .apiVersionInserter(ApiVersionInserter.useHeader("API-Version"))
+                .apiVersionInserter(ApiVersionInserter.useHeader("X-API-Version"))
                 .build()
         }
 

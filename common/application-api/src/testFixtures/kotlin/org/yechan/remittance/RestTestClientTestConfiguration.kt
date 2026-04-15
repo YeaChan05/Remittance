@@ -13,8 +13,8 @@ class RestTestClientTestConfiguration {
     fun restTestClient(context: WebApplicationContext): RestTestClient {
         val mockMvc = MockMvcBuilders.webAppContextSetup(context).build()
         return RestTestClient.bindTo(mockMvc)
-            .apiVersionInserter(ApiVersionInserter.useHeader("API-Version"))
-            .defaultHeader("API-Version", "v1")
+            .apiVersionInserter(ApiVersionInserter.useHeader("X-API-Version"))
+            .defaultHeader("X-API-Version", "v1")
             .build()
     }
 }

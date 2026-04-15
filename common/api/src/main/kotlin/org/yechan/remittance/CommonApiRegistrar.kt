@@ -3,6 +3,7 @@ package org.yechan.remittance
 import org.springframework.beans.factory.BeanRegistrarDsl
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.context.annotation.Import
+import org.springframework.web.accept.HeaderApiVersionResolver
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.ApiVersionConfigurer
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
@@ -26,7 +27,7 @@ class CommonApiBeanRegistrar :
                 }
 
                 override fun configureApiVersioning(configurer: ApiVersionConfigurer) {
-                    configurer.useRequestHeader("API-Version")
+                    configurer.useVersionResolver(HeaderApiVersionResolver("X-API-Version"))
                 }
             }
         }
