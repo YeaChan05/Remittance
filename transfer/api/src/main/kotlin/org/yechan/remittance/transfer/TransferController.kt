@@ -14,7 +14,7 @@ import org.yechan.remittance.transfer.dto.TransferRequest
 import java.time.LocalDateTime
 
 @RestController
-@RequestMapping("/transfers")
+@RequestMapping("/transfers", version = "v1")
 class TransferController(
     private val transferCreateUseCase: TransferCreateUseCase,
     private val transferQueryUseCase: TransferQueryUseCase,

@@ -10,7 +10,7 @@ import org.yechan.remittance.LoginUserId
 import org.yechan.remittance.transfer.dto.WithdrawalRequest
 
 @RestController
-@RequestMapping("/withdrawals")
+@RequestMapping("/withdrawals", version = "v1")
 class WithdrawalController(
     private val transferCreateUseCase: TransferCreateUseCase,
 ) {

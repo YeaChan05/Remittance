@@ -9,7 +9,7 @@ import org.yechan.remittance.LoginUserId
 import org.yechan.remittance.transfer.dto.IdempotencyKeyCreateResponse
 
 @RestController
-@RequestMapping("/idempotency-keys")
+@RequestMapping("/idempotency-keys", version = "v1")
 class IdempotencyKeyController(
     private val idempotencyKeyCreateUseCase: IdempotencyKeyCreateUseCase,
 ) : IdempotencyKeyApi {

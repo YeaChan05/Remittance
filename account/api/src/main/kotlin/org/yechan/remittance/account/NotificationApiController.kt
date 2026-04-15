@@ -7,7 +7,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 import org.yechan.remittance.LoginUserId
 
 @RestController
-@RequestMapping("/notification")
+@RequestMapping("/notification", version = "v1")
 class NotificationApiController(
     private val handler: NotificationSubscriptionHandler,
 ) : NotificationApi {

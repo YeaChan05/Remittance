@@ -11,7 +11,7 @@ import org.yechan.remittance.member.dto.MemberRegisterResponse
 import org.yechan.remittance.member.dto.toProps
 
 @RestController
-@RequestMapping("/members")
+@RequestMapping("/members", version = "v1")
 class MemberController(
     private val memberCreateUseCase: MemberCreateUseCase,
 ) : MemberApi {

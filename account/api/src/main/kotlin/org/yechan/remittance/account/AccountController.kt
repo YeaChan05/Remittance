@@ -15,7 +15,7 @@ import org.yechan.remittance.account.dto.AccountDeleteResponse
 import java.math.BigDecimal
 
 @RestController
-@RequestMapping("/accounts")
+@RequestMapping("/accounts", version = "v1")
 class AccountController(
     private val accountCreateUseCase: AccountCreateUseCase,
     private val accountDeleteUseCase: AccountDeleteUseCase,

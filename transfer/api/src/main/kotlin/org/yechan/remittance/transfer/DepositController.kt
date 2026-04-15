@@ -10,7 +10,7 @@ import org.yechan.remittance.LoginUserId
 import org.yechan.remittance.transfer.dto.DepositRequest
 
 @RestController
-@RequestMapping("/deposits")
+@RequestMapping("/deposits", version = "v1")
 class DepositController(
     private val transferCreateUseCase: TransferCreateUseCase,
 ) {
