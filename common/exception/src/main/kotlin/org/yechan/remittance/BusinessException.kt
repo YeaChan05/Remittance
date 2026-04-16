@@ -13,4 +13,6 @@ open class BusinessException : RuntimeException {
     constructor(message: String) : super(message) {
         status = Status.INTERNAL_SERVER_ERROR
     }
+
+    fun getHttpStatus() = status.toHttpStatus()
 }

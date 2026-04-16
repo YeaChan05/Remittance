@@ -13,7 +13,7 @@ class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException::class)
     fun handleBusinessException(e: BusinessException): ResponseEntity<Any> {
         log.error(e) { e.stackTraceToString() }
-        return ResponseEntity.status(e.status.toHttpStatus()).body(e.message ?: "")
+        return ResponseEntity.status(e.getHttpStatus()).body(e.message ?: "")
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
