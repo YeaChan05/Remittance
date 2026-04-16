@@ -1,0 +1,5 @@
+spring:
+  mvc:
+    apiversion:
+      use:
+        header: X-API-Version
