@@ -48,3 +48,4 @@ bin/
 .codex/skills/.system/**
 !.codex/prompts/
 !.codex/prompts/**
+.obsidian
