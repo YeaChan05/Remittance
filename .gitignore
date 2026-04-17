@@ -50,3 +50,4 @@ bin/
 !.codex/prompts/**
 .obsidian
 graphify-out
+.graphify**
