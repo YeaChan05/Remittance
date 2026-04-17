@@ -11,6 +11,7 @@ testcontainers {
 }
 
 dependencies {
+    implementation(project(":common:api"))
     implementation(project(":common:security"))
 
     implementation(project(":account:api"))

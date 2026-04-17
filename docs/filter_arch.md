@@ -65,6 +65,9 @@ provider 쪽 `/internal/**` 전용 필터는 이 헤더를 읽어 내부 요청�
 - `POST /members`
 - Swagger / OpenAPI 관련 경로
 
+Swagger / OpenAPI 경로는 인증 예외(`permitAll`)일 뿐 아니라, 브라우저 접근을 위해
+`X-API-Version` 헤더 없이도 처리되도록 API versioning 예외를 함께 둔다.
+
 그 외 요청은 기본적으로 인증 대상이다.
 
 ## 관리 엔드포인트 처리

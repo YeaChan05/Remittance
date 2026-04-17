@@ -44,3 +44,6 @@ auth:
 transfer:
   idempotency-key:
     expires-in: 24h
+logging:
+  level:
+    org.springframework.web.filter.CommonsRequestLoggingFilter: debug

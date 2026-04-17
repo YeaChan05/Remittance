@@ -3,12 +3,14 @@ package org.yechan.remittance
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.SpringBootConfiguration
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
 import org.springframework.security.core.Authentication
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
 import org.springframework.test.context.TestPropertySource
@@ -39,6 +41,10 @@ import org.springframework.web.context.WebApplicationContext
 class CommonSecurityAutoConfigurationTest {
     @Autowired
     lateinit var restTestClient: RestTestClient
+
+    @Autowired
+    @Qualifier("rawRestTestClient")
+    lateinit var rawRestTestClient: RestTestClient
 
     @Autowired
     lateinit var tokenGenerator: TokenGenerator
@@ -147,6 +153,32 @@ class CommonSecurityAutoConfigurationTest {
             .expectStatus().isUnauthorized
     }
 
+    @Test
+    fun `swagger openapi endpoints are accessible without api version header`() {
+        rawRestTestClient.get()
+            .uri("/swagger-ui.html")
+            .exchange()
+            .expectStatus().is3xxRedirection
+
+        rawRestTestClient.get()
+            .uri("/swagger-ui/index.html")
+            .exchange()
+            .expectStatus().isOk
+
+        rawRestTestClient.get()
+            .uri("/v3/api-docs")
+            .exchange()
+            .expectStatus().isOk
+    }
+
+    @Test
+    fun `versioned api endpoints still reject requests without api version header`() {
+        rawRestTestClient.get()
+            .uri("/open")
+            .exchange()
+            .expectStatus().isBadRequest
+    }
+
     @SpringBootConfiguration
     @EnableAutoConfiguration
     class TestApplication {
@@ -178,8 +210,27 @@ class CommonSecurityAutoConfigurationTest {
         }
 
         @Bean
-        fun openEndpointCustomizer(): AuthorizeHttpRequestsCustomizer = PrioritizedAuthorizeHttpRequestsCustomizer(
-            0,
-        ) { registry -> registry.requestMatchers("/open").permitAll() }
+        fun rawRestTestClient(context: WebApplicationContext): RestTestClient {
+            val mockMvc =
+                MockMvcBuilders.webAppContextSetup(context)
+                    .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
+                    .build()
+            return RestTestClient.bindTo(mockMvc).build()
+        }
+
+        @Bean
+        fun applicationOpenEndpointPolicy(): ApplicationOpenEndpointPolicy = StaticApplicationOpenEndpointPolicy(
+            additionalMatchers =
+            listOf(
+                OpenEndpointMatcher(pattern = "/open"),
+            ),
+        )
+
+        @Bean
+        fun openEndpointCustomizer(policy: ApplicationOpenEndpointPolicy): AuthorizeHttpRequestsCustomizer =
+            PrioritizedAuthorizeHttpRequestsCustomizer(
+                0,
+                ApplicationOpenEndpointsAuthorizeHttpRequestsCustomizer(policy),
+            )
     }
 }

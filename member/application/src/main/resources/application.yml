@@ -35,3 +35,6 @@ auth:
     refresh-expires-in: ${AUTH_TOKEN_REFRESH_EXPIRES_IN:604800}
   internal:
     token: ${AUTH_INTERNAL_TOKEN:remittance-internal-token}
+logging:
+  level:
+    org.springframework.web.filter.CommonsRequestLoggingFilter: debug
