@@ -49,5 +49,5 @@ bin/
 !.codex/prompts/
 !.codex/prompts/**
 .obsidian
-graphify-out
+graphify-out/
 .graphify**
