@@ -52,7 +52,6 @@ class InternalServiceAuthenticationFilter(
             SecurityContextHolder.setContext(context)
             filterChain.doFilter(request, response)
         } catch (ex: AuthenticationException) {
-            SecurityContextHolder.clearContext()
             authenticationEntryPoint.commence(request, response, ex)
         } finally {
             SecurityContextHolder.clearContext()
