@@ -41,11 +41,7 @@ bin/
 
 ### vulnerable ###
 .codex/*
-!.codex/agents/
-!.codex/agents/**
 .codex/skills/.system/**
-!.codex/prompts/
-!.codex/prompts/**
 .obsidian
 graphify-out/
 .graphify**
