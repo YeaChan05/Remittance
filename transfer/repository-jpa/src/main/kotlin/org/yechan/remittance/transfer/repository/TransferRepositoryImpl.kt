@@ -2,6 +2,7 @@ package org.yechan.remittance.transfer.repository
 
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.yechan.remittance.Money
 import org.yechan.remittance.transfer.TransferAccountIdentifier
 import org.yechan.remittance.transfer.TransferIdentifier
 import org.yechan.remittance.transfer.TransferModel
@@ -9,7 +10,6 @@ import org.yechan.remittance.transfer.TransferProps
 import org.yechan.remittance.transfer.TransferQueryCondition
 import org.yechan.remittance.transfer.TransferRepository
 import org.yechan.remittance.transfer.TransferRequestProps
-import java.math.BigDecimal
 import java.time.LocalDateTime
 
 class TransferRepositoryImpl(
@@ -39,12 +39,14 @@ class TransferRepositoryImpl(
         scope: TransferProps.TransferScopeValue,
         from: LocalDateTime,
         to: LocalDateTime,
-    ): BigDecimal = repository.sumAmountByFromAccountIdAndScopeBetween(
-        requireNotNull(identifier.accountId),
-        scope,
-        TransferProps.TransferStatusValue.SUCCEEDED,
-        from,
-        to,
+    ): Money = Money.of(
+        repository.sumAmountByFromAccountIdAndScopeBetween(
+            requireNotNull(identifier.accountId),
+            scope,
+            TransferProps.TransferStatusValue.SUCCEEDED,
+            from,
+            to,
+        ),
     )
 
     private data class TransferCreateCommand(
@@ -54,7 +56,7 @@ class TransferRepositoryImpl(
             get() = props.fromAccountId
         override val toAccountId: Long
             get() = props.toAccountId
-        override val amount: BigDecimal
+        override val amount: Money
             get() = props.amount
         override val scope: TransferProps.TransferScopeValue
             get() = props.scope

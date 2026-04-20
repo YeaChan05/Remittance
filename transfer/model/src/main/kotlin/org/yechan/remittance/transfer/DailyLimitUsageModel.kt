@@ -1,9 +1,9 @@
 package org.yechan.remittance.transfer
 
-import java.math.BigDecimal
+import org.yechan.remittance.Money
 
 interface DailyLimitUsageModel :
     DailyLimitUsageProps,
     DailyLimitUsageIdentifier {
-    fun updateUsedAmount(usedAmount: BigDecimal): Unit = throw UnsupportedOperationException("Update used amount not supported")
+    fun updateUsedAmount(usedAmount: Money): Unit = throw UnsupportedOperationException("Update used amount not supported")
 }

@@ -8,6 +8,7 @@ import okhttp3.mockwebserver.RecordedRequest
 import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.yechan.remittance.InternalServiceAuthenticationFilter
+import org.yechan.remittance.Money
 import org.yechan.remittance.transfer.TransferAccountSnapshot
 import org.yechan.remittance.transfer.TransferBalanceChangeCommand
 import java.math.BigDecimal
@@ -69,7 +70,7 @@ class TransferApplicationAccountStore {
         balance: BigDecimal,
     ): TransferAccountSnapshot {
         val accountId = nextId.getAndIncrement()
-        val snapshot = TransferAccountSnapshot(accountId, memberId, balance)
+        val snapshot = TransferAccountSnapshot(accountId, memberId, Money.of(balance))
         accounts[accountId] = snapshot
         return snapshot
     }
@@ -126,7 +127,7 @@ private class AccountInternalDispatcher(
             mapOf(
                 "accountId" to snapshot.accountId,
                 "memberId" to snapshot.memberId,
-                "balance" to snapshot.balance,
+                "balance" to snapshot.balance.amount,
             ),
         )
     }
@@ -153,8 +154,8 @@ private class AccountInternalDispatcher(
                     ?.toLongOrNull() ?: 0L,
                 fromAccountId = payload.get("fromAccountId").longValue(),
                 toAccountId = payload.get("toAccountId").longValue(),
-                fromBalance = payload.get("fromBalance").decimalValue(),
-                toBalance = payload.get("toBalance").decimalValue(),
+                fromBalance = Money.of(payload.get("fromBalance").decimalValue()),
+                toBalance = Money.of(payload.get("toBalance").decimalValue()),
             ),
         )
         return json(mapOf("applied" to true))
@@ -163,7 +164,7 @@ private class AccountInternalDispatcher(
     private fun snapshotResponse(snapshot: TransferAccountSnapshot): Map<String, Any> = mapOf(
         "accountId" to snapshot.accountId,
         "memberId" to snapshot.memberId,
-        "balance" to snapshot.balance,
+        "balance" to snapshot.balance.amount,
     )
 
     private fun body(request: RecordedRequest) = objectMapper.readTree(request.body.readUtf8())

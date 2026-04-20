@@ -11,6 +11,7 @@ testcontainers {
 dependencies {
     implementation(project(":common:security"))
     implementation(project(":transfer:api"))
+    implementation(project(":common:model"))
     implementation(project(":transfer:repository-jpa"))
     implementation(project(":transfer:schema"))
     implementation(project(":transfer:mq-rabbitmq"))

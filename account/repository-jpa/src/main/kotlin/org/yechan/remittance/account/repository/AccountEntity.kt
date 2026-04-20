@@ -3,7 +3,9 @@ package org.yechan.remittance.account.repository
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
+import jakarta.persistence.Transient
 import org.yechan.remittance.BaseEntity
+import org.yechan.remittance.Money
 import org.yechan.remittance.account.AccountModel
 import org.yechan.remittance.account.AccountProps
 import java.math.BigDecimal
@@ -28,15 +30,22 @@ class AccountEntity() :
     @field:Column(nullable = false)
     override var accountName: String = ""
 
-    @field:Column(nullable = false)
-    override var balance: BigDecimal = BigDecimal.ZERO
+    @field:Column(name = "balance", nullable = false)
+    private var persistedBalance: BigDecimal = BigDecimal.ZERO
+
+    @get:Transient
+    override var balance: Money
+        get() = Money.of(persistedBalance)
+        set(value) {
+            persistedBalance = value.amount
+        }
 
     private constructor(
         memberId: Long?,
         bankCode: String,
         accountNumber: String,
         accountName: String,
-        balance: BigDecimal,
+        balance: Money,
     ) : this() {
         this.memberId = memberId
         this.bankCode = bankCode
@@ -45,7 +54,7 @@ class AccountEntity() :
         this.balance = balance
     }
 
-    override fun updateBalance(balance: BigDecimal) {
+    override fun updateBalance(balance: Money) {
         this.balance = balance
     }
 

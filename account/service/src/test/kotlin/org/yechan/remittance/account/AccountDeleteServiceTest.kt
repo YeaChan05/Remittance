@@ -3,7 +3,7 @@ package org.yechan.remittance.account
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
-import java.math.BigDecimal
+import org.yechan.remittance.Money
 import java.util.concurrent.atomic.AtomicReference
 
 class AccountDeleteServiceTest {
@@ -84,6 +84,6 @@ class AccountDeleteServiceTest {
         override val bankCode: String = "001"
         override val accountNumber: String = "123"
         override val accountName: String = "name"
-        override val balance: BigDecimal = BigDecimal.ZERO
+        override val balance: Money = Money.zero()
     }
 }

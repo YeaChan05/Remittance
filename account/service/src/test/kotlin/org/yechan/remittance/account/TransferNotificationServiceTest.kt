@@ -3,7 +3,7 @@ package org.yechan.remittance.account
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
-import java.math.BigDecimal
+import org.yechan.remittance.Money
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
@@ -52,7 +52,7 @@ class TransferNotificationServiceTest {
         "090",
         "123-456",
         "sample-account",
-        BigDecimal.ZERO,
+        Money.zero(),
     )
 
     private fun sampleProps(): TransferNotificationProps = TestTransferNotificationProps(
@@ -60,7 +60,7 @@ class TransferNotificationServiceTest {
         11L,
         10L,
         1L,
-        BigDecimal.valueOf(10_000L),
+        Money.of(10_000L),
         LocalDateTime.of(2025, 1, 1, 0, 0),
     )
 
@@ -69,7 +69,7 @@ class TransferNotificationServiceTest {
         override val transferId: Long,
         override val toAccountId: Long,
         override val fromAccountId: Long,
-        override val amount: BigDecimal,
+        override val amount: Money,
         override val occurredAt: LocalDateTime,
     ) : TransferNotificationProps
 
@@ -80,13 +80,13 @@ class TransferNotificationServiceTest {
 
         override fun findById(identifier: AccountIdentifier): AccountModel? = account
 
-        override fun findByIdForUpdate(identifier: AccountIdentifier): AccountModel? = throw UnsupportedOperationException("Not used")
+        override fun findByIdForUpdate(identifier: AccountIdentifier): AccountModel = throw UnsupportedOperationException("Not used")
 
         override fun findByMemberIdAndBankCodeAndAccountNumber(
             memberId: Long?,
             bankCode: String,
             accountNumber: String,
-        ): AccountModel? = throw UnsupportedOperationException("Not used")
+        ): AccountModel = throw UnsupportedOperationException("Not used")
 
         override fun delete(identifier: AccountIdentifier): Unit = throw UnsupportedOperationException("Not used")
     }

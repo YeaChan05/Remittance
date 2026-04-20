@@ -1,6 +1,6 @@
 package org.yechan.remittance.transfer
 
-import java.math.BigDecimal
+import org.yechan.remittance.Money
 import java.time.LocalDateTime
 
 interface LedgerRepository {
@@ -17,5 +17,5 @@ interface LedgerRepository {
         side: LedgerProps.LedgerSideValue,
         from: LocalDateTime,
         to: LocalDateTime,
-    ): BigDecimal
+    ): Money
 }

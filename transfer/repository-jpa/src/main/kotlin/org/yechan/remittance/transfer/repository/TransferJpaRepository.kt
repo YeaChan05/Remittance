@@ -29,7 +29,7 @@ interface TransferJpaRepository : JpaRepository<TransferEntity, Long> {
 
     @Query(
         """
-        select coalesce(sum(t.amount), 0)
+        select coalesce(sum(t.persistedAmount), 0)
           from TransferEntity t
          where t.fromAccountId = :accountId
            and t.scope = :scope

@@ -2,27 +2,28 @@ package org.yechan.remittance.account
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.yechan.remittance.Money
 import java.math.BigDecimal
 
 class AccountInternalQueryServiceTest {
     @Test
     fun `계좌 조회는 최소 스냅샷을 반환한다`() {
         val repository = TestAccountRepository(
-            accounts = mapOf(1L to TestAccount(1L, 10L, BigDecimal("1000"))),
+            accounts = mapOf(1L to TestAccount(1L, 10L, money("1000"))),
         )
         val useCase = AccountInternalQueryService(repository)
 
         val result = useCase.get(10L, 1L)
 
-        assertThat(result).isEqualTo(AccountInternalSnapshotValue(1L, 10L, BigDecimal("1000")))
+        assertThat(result).isEqualTo(AccountInternalSnapshotValue(1L, 10L, money("1000")))
     }
 
     @Test
     fun `계좌 잠금은 작은 계좌 ID부터 잠근 뒤 원래 순서로 반환한다`() {
         val repository = TestAccountRepository(
             accounts = mapOf(
-                1L to TestAccount(1L, 10L, BigDecimal("1000")),
-                2L to TestAccount(2L, 20L, BigDecimal("2000")),
+                1L to TestAccount(1L, 10L, money("1000")),
+                2L to TestAccount(2L, 20L, money("2000")),
             ),
         )
         val useCase = AccountInternalQueryService(repository)
@@ -37,7 +38,7 @@ class AccountInternalQueryServiceTest {
     @Test
     fun `같은 계좌 잠금은 한 번만 조회해 양쪽에 같은 스냅샷을 반환한다`() {
         val repository = TestAccountRepository(
-            accounts = mapOf(1L to TestAccount(1L, 10L, BigDecimal("1000"))),
+            accounts = mapOf(1L to TestAccount(1L, 10L, money("1000"))),
         )
         val useCase = AccountInternalQueryService(repository)
 
@@ -65,7 +66,7 @@ class AccountInternalQueryServiceTest {
             memberId: Long?,
             bankCode: String,
             accountNumber: String,
-        ): AccountModel? = throw UnsupportedOperationException()
+        ): AccountModel = throw UnsupportedOperationException()
 
         override fun delete(identifier: AccountIdentifier) = throw UnsupportedOperationException()
     }
@@ -73,14 +74,16 @@ class AccountInternalQueryServiceTest {
     private data class TestAccount(
         override val accountId: Long?,
         override val memberId: Long?,
-        override var balance: BigDecimal,
+        override var balance: Money,
     ) : AccountModel {
         override val bankCode: String = "001"
         override val accountNumber: String = "123"
         override val accountName: String = "name"
 
-        override fun updateBalance(balance: BigDecimal) {
+        override fun updateBalance(balance: Money) {
             this.balance = balance
         }
     }
+
+    private fun money(value: String): Money = Money.of(BigDecimal(value))
 }

@@ -1,9 +1,9 @@
 package org.yechan.remittance.account
 
-import java.math.BigDecimal
+import org.yechan.remittance.Money
 
 interface AccountModel :
     AccountProps,
     AccountIdentifier {
-    fun updateBalance(balance: BigDecimal): Unit = throw UnsupportedOperationException("Update balance not supported")
+    fun updateBalance(balance: Money): Unit = throw UnsupportedOperationException("Update balance not supported")
 }

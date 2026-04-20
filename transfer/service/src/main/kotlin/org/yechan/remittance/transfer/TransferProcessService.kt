@@ -2,7 +2,7 @@ package org.yechan.remittance.transfer
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.transaction.annotation.Transactional
-import java.math.BigDecimal
+import org.yechan.remittance.Money
 import java.time.LocalDateTime
 
 private val log = KotlinLogging.logger {}
@@ -184,14 +184,14 @@ open class TransferProcessService(
         val fromAccount: TransferAccountSnapshot,
         val toAccount: TransferAccountSnapshot,
     ) {
-        fun isInsufficient(debit: BigDecimal): Boolean = fromAccount.balance < debit
+        fun isInsufficient(debit: Money): Boolean = fromAccount.balance < debit
     }
 
     private data class AccountId(override val accountId: Long?) : TransferAccountIdentifier
 
     private companion object {
-        val WITHDRAW_DAILY_LIMIT: BigDecimal = BigDecimal.valueOf(1_000_000)
-        val TRANSFER_DAILY_LIMIT: BigDecimal = BigDecimal.valueOf(3_000_000)
+        val WITHDRAW_DAILY_LIMIT: Money = Money.of(1_000_000)
+        val TRANSFER_DAILY_LIMIT: Money = Money.of(3_000_000)
         const val AGGREGATE_TYPE = "TRANSFER"
         const val EVENT_TYPE = "TRANSFER_COMPLETED"
     }

@@ -5,8 +5,10 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
+import jakarta.persistence.Transient
 import jakarta.persistence.UniqueConstraint
 import org.yechan.remittance.BaseEntity
+import org.yechan.remittance.Money
 import org.yechan.remittance.transfer.LedgerModel
 import org.yechan.remittance.transfer.LedgerProps
 import java.math.BigDecimal
@@ -34,8 +36,15 @@ class LedgerEntity() :
     @field:Column(name = "account_id", nullable = false)
     override var accountId: Long = 0
 
-    @field:Column(nullable = false)
-    override var amount: BigDecimal = BigDecimal.ZERO
+    @field:Column(name = "amount", nullable = false)
+    private var persistedAmount: BigDecimal = BigDecimal.ZERO
+
+    @get:Transient
+    override var amount: Money
+        get() = Money.of(persistedAmount)
+        set(value) {
+            persistedAmount = value.amount
+        }
 
     @field:Enumerated(EnumType.STRING)
     @field:Column(nullable = false)
@@ -44,7 +53,7 @@ class LedgerEntity() :
     private constructor(
         transferId: Long,
         accountId: Long,
-        amount: BigDecimal,
+        amount: Money,
         side: LedgerProps.LedgerSideValue,
     ) : this() {
         this.transferId = transferId

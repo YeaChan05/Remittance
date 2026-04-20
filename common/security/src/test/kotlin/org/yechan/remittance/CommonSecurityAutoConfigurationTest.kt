@@ -10,7 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
 import org.springframework.security.core.Authentication
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
 import org.springframework.test.context.TestPropertySource
@@ -227,10 +226,9 @@ class CommonSecurityAutoConfigurationTest {
         )
 
         @Bean
-        fun openEndpointCustomizer(policy: ApplicationOpenEndpointPolicy): AuthorizeHttpRequestsCustomizer =
-            PrioritizedAuthorizeHttpRequestsCustomizer(
-                0,
-                ApplicationOpenEndpointsAuthorizeHttpRequestsCustomizer(policy),
-            )
+        fun openEndpointCustomizer(policy: ApplicationOpenEndpointPolicy): AuthorizeHttpRequestsCustomizer = PrioritizedAuthorizeHttpRequestsCustomizer(
+            0,
+            ApplicationOpenEndpointsAuthorizeHttpRequestsCustomizer(policy),
+        )
     }
 }

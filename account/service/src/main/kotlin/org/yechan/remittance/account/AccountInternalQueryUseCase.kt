@@ -1,7 +1,7 @@
 package org.yechan.remittance.account
 
 import org.springframework.transaction.annotation.Transactional
-import java.math.BigDecimal
+import org.yechan.remittance.Money
 
 interface AccountInternalQueryUseCase {
     fun get(
@@ -19,7 +19,7 @@ interface AccountInternalQueryUseCase {
 data class AccountInternalSnapshotValue(
     val accountId: Long,
     val memberId: Long,
-    val balance: BigDecimal,
+    val balance: Money,
 )
 
 data class AccountInternalLockValue(

@@ -3,6 +3,7 @@ package org.yechan.remittance.transfer
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import org.yechan.remittance.Money
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -15,7 +16,7 @@ class TransferQueryServiceTest {
                 override fun get(
                     memberId: Long,
                     accountId: Long,
-                ): TransferAccountSnapshot = TransferAccountSnapshot(accountId, 10L, BigDecimal("1000"))
+                ): TransferAccountSnapshot = TransferAccountSnapshot(accountId, 10L, money("1000"))
 
                 override fun lock(command: TransferAccountLockCommand): TransferLockedAccounts? = null
 
@@ -59,7 +60,7 @@ class TransferQueryServiceTest {
                 override fun get(
                     memberId: Long,
                     accountId: Long,
-                ): TransferAccountSnapshot = TransferAccountSnapshot(accountId, 99L, BigDecimal("1000"))
+                ): TransferAccountSnapshot = TransferAccountSnapshot(accountId, 99L, money("1000"))
 
                 override fun lock(command: TransferAccountLockCommand): TransferLockedAccounts? = null
 
@@ -87,7 +88,7 @@ class TransferQueryServiceTest {
                 transferId = 1L,
                 fromAccountId = requireNotNull(identifier.accountId),
                 toAccountId = 2L,
-                amount = BigDecimal("100"),
+                amount = Money.of(BigDecimal("100")),
                 scope = TransferProps.TransferScopeValue.TRANSFER,
                 status = TransferProps.TransferStatusValue.SUCCEEDED,
                 requestedAt = LocalDateTime.of(2026, 1, 1, 0, 0),
@@ -100,6 +101,8 @@ class TransferQueryServiceTest {
             scope: TransferProps.TransferScopeValue,
             from: LocalDateTime,
             to: LocalDateTime,
-        ): BigDecimal = BigDecimal.ZERO
+        ): Money = Money.zero()
     }
+
+    private fun money(value: String): Money = Money.of(BigDecimal(value))
 }

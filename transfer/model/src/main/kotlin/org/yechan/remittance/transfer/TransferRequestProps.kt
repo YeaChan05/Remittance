@@ -1,13 +1,13 @@
 package org.yechan.remittance.transfer
 
-import java.math.BigDecimal
+import org.yechan.remittance.Money
 
 interface TransferRequestProps {
     val fromAccountId: Long
     val toAccountId: Long
-    val amount: BigDecimal
+    val amount: Money
     val scope: TransferProps.TransferScopeValue
-    val fee: BigDecimal
+    val fee: Money
 
     fun toIdempotencyScope(): IdempotencyKeyProps.IdempotencyScopeValue = when (scope) {
         TransferProps.TransferScopeValue.WITHDRAW ->
@@ -20,5 +20,5 @@ interface TransferRequestProps {
             IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER
     }
 
-    fun debit(): BigDecimal = amount.add(fee)
+    fun debit(): Money = amount.add(fee)
 }

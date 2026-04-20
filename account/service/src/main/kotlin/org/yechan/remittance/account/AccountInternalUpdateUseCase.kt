@@ -1,7 +1,7 @@
 package org.yechan.remittance.account
 
 import org.springframework.transaction.annotation.Transactional
-import java.math.BigDecimal
+import org.yechan.remittance.Money
 
 fun interface AccountInternalUpdateUseCase {
     fun applyBalanceChange(
@@ -13,8 +13,8 @@ fun interface AccountInternalUpdateUseCase {
 data class AccountInternalBalanceChangeCommand(
     val fromAccountId: Long,
     val toAccountId: Long,
-    val fromBalance: BigDecimal,
-    val toBalance: BigDecimal,
+    val fromBalance: Money,
+    val toBalance: Money,
 ) {
     fun isSameAccount(): Boolean = this.fromAccountId == this.toAccountId
 }

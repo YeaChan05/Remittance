@@ -9,8 +9,8 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.TestConstructor
+import org.yechan.remittance.Money
 import org.yechan.remittance.account.AccountProps
-import java.math.BigDecimal
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -42,6 +42,6 @@ class AccountJpaRepositoryTest {
         override val bankCode: String = "090"
         override val accountNumber: String = "123-456"
         override val accountName: String = "sample-account"
-        override val balance: BigDecimal = BigDecimal.ZERO
+        override val balance: Money = Money.zero()
     }
 }

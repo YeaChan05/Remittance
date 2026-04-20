@@ -5,7 +5,9 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
+import jakarta.persistence.Transient
 import org.yechan.remittance.BaseEntity
+import org.yechan.remittance.Money
 import org.yechan.remittance.transfer.TransferModel
 import org.yechan.remittance.transfer.TransferProps
 import java.math.BigDecimal
@@ -25,8 +27,15 @@ class TransferEntity() :
     @field:Column(nullable = false)
     override var toAccountId: Long = 0
 
-    @field:Column(nullable = false)
-    override var amount: BigDecimal = BigDecimal.ZERO
+    @field:Column(name = "amount", nullable = false)
+    private var persistedAmount: BigDecimal = BigDecimal.ZERO
+
+    @get:Transient
+    override var amount: Money
+        get() = Money.of(persistedAmount)
+        set(value) {
+            persistedAmount = value.amount
+        }
 
     @field:Enumerated(EnumType.STRING)
     @field:Column(nullable = false)
@@ -46,7 +55,7 @@ class TransferEntity() :
     private constructor(
         fromAccountId: Long,
         toAccountId: Long,
-        amount: BigDecimal,
+        amount: Money,
         scope: TransferProps.TransferScopeValue,
         status: TransferProps.TransferStatusValue,
         completedAt: LocalDateTime?,

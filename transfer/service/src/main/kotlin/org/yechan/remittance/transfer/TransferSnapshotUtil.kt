@@ -49,7 +49,7 @@ class TransferSnapshotUtil(
                 linkedMapOf(
                     "fromAccountId" to props.fromAccountId,
                     "toAccountId" to props.toAccountId,
-                    "amount" to props.amount,
+                    "amount" to props.amount.amount,
                 ),
             )
         try {
@@ -70,7 +70,7 @@ class TransferSnapshotUtil(
             "transferId" to transfer.transferId,
             "fromAccountId" to props.fromAccountId,
             "toAccountId" to props.toAccountId,
-            "amount" to props.amount,
+            "amount" to props.amount.amount,
             "completedAt" to now.toString(),
         ),
     )

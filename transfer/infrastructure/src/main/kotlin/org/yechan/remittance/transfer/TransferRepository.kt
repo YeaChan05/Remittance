@@ -1,6 +1,6 @@
 package org.yechan.remittance.transfer
 
-import java.math.BigDecimal
+import org.yechan.remittance.Money
 import java.time.LocalDateTime
 
 interface TransferRepository {
@@ -18,5 +18,5 @@ interface TransferRepository {
         scope: TransferProps.TransferScopeValue,
         from: LocalDateTime,
         to: LocalDateTime,
-    ): BigDecimal
+    ): Money
 }

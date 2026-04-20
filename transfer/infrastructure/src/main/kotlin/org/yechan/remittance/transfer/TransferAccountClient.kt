@@ -1,6 +1,6 @@
 package org.yechan.remittance.transfer
 
-import java.math.BigDecimal
+import org.yechan.remittance.Money
 
 interface TransferAccountClient {
     fun get(
@@ -16,7 +16,7 @@ interface TransferAccountClient {
 data class TransferAccountSnapshot(
     val accountId: Long,
     val memberId: Long,
-    val balance: BigDecimal,
+    val balance: Money,
 )
 
 data class TransferAccountLockCommand(
@@ -34,6 +34,6 @@ data class TransferBalanceChangeCommand(
     val memberId: Long,
     val fromAccountId: Long,
     val toAccountId: Long,
-    val fromBalance: BigDecimal,
-    val toBalance: BigDecimal,
+    val fromBalance: Money,
+    val toBalance: Money,
 )

@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.transaction.support.TransactionTemplate
 import org.yechan.remittance.AggregateApplication
 import org.yechan.remittance.EmailGenerator
+import org.yechan.remittance.Money
 import org.yechan.remittance.PasswordGenerator
 import org.yechan.remittance.account.AccountCreateUseCase
 import org.yechan.remittance.account.AccountProps
@@ -181,7 +182,7 @@ class ConcurrentTransferNotificationSpecs {
                 bankCode = "090",
                 accountNumber = accountNumber,
                 accountName = accountName,
-                balance = BigDecimal.ZERO,
+                balance = Money.zero(),
             ),
         )
         return AccountSeed(requireNotNull(model.accountId))
@@ -279,7 +280,7 @@ class ConcurrentTransferNotificationSpecs {
 
         assertThat(recordedPayloads).hasSize(scenario.requestCount)
         assertThat(notificationTypes).containsExactly("TRANSFER_RECEIVED")
-        assertThat(notificationAmounts).containsExactly(scenario.transferAmount)
+        assertThat(notificationAmounts.single()).isEqualByComparingTo(scenario.transferAmount)
         assertThat(notificationFromAccountIds).containsExactly(scenario.senderAccount.accountId)
         assertThat(notificationTransferIds).hasSize(scenario.requestCount)
 
@@ -332,7 +333,7 @@ class ConcurrentTransferNotificationSpecs {
         entityManager.clear()
         entityManager.createQuery(
             """
-                select a.balance
+                select a.persistedBalance
                   from AccountEntity a
                  where a.id = :accountId
             """.trimIndent(),
@@ -450,7 +451,7 @@ class ConcurrentTransferNotificationSpecs {
         override val bankCode: String,
         override val accountNumber: String,
         override val accountName: String,
-        override val balance: BigDecimal,
+        override val balance: Money,
     ) : AccountProps
 
     private data class TestIdempotencyKeyCreateProps(
@@ -461,9 +462,9 @@ class ConcurrentTransferNotificationSpecs {
     private data class TestTransferRequestProps(
         override val fromAccountId: Long,
         override val toAccountId: Long,
-        override val amount: BigDecimal,
+        override val amount: Money,
         override val scope: TransferProps.TransferScopeValue,
-        override val fee: BigDecimal,
+        override val fee: Money,
     ) : TransferRequestProps {
         companion object {
             fun transfer(
@@ -473,9 +474,9 @@ class ConcurrentTransferNotificationSpecs {
             ): TestTransferRequestProps = TestTransferRequestProps(
                 fromAccountId = fromAccountId,
                 toAccountId = toAccountId,
-                amount = amount,
+                amount = Money.of(amount),
                 scope = TransferProps.TransferScopeValue.TRANSFER,
-                fee = amount.multiply(TRANSFER_FEE_RATE).setScale(2, RoundingMode.DOWN),
+                fee = Money.of(amount.multiply(TRANSFER_FEE_RATE).setScale(2, RoundingMode.DOWN)),
             )
 
             fun deposit(
@@ -484,9 +485,9 @@ class ConcurrentTransferNotificationSpecs {
             ): TestTransferRequestProps = TestTransferRequestProps(
                 fromAccountId = accountId,
                 toAccountId = accountId,
-                amount = amount,
+                amount = Money.of(amount),
                 scope = TransferProps.TransferScopeValue.DEPOSIT,
-                fee = BigDecimal.ZERO,
+                fee = Money.zero(),
             )
         }
     }

@@ -16,7 +16,7 @@ interface LedgerJpaRepository : JpaRepository<LedgerEntity, Long> {
 
     @Query(
         """
-        select coalesce(sum(l.amount), 0)
+        select coalesce(sum(l.persistedAmount), 0)
         from LedgerEntity l
         where l.accountId = :accountId
           and l.side = :side

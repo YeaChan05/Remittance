@@ -1,9 +1,9 @@
 package org.yechan.remittance.transfer.repository
 
+import org.yechan.remittance.Money
 import org.yechan.remittance.transfer.LedgerModel
 import org.yechan.remittance.transfer.LedgerProps
 import org.yechan.remittance.transfer.LedgerRepository
-import java.math.BigDecimal
 import java.time.LocalDateTime
 
 class LedgerRepositoryImpl(
@@ -22,5 +22,5 @@ class LedgerRepositoryImpl(
         side: LedgerProps.LedgerSideValue,
         from: LocalDateTime,
         to: LocalDateTime,
-    ): BigDecimal = repository.sumAmountByAccountIdAndSideBetween(accountId, side, from, to)
+    ): Money = Money.of(repository.sumAmountByAccountIdAndSideBetween(accountId, side, from, to))
 }

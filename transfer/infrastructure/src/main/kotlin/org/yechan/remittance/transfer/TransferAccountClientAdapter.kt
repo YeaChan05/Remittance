@@ -1,5 +1,6 @@
 package org.yechan.remittance.transfer
 
+import org.yechan.remittance.Money
 import org.yechan.remittance.account.internal.contract.AccountBalanceChangeRequest
 import org.yechan.remittance.account.internal.contract.AccountGetRequest
 import org.yechan.remittance.account.internal.contract.AccountInternalApi
@@ -29,8 +30,8 @@ class TransferAccountClientAdapter(
             AccountBalanceChangeRequest(
                 fromAccountId = command.fromAccountId,
                 toAccountId = command.toAccountId,
-                fromBalance = command.fromBalance,
-                toBalance = command.toBalance,
+                fromBalance = command.fromBalance.amount,
+                toBalance = command.toBalance.amount,
             ),
         )
     }
@@ -38,7 +39,7 @@ class TransferAccountClientAdapter(
     private fun AccountSnapshotResponse.toSnapshot(): TransferAccountSnapshot = TransferAccountSnapshot(
         accountId = accountId,
         memberId = memberId,
-        balance = balance,
+        balance = Money.of(balance),
     )
 
     private fun AccountLockResponse.toLockedAccounts(): TransferLockedAccounts = TransferLockedAccounts(

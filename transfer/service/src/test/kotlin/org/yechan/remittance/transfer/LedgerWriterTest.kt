@@ -2,6 +2,7 @@ package org.yechan.remittance.transfer
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.yechan.remittance.Money
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -26,9 +27,9 @@ class LedgerWriterTest {
             TestTransferRequestProps(
                 fromAccountId = 1L,
                 toAccountId = 1L,
-                amount = BigDecimal("100"),
+                amount = money("100"),
                 scope = TransferProps.TransferScopeValue.DEPOSIT,
-                fee = BigDecimal.ZERO,
+                fee = Money.zero(),
             ),
             TransferResult.succeeded(1L),
             now(),
@@ -37,7 +38,7 @@ class LedgerWriterTest {
         assertThat(repository.savedProps).hasSize(1)
         assertThat(repository.savedProps.first().accountId).isEqualTo(1L)
         assertThat(repository.savedProps.first().side).isEqualTo(LedgerProps.LedgerSideValue.CREDIT)
-        assertThat(repository.savedProps.first().amount).isEqualByComparingTo("100")
+        assertThat(repository.savedProps.first().amount).isEqualTo(money("100"))
     }
 
     @Test
@@ -47,9 +48,9 @@ class LedgerWriterTest {
 
         writer.record(
             TestTransferRequestProps(
-                amount = BigDecimal("100"),
+                amount = money("100"),
                 scope = TransferProps.TransferScopeValue.WITHDRAW,
-                fee = BigDecimal.ZERO,
+                fee = Money.zero(),
             ),
             TransferResult.succeeded(1L),
             now(),
@@ -58,7 +59,7 @@ class LedgerWriterTest {
         assertThat(repository.savedProps).hasSize(1)
         assertThat(repository.savedProps.first().accountId).isEqualTo(1L)
         assertThat(repository.savedProps.first().side).isEqualTo(LedgerProps.LedgerSideValue.DEBIT)
-        assertThat(repository.savedProps.first().amount).isEqualByComparingTo("100")
+        assertThat(repository.savedProps.first().amount).isEqualTo(money("100"))
     }
 
     @Test
@@ -68,9 +69,9 @@ class LedgerWriterTest {
 
         writer.record(
             TestTransferRequestProps(
-                amount = BigDecimal("100"),
+                amount = money("100"),
                 scope = TransferProps.TransferScopeValue.TRANSFER,
-                fee = BigDecimal("1"),
+                fee = money("1"),
             ),
             TransferResult.succeeded(1L),
             now(),
@@ -82,8 +83,8 @@ class LedgerWriterTest {
             LedgerProps.LedgerSideValue.CREDIT,
         )
         assertThat(repository.savedProps.map { it.amount }).containsExactly(
-            BigDecimal("101"),
-            BigDecimal("100"),
+            money("101"),
+            money("100"),
         )
     }
 
@@ -96,9 +97,9 @@ class LedgerWriterTest {
 
         writer.record(
             TestTransferRequestProps(
-                amount = BigDecimal("100"),
+                amount = money("100"),
                 scope = TransferProps.TransferScopeValue.WITHDRAW,
-                fee = BigDecimal.ZERO,
+                fee = Money.zero(),
             ),
             TransferResult.succeeded(1L),
             now(),
@@ -115,9 +116,9 @@ class LedgerWriterTest {
     private data class TestTransferRequestProps(
         override val fromAccountId: Long = 1L,
         override val toAccountId: Long = 2L,
-        override val amount: BigDecimal = BigDecimal("100"),
+        override val amount: Money = Money.of(BigDecimal("100")),
         override val scope: TransferProps.TransferScopeValue = TransferProps.TransferScopeValue.TRANSFER,
-        override val fee: BigDecimal = BigDecimal("1"),
+        override val fee: Money = Money.of(BigDecimal("1")),
     ) : TransferRequestProps
 
     private data class LedgerKey(
@@ -136,7 +137,7 @@ class LedgerWriterTest {
             savedProps += props
             existingKeys += LedgerKey(props.transferId, props.accountId, props.side)
             return object : LedgerModel, LedgerProps by props {
-                override val ledgerId: Long? = savedProps.size.toLong()
+                override val ledgerId: Long = savedProps.size.toLong()
             }
         }
 
@@ -155,6 +156,8 @@ class LedgerWriterTest {
             side: LedgerProps.LedgerSideValue,
             from: LocalDateTime,
             to: LocalDateTime,
-        ): BigDecimal = BigDecimal.ZERO
+        ): Money = Money.zero()
     }
+
+    private fun money(value: String): Money = Money.of(BigDecimal(value))
 }

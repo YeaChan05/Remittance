@@ -1,6 +1,6 @@
 package org.yechan.remittance.account
 
-import java.math.BigDecimal
+import org.yechan.remittance.Money
 import java.time.LocalDateTime
 
 class TransferNotificationPayloadParser {
@@ -24,7 +24,7 @@ class TransferNotificationPayloadParser {
             values.getValue("transferId").toLong(),
             values.getValue("toAccountId").toLong(),
             values.getValue("fromAccountId").toLong(),
-            BigDecimal(values.getValue("amount")),
+            Money.of(values.getValue("amount").toBigDecimal()),
             LocalDateTime.parse(values.getValue("completedAt")),
         )
     }
@@ -34,7 +34,7 @@ class TransferNotificationPayloadParser {
         override val transferId: Long,
         override val toAccountId: Long,
         override val fromAccountId: Long,
-        override val amount: BigDecimal,
+        override val amount: Money,
         override val occurredAt: LocalDateTime,
     ) : TransferNotificationProps
 

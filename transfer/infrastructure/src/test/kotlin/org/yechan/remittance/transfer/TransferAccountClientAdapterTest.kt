@@ -2,6 +2,7 @@ package org.yechan.remittance.transfer
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.yechan.remittance.Money
 import org.yechan.remittance.account.internal.contract.AccountBalanceChangeRequest
 import org.yechan.remittance.account.internal.contract.AccountBalanceChangeResponse
 import org.yechan.remittance.account.internal.contract.AccountGetRequest
@@ -61,14 +62,14 @@ class TransferAccountClientAdapterTest {
                 memberId = 7L,
                 fromAccountId = 10L,
                 toAccountId = 20L,
-                fromBalance = BigDecimal("890"),
-                toBalance = BigDecimal("300"),
+                fromBalance = money("890"),
+                toBalance = money("300"),
             ),
         )
 
         assertThat(capturedMemberIdForGet.get()).isEqualTo(7L)
         assertThat(capturedGet.get()).isEqualTo(AccountGetRequest(10L))
-        assertThat(snapshot).isEqualTo(TransferAccountSnapshot(10L, 7L, BigDecimal("1000")))
+        assertThat(snapshot).isEqualTo(TransferAccountSnapshot(10L, 7L, money("1000")))
         assertThat(capturedMemberIdForLock.get()).isEqualTo(7L)
         assertThat(capturedLock.get()).isEqualTo(AccountLockRequest(10L, 20L))
         assertThat(locked?.fromAccount?.accountId).isEqualTo(10L)
@@ -78,9 +79,11 @@ class TransferAccountClientAdapterTest {
             AccountBalanceChangeRequest(
                 fromAccountId = 10L,
                 toAccountId = 20L,
-                fromBalance = BigDecimal("890"),
-                toBalance = BigDecimal("300"),
+                fromBalance = BigDecimal("890.00"),
+                toBalance = BigDecimal("300.00"),
             ),
         )
     }
+
+    private fun money(value: String): Money = Money.of(BigDecimal(value))
 }

@@ -151,13 +151,13 @@ class TransferTestFixtures(
     fun countOutboxEvents(): Long = em.createQuery("select count(o) from OutboxEventEntity o", Long::class.java)
         .singleResult
 
-    fun loadBalance(accountId: Long): BigDecimal = accountStore.find(accountId)?.balance
+    fun loadBalance(accountId: Long): BigDecimal = accountStore.find(accountId)?.balance?.amount
         ?: throw IllegalStateException("Balance not found")
 
     fun loadLedgers(transferId: Long): List<LedgerRow> {
         val rows = em.createQuery(
             """
-                select l.accountId, l.amount, l.side, l.createdAt
+                select l.accountId, l.persistedAmount, l.side, l.createdAt
                   from LedgerEntity l
                  where l.transferId = :transferId
             """.trimIndent(),

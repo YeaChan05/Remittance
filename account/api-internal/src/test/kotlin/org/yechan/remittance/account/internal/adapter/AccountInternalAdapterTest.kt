@@ -2,6 +2,7 @@ package org.yechan.remittance.account.internal.adapter
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.yechan.remittance.Money
 import org.yechan.remittance.account.AccountInternalBalanceChangeCommand
 import org.yechan.remittance.account.AccountInternalLockValue
 import org.yechan.remittance.account.AccountInternalQueryUseCase
@@ -23,7 +24,7 @@ class AccountInternalAdapterTest {
                 accountId: Long,
             ): AccountInternalSnapshotValue {
                 capturedMemberId.set(memberId)
-                return AccountInternalSnapshotValue(accountId, 3L, BigDecimal("1000"))
+                return AccountInternalSnapshotValue(accountId, 3L, money("1000"))
             }
 
             override fun lock(
@@ -59,8 +60,8 @@ class AccountInternalAdapterTest {
             ): AccountInternalLockValue {
                 capturedMemberId.set(memberId)
                 return AccountInternalLockValue(
-                    AccountInternalSnapshotValue(fromAccountId, 3L, BigDecimal("900")),
-                    AccountInternalSnapshotValue(toAccountId, 4L, BigDecimal("100")),
+                    AccountInternalSnapshotValue(fromAccountId, 3L, money("900")),
+                    AccountInternalSnapshotValue(toAccountId, 4L, money("100")),
                 )
             }
         }
@@ -113,9 +114,11 @@ class AccountInternalAdapterTest {
             AccountInternalBalanceChangeCommand(
                 fromAccountId = 1L,
                 toAccountId = 2L,
-                fromBalance = BigDecimal("890"),
-                toBalance = BigDecimal("600"),
+                fromBalance = money("890"),
+                toBalance = money("600"),
             ),
         )
     }
+
+    private fun money(value: String): Money = Money.of(BigDecimal(value))
 }

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
+import org.yechan.remittance.Money
 import org.yechan.remittance.account.AccountInternalLockValue
 import org.yechan.remittance.account.AccountInternalQueryUseCase
 import org.yechan.remittance.account.AccountInternalSnapshotValue
@@ -23,7 +24,7 @@ class AccountInternalApiBeanRegistrarTest {
                 accountId: Long,
             ): AccountInternalSnapshotValue {
                 capturedMemberIds += memberId
-                return AccountInternalSnapshotValue(accountId, 3L, BigDecimal("1000"))
+                return AccountInternalSnapshotValue(accountId, 3L, money("1000"))
             }
 
             override fun lock(
@@ -33,8 +34,8 @@ class AccountInternalApiBeanRegistrarTest {
             ): AccountInternalLockValue {
                 capturedMemberIds += memberId
                 return AccountInternalLockValue(
-                    AccountInternalSnapshotValue(fromAccountId, 3L, BigDecimal("900")),
-                    AccountInternalSnapshotValue(toAccountId, 4L, BigDecimal("100")),
+                    AccountInternalSnapshotValue(fromAccountId, 3L, money("900")),
+                    AccountInternalSnapshotValue(toAccountId, 4L, money("100")),
                 )
             }
         }
@@ -71,4 +72,6 @@ class AccountInternalApiBeanRegistrarTest {
     @Configuration(proxyBeanMethods = false)
     @Import(AccountInternalApiBeanRegistrar::class, AccountInternalController::class)
     class TestConfiguration
+
+    private fun money(value: String): Money = Money.of(BigDecimal(value))
 }

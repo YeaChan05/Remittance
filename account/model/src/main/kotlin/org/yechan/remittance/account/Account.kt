@@ -1,6 +1,6 @@
 package org.yechan.remittance.account
 
-import java.math.BigDecimal
+import org.yechan.remittance.Money
 
 data class Account(
     override val accountId: Long?,
@@ -8,5 +8,5 @@ data class Account(
     override val bankCode: String,
     override val accountNumber: String,
     override val accountName: String,
-    override var balance: BigDecimal,
+    override var balance: Money,
 ) : AccountModel

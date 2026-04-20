@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.support.TestPropertySourceUtils
 import org.yechan.remittance.InternalServiceAuthProperties
+import org.yechan.remittance.Money
 import java.math.BigDecimal
 
 class TransferInfrastructureBeanRegistrarTest {
@@ -92,8 +93,8 @@ class TransferInfrastructureBeanRegistrarTest {
                     memberId = 99L,
                     fromAccountId = 10L,
                     toAccountId = 20L,
-                    fromBalance = BigDecimal("890"),
-                    toBalance = BigDecimal("110"),
+                    fromBalance = money("890"),
+                    toBalance = money("110"),
                 ),
             )
             assertThat(memberClient.exists(7L)).isTrue()
@@ -107,4 +108,6 @@ class TransferInfrastructureBeanRegistrarTest {
     @Configuration(proxyBeanMethods = false)
     @Import(TransferInfrastructureBeanRegistrar::class)
     class TestConfiguration
+
+    private fun money(value: String): Money = Money.of(BigDecimal(value))
 }

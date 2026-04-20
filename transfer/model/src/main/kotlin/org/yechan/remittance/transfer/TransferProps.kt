@@ -1,12 +1,12 @@
 package org.yechan.remittance.transfer
 
-import java.math.BigDecimal
+import org.yechan.remittance.Money
 import java.time.LocalDateTime
 
 interface TransferProps {
     val fromAccountId: Long
     val toAccountId: Long
-    val amount: BigDecimal
+    val amount: Money
     val scope: TransferScopeValue
     val status: TransferStatusValue
     val requestedAt: LocalDateTime

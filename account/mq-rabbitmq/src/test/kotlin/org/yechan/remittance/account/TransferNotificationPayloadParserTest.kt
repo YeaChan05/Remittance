@@ -2,6 +2,7 @@ package org.yechan.remittance.account
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.yechan.remittance.Money
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -20,7 +21,7 @@ class TransferNotificationPayloadParserTest {
         assertEquals(11L, props.transferId)
         assertEquals(1L, props.fromAccountId)
         assertEquals(2L, props.toAccountId)
-        assertEquals(BigDecimal("10000"), props.amount)
+        assertEquals(Money.of(BigDecimal("10000")), props.amount)
         assertEquals(LocalDateTime.of(2025, 1, 1, 0, 0), props.occurredAt)
     }
 }

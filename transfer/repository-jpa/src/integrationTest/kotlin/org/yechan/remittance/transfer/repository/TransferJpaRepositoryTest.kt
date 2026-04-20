@@ -11,8 +11,8 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.TestConstructor
+import org.yechan.remittance.Money
 import org.yechan.remittance.transfer.TransferProps
-import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @DataJpaTest
@@ -101,7 +101,7 @@ class TransferJpaRepositoryTest @Autowired constructor(
         override val requestedAt: LocalDateTime,
         override val completedAt: LocalDateTime?,
     ) : TransferProps {
-        override val amount: BigDecimal = BigDecimal.valueOf(1000L)
+        override val amount: Money = Money.of(1000L)
         override val scope: TransferProps.TransferScopeValue =
             TransferProps.TransferScopeValue.DEPOSIT
     }

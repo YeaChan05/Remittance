@@ -27,7 +27,7 @@ data class TransferQueryResponse(
                 transfer.transferId,
                 transfer.fromAccountId,
                 transfer.toAccountId,
-                transfer.amount,
+                transfer.amount.amount,
                 transfer.scope,
                 transfer.status,
                 transfer.requestedAt,

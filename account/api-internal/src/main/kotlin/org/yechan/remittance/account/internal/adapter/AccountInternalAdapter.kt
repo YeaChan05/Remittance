@@ -40,8 +40,8 @@ class AccountInternalAdapter(
             AccountInternalBalanceChangeCommand(
                 request.fromAccountId,
                 request.toAccountId,
-                request.fromBalance,
-                request.toBalance,
+                org.yechan.remittance.Money.of(request.fromBalance),
+                org.yechan.remittance.Money.of(request.toBalance),
             ),
         ),
     )
@@ -49,7 +49,7 @@ class AccountInternalAdapter(
     private fun AccountInternalSnapshotValue.toResponse(): AccountSnapshotResponse = AccountSnapshotResponse(
         accountId = accountId,
         memberId = memberId,
-        balance = balance,
+        balance = balance.amount,
     )
 
     private fun AccountInternalLockValue.toResponse(): AccountLockResponse = AccountLockResponse(

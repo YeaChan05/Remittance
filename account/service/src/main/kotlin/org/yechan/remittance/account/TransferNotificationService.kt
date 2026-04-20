@@ -33,7 +33,7 @@ class TransferNotificationService(
             TransferNotificationMessage(
                 MESSAGE_TYPE,
                 props.transferId,
-                props.amount,
+                props.amount.amount,
                 props.fromAccountId,
                 props.occurredAt,
             )

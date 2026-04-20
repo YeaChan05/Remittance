@@ -1,19 +1,26 @@
 package org.yechan.remittance.transfer.dto
 
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonProperty
+import org.yechan.remittance.Money
 import org.yechan.remittance.transfer.TransferFailedException
 import org.yechan.remittance.transfer.TransferFailureCode
 import org.yechan.remittance.transfer.TransferRequestProps
 import java.math.BigDecimal
 
 abstract class SingleAccountTransferRequest(
-    private val accountIdRaw: Long?,
-    private val amountRaw: BigDecimal?,
+    @get:JsonProperty("accountId")
+    @param:JsonProperty("accountId")
+    val accountId: Long?,
+    @get:JsonProperty("amount")
+    @param:JsonProperty("amount")
+    val requestAmount: BigDecimal?,
 ) : TransferRequestProps {
     init {
-        if (amountRaw == null || amountRaw <= BigDecimal.ZERO) {
+        if (requestAmount == null || requestAmount <= BigDecimal.ZERO) {
             throw TransferFailedException(TransferFailureCode.INVALID_REQUEST, "Invalid amount")
         }
-        if (accountIdRaw == null) {
+        if (accountId == null) {
             throw TransferFailedException(
                 TransferFailureCode.INVALID_REQUEST,
                 "Account ID must not be null",
@@ -21,18 +28,19 @@ abstract class SingleAccountTransferRequest(
         }
     }
 
-    val accountId: Long?
-        get() = accountIdRaw
-
+    @get:JsonIgnore
     override val fromAccountId: Long
-        get() = requireNotNull(accountIdRaw)
+        get() = requireNotNull(accountId)
 
+    @get:JsonIgnore
     override val toAccountId: Long
-        get() = requireNotNull(accountIdRaw)
+        get() = requireNotNull(accountId)
 
-    override val amount: BigDecimal
-        get() = requireNotNull(amountRaw)
+    @get:JsonIgnore
+    override val amount: Money
+        get() = Money.of(requireNotNull(requestAmount))
 
-    override val fee: BigDecimal
-        get() = BigDecimal.ZERO
+    @get:JsonIgnore
+    override val fee: Money
+        get() = Money.zero()
 }

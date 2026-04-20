@@ -23,7 +23,6 @@ import org.yechan.remittance.transfer.TransferRequestProps
 import org.yechan.remittance.transfer.config.TransferApplicationAccountStore
 import org.yechan.remittance.transfer.config.TransferApplicationMemberStore
 import org.yechan.remittance.transfer.config.TransferInternalApiStubEnvironment
-import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -138,5 +137,5 @@ private class FailureTransferRepository(
         scope: TransferProps.TransferScopeValue,
         from: LocalDateTime,
         to: LocalDateTime,
-    ): BigDecimal = delegate.sumAmountByFromAccountIdAndScopeBetween(identifier, scope, from, to)
+    ): Money = delegate.sumAmountByFromAccountIdAndScopeBetween(identifier, scope, from, to)
 }

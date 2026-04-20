@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.yechan.remittance.Money
 import java.math.BigDecimal
 
 class TransferSnapshotUtilTest {
@@ -64,9 +65,9 @@ class TransferSnapshotUtilTest {
     private class TestRequestProps : TransferRequestProps {
         override val fromAccountId: Long = 1L
         override val toAccountId: Long = 2L
-        override val amount: BigDecimal = BigDecimal("100.00")
+        override val amount: Money = Money.of(BigDecimal("100.00"))
         override val scope: TransferProps.TransferScopeValue =
             TransferProps.TransferScopeValue.TRANSFER
-        override val fee: BigDecimal = BigDecimal.ONE
+        override val fee: Money = Money.of(BigDecimal.ONE)
     }
 }

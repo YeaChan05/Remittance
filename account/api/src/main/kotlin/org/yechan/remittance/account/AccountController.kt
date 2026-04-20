@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import org.yechan.remittance.LoginUserId
+import org.yechan.remittance.Money
 import org.yechan.remittance.account.dto.AccountCreateRequest
 import org.yechan.remittance.account.dto.AccountCreateResponse
 import org.yechan.remittance.account.dto.AccountDeleteResponse
-import java.math.BigDecimal
 
 @RestController
 @RequestMapping("/accounts", version = "v1")
@@ -52,7 +52,7 @@ class AccountController(
         override val accountNumber: String,
         override val accountName: String,
     ) : AccountProps {
-        override val balance: BigDecimal = BigDecimal.ZERO
+        override val balance: Money = Money.zero()
     }
 
     private data class AccountDeleteCommand(

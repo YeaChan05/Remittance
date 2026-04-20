@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import org.yechan.remittance.Money
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -13,8 +14,8 @@ class TransferProcessServiceTest {
     fun `일반 이체 성공 시 잔액 변경과 outbox 생성을 수행한다`() {
         val fixture = transferFixture(
             lockedAccounts = TransferLockedAccounts(
-                TransferAccountSnapshot(1L, 10L, BigDecimal("1000")),
-                TransferAccountSnapshot(2L, 20L, BigDecimal("200")),
+                TransferAccountSnapshot(1L, 10L, money("1000")),
+                TransferAccountSnapshot(2L, 20L, money("200")),
             ),
         )
 
@@ -28,8 +29,8 @@ class TransferProcessServiceTest {
                 memberId = 10L,
                 fromAccountId = 1L,
                 toAccountId = 2L,
-                fromBalance = BigDecimal("899"),
-                toBalance = BigDecimal("300"),
+                fromBalance = money("899"),
+                toBalance = money("300"),
             ),
         )
         assertThat(fixture.dailyLimitUsageRepository.findOrCreateCallCount).isEqualTo(1)
@@ -48,8 +49,8 @@ class TransferProcessServiceTest {
     fun `입금 성공 시 동일 계좌 잔액만 증가시키고 outbox를 생성하지 않는다`() {
         val fixture = transferFixture(
             lockedAccounts = TransferLockedAccounts(
-                TransferAccountSnapshot(1L, 10L, BigDecimal("1000")),
-                TransferAccountSnapshot(1L, 10L, BigDecimal("1000")),
+                TransferAccountSnapshot(1L, 10L, money("1000")),
+                TransferAccountSnapshot(1L, 10L, money("1000")),
             ),
         )
 
@@ -60,7 +61,7 @@ class TransferProcessServiceTest {
                 fromAccountId = 1L,
                 toAccountId = 1L,
                 scope = TransferProps.TransferScopeValue.DEPOSIT,
-                fee = BigDecimal.ZERO,
+                fee = Money.zero(),
             ),
             now(),
         )
@@ -72,8 +73,8 @@ class TransferProcessServiceTest {
                 memberId = 10L,
                 fromAccountId = 1L,
                 toAccountId = 1L,
-                fromBalance = BigDecimal("1100"),
-                toBalance = BigDecimal("1100"),
+                fromBalance = money("1100"),
+                toBalance = money("1100"),
             ),
         )
         assertThat(fixture.outboxEventRepository.saveCallCount).isZero()
@@ -84,8 +85,8 @@ class TransferProcessServiceTest {
     fun `출금 성공 시 출금 계좌 잔액만 감소시키고 outbox를 생성하지 않는다`() {
         val fixture = transferFixture(
             lockedAccounts = TransferLockedAccounts(
-                TransferAccountSnapshot(1L, 10L, BigDecimal("1000")),
-                TransferAccountSnapshot(1L, 10L, BigDecimal("1000")),
+                TransferAccountSnapshot(1L, 10L, money("1000")),
+                TransferAccountSnapshot(1L, 10L, money("1000")),
             ),
         )
 
@@ -96,7 +97,7 @@ class TransferProcessServiceTest {
                 fromAccountId = 1L,
                 toAccountId = 1L,
                 scope = TransferProps.TransferScopeValue.WITHDRAW,
-                fee = BigDecimal.ZERO,
+                fee = Money.zero(),
             ),
             now(),
         )
@@ -108,8 +109,8 @@ class TransferProcessServiceTest {
                 memberId = 10L,
                 fromAccountId = 1L,
                 toAccountId = 1L,
-                fromBalance = BigDecimal("900"),
-                toBalance = BigDecimal("900"),
+                fromBalance = money("900"),
+                toBalance = money("900"),
             ),
         )
         assertThat(fixture.outboxEventRepository.saveCallCount).isZero()
@@ -120,8 +121,8 @@ class TransferProcessServiceTest {
     fun `같은 계좌로 이체하면 INVALID_REQUEST를 반환한다`() {
         val fixture = transferFixture(
             lockedAccounts = TransferLockedAccounts(
-                TransferAccountSnapshot(1L, 10L, BigDecimal("1000")),
-                TransferAccountSnapshot(1L, 10L, BigDecimal("1000")),
+                TransferAccountSnapshot(1L, 10L, money("1000")),
+                TransferAccountSnapshot(1L, 10L, money("1000")),
             ),
         )
 
@@ -163,8 +164,8 @@ class TransferProcessServiceTest {
     fun `송금 계좌 회원이 없으면 OWNER_NOT_FOUND를 반환한다`() {
         val fixture = transferFixture(
             lockedAccounts = TransferLockedAccounts(
-                TransferAccountSnapshot(1L, 10L, BigDecimal("1000")),
-                TransferAccountSnapshot(2L, 20L, BigDecimal("200")),
+                TransferAccountSnapshot(1L, 10L, money("1000")),
+                TransferAccountSnapshot(2L, 20L, money("200")),
             ),
             existingMemberIds = setOf(20L),
         )
@@ -185,8 +186,8 @@ class TransferProcessServiceTest {
     fun `수취인 회원이 없으면 MEMBER_NOT_FOUND를 반환한다`() {
         val fixture = transferFixture(
             lockedAccounts = TransferLockedAccounts(
-                TransferAccountSnapshot(1L, 10L, BigDecimal("1000")),
-                TransferAccountSnapshot(2L, 20L, BigDecimal("200")),
+                TransferAccountSnapshot(1L, 10L, money("1000")),
+                TransferAccountSnapshot(2L, 20L, money("200")),
             ),
             existingMemberIds = setOf(10L),
         )
@@ -207,8 +208,8 @@ class TransferProcessServiceTest {
     fun `요청 사용자와 소유자가 다르면 INVALID_REQUEST를 반환한다`() {
         val fixture = transferFixture(
             lockedAccounts = TransferLockedAccounts(
-                TransferAccountSnapshot(1L, 10L, BigDecimal("1000")),
-                TransferAccountSnapshot(2L, 20L, BigDecimal("200")),
+                TransferAccountSnapshot(1L, 10L, money("1000")),
+                TransferAccountSnapshot(2L, 20L, money("200")),
             ),
             existingMemberIds = setOf(10L, 20L),
         )
@@ -229,10 +230,10 @@ class TransferProcessServiceTest {
     fun `일일 한도 초과 시 DAILY_LIMIT_EXCEEDED를 반환한다`() {
         val fixture = transferFixture(
             lockedAccounts = TransferLockedAccounts(
-                TransferAccountSnapshot(1L, 10L, BigDecimal("1000")),
-                TransferAccountSnapshot(2L, 20L, BigDecimal("200")),
+                TransferAccountSnapshot(1L, 10L, money("1000")),
+                TransferAccountSnapshot(2L, 20L, money("200")),
             ),
-            initialUsedAmount = BigDecimal.valueOf(3_000_000),
+            initialUsedAmount = Money.of(3_000_000),
         )
 
         assertThatThrownBy {
@@ -252,8 +253,8 @@ class TransferProcessServiceTest {
     fun `잔액이 부족하면 INSUFFICIENT_BALANCE를 반환한다`() {
         val fixture = transferFixture(
             lockedAccounts = TransferLockedAccounts(
-                TransferAccountSnapshot(1L, 10L, BigDecimal("50")),
-                TransferAccountSnapshot(2L, 20L, BigDecimal("200")),
+                TransferAccountSnapshot(1L, 10L, money("50")),
+                TransferAccountSnapshot(2L, 20L, money("200")),
             ),
         )
 
@@ -261,7 +262,7 @@ class TransferProcessServiceTest {
             fixture.service.process(
                 10L,
                 "idem-key",
-                TestTransferRequestProps(amount = BigDecimal("100")),
+                TestTransferRequestProps(amount = money("100")),
                 now(),
             )
         }.isInstanceOf(TransferFailedException::class.java)
@@ -278,7 +279,7 @@ class TransferProcessServiceTest {
     private fun transferFixture(
         lockedAccounts: TransferLockedAccounts?,
         existingMemberIds: Set<Long> = setOf(10L, 20L),
-        initialUsedAmount: BigDecimal = BigDecimal.ZERO,
+        initialUsedAmount: Money = Money.zero(),
     ): TransferFixture {
         val accountClient = FakeTransferAccountClient(lockedAccounts = lockedAccounts)
         val transferRepository = FakeTransferRepository()
@@ -321,9 +322,9 @@ class TransferProcessServiceTest {
     private data class TestTransferRequestProps(
         override val fromAccountId: Long = 1L,
         override val toAccountId: Long = 2L,
-        override val amount: BigDecimal = BigDecimal("100"),
+        override val amount: Money = Money.of(BigDecimal("100")),
         override val scope: TransferProps.TransferScopeValue = TransferProps.TransferScopeValue.TRANSFER,
-        override val fee: BigDecimal = BigDecimal("1"),
+        override val fee: Money = Money.of(BigDecimal("1")),
     ) : TransferRequestProps
 
     private class FakeTransferAccountClient(
@@ -393,7 +394,7 @@ class TransferProcessServiceTest {
             scope: TransferProps.TransferScopeValue,
             from: LocalDateTime,
             to: LocalDateTime,
-        ): BigDecimal = BigDecimal.ZERO
+        ): Money = Money.zero()
     }
 
     private class FakeOutboxEventRepository : OutboxEventRepository {
@@ -477,7 +478,7 @@ class TransferProcessServiceTest {
     }
 
     private class FakeDailyLimitUsageRepository(
-        initialUsedAmount: BigDecimal,
+        initialUsedAmount: Money,
     ) : DailyLimitUsageRepository {
         val usage = TestDailyLimitUsage(initialUsedAmount)
         var findOrCreateCallCount: Int = 0
@@ -493,18 +494,20 @@ class TransferProcessServiceTest {
     }
 
     private class TestDailyLimitUsage(
-        override var usedAmount: BigDecimal,
+        override var usedAmount: Money,
     ) : DailyLimitUsageModel {
         override val accountId: Long = 1L
         override val scope: TransferProps.TransferScopeValue =
             TransferProps.TransferScopeValue.TRANSFER
         override val usageDate: LocalDate = LocalDate.of(2026, 1, 1)
-        override val dailyLimitUsageId: Long? = 1L
+        override val dailyLimitUsageId: Long = 1L
         var updateCallCount: Int = 0
 
-        override fun updateUsedAmount(usedAmount: BigDecimal) {
+        override fun updateUsedAmount(usedAmount: Money) {
             updateCallCount += 1
             this.usedAmount = usedAmount
         }
     }
+
+    private fun money(value: String): Money = Money.of(BigDecimal(value))
 }

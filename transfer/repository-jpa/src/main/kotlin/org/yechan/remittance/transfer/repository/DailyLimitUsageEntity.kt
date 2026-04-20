@@ -5,8 +5,10 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
+import jakarta.persistence.Transient
 import jakarta.persistence.UniqueConstraint
 import org.yechan.remittance.BaseEntity
+import org.yechan.remittance.Money
 import org.yechan.remittance.transfer.DailyLimitUsageModel
 import org.yechan.remittance.transfer.DailyLimitUsageProps
 import org.yechan.remittance.transfer.TransferProps
@@ -41,13 +43,20 @@ class DailyLimitUsageEntity() :
     override var usageDate: LocalDate = LocalDate.MIN
 
     @field:Column(name = "used_amount", nullable = false)
-    override var usedAmount: BigDecimal = BigDecimal.ZERO
+    private var persistedUsedAmount: BigDecimal = BigDecimal.ZERO
+
+    @get:Transient
+    override var usedAmount: Money
+        get() = Money.of(persistedUsedAmount)
+        set(value) {
+            persistedUsedAmount = value.amount
+        }
 
     private constructor(
         accountId: Long,
         scope: TransferProps.TransferScopeValue,
         usageDate: LocalDate,
-        usedAmount: BigDecimal,
+        usedAmount: Money,
     ) : this() {
         this.accountId = accountId
         this.scope = scope
@@ -55,7 +64,7 @@ class DailyLimitUsageEntity() :
         this.usedAmount = usedAmount
     }
 
-    override fun updateUsedAmount(usedAmount: BigDecimal) {
+    override fun updateUsedAmount(usedAmount: Money) {
         this.usedAmount = usedAmount
     }
 

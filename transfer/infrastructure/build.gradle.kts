@@ -1,5 +1,6 @@
 dependencies {
     api(project(":transfer:model"))
+    api(project(":common:model"))
     implementation(project(":common:security"))
     implementation(project(":account:api-internal"))
     implementation(project(":member:api-internal"))

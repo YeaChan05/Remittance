@@ -9,6 +9,7 @@ testcontainers {
 
 dependencies {
     implementation(project(":common:repository-jpa"))
+    implementation(project(":common:model"))
     implementation(project(":transfer:infrastructure"))
     implementation("org.springframework.boot:spring-boot-starter-liquibase")
 

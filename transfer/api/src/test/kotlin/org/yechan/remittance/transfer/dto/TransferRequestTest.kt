@@ -3,6 +3,7 @@ package org.yechan.remittance.transfer.dto
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import org.yechan.remittance.Money
 import org.yechan.remittance.transfer.TransferFailedException
 import org.yechan.remittance.transfer.TransferProps
 import java.math.BigDecimal
@@ -13,7 +14,7 @@ class TransferRequestTest {
         val request = TransferRequest(1L, 2L, BigDecimal("100.129"))
 
         assertEquals(TransferProps.TransferScopeValue.TRANSFER, request.scope)
-        assertEquals(BigDecimal("1.00"), request.fee)
+        assertEquals(Money.of(BigDecimal("1.00")), request.fee)
     }
 
     @Test

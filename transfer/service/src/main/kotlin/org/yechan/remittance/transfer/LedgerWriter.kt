@@ -3,7 +3,7 @@ package org.yechan.remittance.transfer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.math.BigDecimal
+import org.yechan.remittance.Money
 import java.time.LocalDateTime
 
 private val log = KotlinLogging.logger {}
@@ -62,7 +62,7 @@ open class LedgerWriter(
     private fun saveLedgerIfAbsent(
         transferId: Long?,
         accountId: Long,
-        amount: BigDecimal,
+        amount: Money,
         side: LedgerProps.LedgerSideValue,
         now: LocalDateTime,
     ) {
@@ -83,7 +83,7 @@ open class LedgerWriter(
     private data class LedgerCreateCommand(
         override val transferId: Long,
         override val accountId: Long,
-        override val amount: BigDecimal,
+        override val amount: Money,
         override val side: LedgerProps.LedgerSideValue,
         override val createdAt: LocalDateTime?,
     ) : LedgerProps

@@ -3,12 +3,12 @@ package org.yechan.remittance.transfer.repository
 import jakarta.persistence.EntityManager
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.transaction.annotation.Transactional
+import org.yechan.remittance.Money
 import org.yechan.remittance.transfer.DailyLimitUsageModel
 import org.yechan.remittance.transfer.DailyLimitUsageProps
 import org.yechan.remittance.transfer.DailyLimitUsageRepository
 import org.yechan.remittance.transfer.TransferAccountIdentifier
 import org.yechan.remittance.transfer.TransferProps
-import java.math.BigDecimal
 import java.time.LocalDate
 
 open class DailyLimitUsageRepositoryImpl(
@@ -35,7 +35,7 @@ open class DailyLimitUsageRepositoryImpl(
                         requireNotNull(identifier.accountId),
                         scope,
                         usageDate,
-                        BigDecimal.ZERO,
+                        Money.zero(),
                     ),
                 ),
             )
@@ -51,6 +51,6 @@ open class DailyLimitUsageRepositoryImpl(
         override val accountId: Long,
         override val scope: TransferProps.TransferScopeValue,
         override val usageDate: LocalDate,
-        override val usedAmount: BigDecimal,
+        override val usedAmount: Money,
     ) : DailyLimitUsageProps
 }
