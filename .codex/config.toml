@@ -3,10 +3,14 @@ model_context_window = 1000000
 model_auto_compact_token_limit = 900000
 approvals_reviewer = "user"
 service_tier = "fast"
-
 sandbox_mode = "workspace-write"
+
 [agents]
 max_threads = 6
 max_depth = 1
+
 [sandbox_workspace_write]
 network_access = true
+
+[features]
+multi_agent = true
