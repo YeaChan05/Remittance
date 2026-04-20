@@ -22,16 +22,13 @@ import org.yechan.remittance.member.MemberProps
 import org.yechan.remittance.transfer.IdempotencyKeyCreateProps
 import org.yechan.remittance.transfer.IdempotencyKeyCreateUseCase
 import org.yechan.remittance.transfer.IdempotencyKeyProps
-import org.yechan.remittance.transfer.OutboxEventProps
 import org.yechan.remittance.transfer.TransferCreateUseCase
 import org.yechan.remittance.transfer.TransferEventPublishUseCase
 import org.yechan.remittance.transfer.TransferProps
 import org.yechan.remittance.transfer.TransferRequestProps
-import org.yechan.remittance.transfer.TransferResult
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.Duration
-import java.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicInteger
 
 @SpringBootTest(
@@ -125,7 +122,9 @@ class AggregateTransferFullFlowSpecs {
         assertThat(loadAccountBalance(senderAccount.accountId)).isEqualByComparingTo(
             initialBalance.subtract(transferAmount).subtract(transferFee),
         )
-        assertThat(loadAccountBalance(receiverAccount.accountId)).isEqualByComparingTo(transferAmount)
+        assertThat(loadAccountBalance(receiverAccount.accountId)).isEqualByComparingTo(
+            transferAmount,
+        )
         assertThat(countTransfers()).isEqualTo(transferCountBefore + 1)
         assertThat(countLedgers()).isEqualTo(ledgerCountBefore + 2)
         assertThat(countOutboxEvents()).isEqualTo(outboxCountBefore + 1)
