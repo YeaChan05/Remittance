@@ -169,6 +169,7 @@ configureByTypeHaving("boot", "jpa", "repository") {
 configureByTypeHaving("boot", "application") {
     apply(plugin = "application")
     apply(plugin = "org.springframework.boot")
+    apply(plugin = "org.springframework.boot.aot")
 
     dependencies {
         implementation("io.micrometer:micrometer-tracing-bridge-otel")
