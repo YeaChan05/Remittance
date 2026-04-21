@@ -64,11 +64,11 @@ jobs:
 
       - name: Build and coverage
         if: github.event_name != 'pull_request'
-        run: ./gradlew build jacocoRootReport --parallel
+        run: ./gradlew build jacocoRootReport
 
       - name: Full verification
         if: github.event_name == 'pull_request' && steps.impacted.outputs.full_run == 'true'
-        run: ./gradlew test integrationTest --parallel
+        run: ./gradlew test integrationTest
 
       - name: Upload coverage
         if: github.event_name != 'pull_request'
@@ -81,4 +81,4 @@ jobs:
 
       - name: Selective test
         if: github.event_name == 'pull_request' && steps.impacted.outputs.full_run != 'true' && steps.impacted.outputs.skip_run != 'true'
-        run: ./gradlew ${{ steps.impacted.outputs.verification_tasks }} --parallel
+        run: ./gradlew ${{ steps.impacted.outputs.verification_tasks }}
