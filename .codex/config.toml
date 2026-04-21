@@ -65,5 +65,8 @@ command = "node"
 args = ["/opt/homebrew/lib/node_modules/oh-my-codex/dist/mcp/wiki-server.js"]
 enabled = true
 startup_timeout_sec = 5
+
+[projects."/Users/shinyechan/IdeaProjects/remittance"]
+trust_level = "trusted"
 # ============================================================
 # End oh-my-codex
