@@ -1,6 +1,5 @@
 package org.yechan.remittance.member
 
-import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -15,7 +14,7 @@ class MemberLoginController(
 ) : MemberLoginApi {
     @PostMapping("/login")
     override fun login(
-        @RequestBody @Valid request: MemberLoginRequest,
+        @RequestBody request: MemberLoginRequest,
     ): ResponseEntity<MemberLoginResponse> {
         val token = memberQueryUseCase.login(request.toProps())
         val response = MemberLoginResponse.from(token)

@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.yechan.remittance.account.dto.AccountCreateRequest
 import org.yechan.remittance.account.dto.AccountCreateResponse
@@ -19,7 +20,7 @@ interface AccountApi {
     )
     fun create(
         @Parameter(hidden = true) memberId: Long,
-        request: AccountCreateRequest,
+        @Valid request: AccountCreateRequest,
     ): ResponseEntity<AccountCreateResponse>
 
     @Operation(summary = "Delete account", description = "Deletes a member account.")

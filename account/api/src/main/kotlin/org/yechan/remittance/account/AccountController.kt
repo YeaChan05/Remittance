@@ -1,6 +1,5 @@
 package org.yechan.remittance.account
 
-import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -23,7 +22,7 @@ class AccountController(
     @PostMapping
     override fun create(
         @LoginUserId memberId: Long,
-        @RequestBody @Valid request: AccountCreateRequest,
+        @RequestBody request: AccountCreateRequest,
     ): ResponseEntity<AccountCreateResponse> {
         val account =
             accountCreateUseCase.create(

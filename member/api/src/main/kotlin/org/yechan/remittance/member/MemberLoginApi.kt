@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.yechan.remittance.member.dto.MemberLoginRequest
 import org.yechan.remittance.member.dto.MemberLoginResponse
@@ -15,5 +16,7 @@ interface MemberLoginApi {
     @ApiResponses(
         ApiResponse(responseCode = "200", description = "Login succeeded", content = [Content()]),
     )
-    fun login(request: MemberLoginRequest): ResponseEntity<MemberLoginResponse>
+    fun login(
+        @Valid request: MemberLoginRequest,
+    ): ResponseEntity<MemberLoginResponse>
 }
