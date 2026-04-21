@@ -39,6 +39,16 @@
 - `test`는 단위/모듈 테스트 경로로 유지하고, 통합 검증은 `integrationTest`를 별도로 실행한다.
 - CI는 `test`와 `integrationTest`를 분리 실행하며, `aggregate:integrationTest`는 통합 테스트 경로에 항상 포함된다.
 
+## AOT 실행
+
+- runnable application 모듈(`aggregate`, `member:application`, `account:application`, `transfer:application`)에는 Spring Boot AOT가 적용된다.
+- AOT 코드 생성: `./gradlew :aggregate:processAot`
+- AOT 테스트 코드 생성: `./gradlew :aggregate:processTestAot`
+- AOT 포함 jar 빌드: `./gradlew :aggregate:bootJar`
+- AOT 포함 jar 실행: `java -Dspring.aot.enabled=true -jar aggregate/build/libs/aggregate.jar`
+- 다른 runnable module도 같은 방식으로 `:{module}:processAot`, `:{module}:processTestAot`, `:{module}:bootJar`를 사용한다.
+- Spring AOT는 build 시점 환경을 기준으로 조건을 고정하므로, 프로필이나 조건부 빈에 의존하는 설정은 AOT 빌드 시점 값으로 검증한다.
+
 ## 애플리케이션 모듈
 
 - `aggregate`는 여러 도메인을 한 번에 띄워 보는 로컬 조립용 runnable application입니다.
