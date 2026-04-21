@@ -6,16 +6,26 @@ on:
   pull_request:
 
 jobs:
-  build:
+  impact-analysis:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-
+    outputs:
+      full_run: ${{ steps.impacted.outputs.full_run }}
+      skip_run: ${{ steps.impacted.outputs.skip_run }}
+      assemble_tasks: ${{ steps.impacted.outputs.assemble_tasks }}
+      test_tasks: ${{ steps.impacted.outputs.test_tasks }}
+      integration_test_tasks: ${{ steps.impacted.outputs.integration_test_tasks }}
+      non_aggregate_integration_test_tasks: ${{ steps.impacted.outputs.non_aggregate_integration_test_tasks }}
+      aggregate_integration_test_tasks: ${{ steps.impacted.outputs.aggregate_integration_test_tasks }}
+      core_verification_tasks: ${{ steps.impacted.outputs.core_verification_tasks }}
+      verification_tasks: ${{ steps.impacted.outputs.verification_tasks }}
+      summary: ${{ steps.impacted.outputs.summary }}
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Resolve git range
-        if: github.event_name == 'pull_request'
         id: git-range
         shell: bash
         run: |
@@ -31,7 +41,6 @@ jobs:
           fi
 
       - name: Resolve impacted modules
-        if: github.event_name == 'pull_request'
         id: impacted
         shell: bash
         run: |
@@ -40,7 +49,6 @@ jobs:
             --head "${{ steps.git-range.outputs.head_sha }}"
 
       - name: Print impact summary
-        if: github.event_name == 'pull_request'
         shell: bash
         run: |
           cat <<'EOF'
@@ -48,30 +56,31 @@ jobs:
           EOF
 
       - name: Skip CI for non-functional changes
-        if: github.event_name == 'pull_request' && steps.impacted.outputs.skip_run == 'true'
+        if: steps.impacted.outputs.skip_run == 'true'
         run: echo "Skipping Gradle CI because only non-functional files changed."
 
+  build:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
       - name: Setup Java
-        if: github.event_name != 'pull_request' || steps.impacted.outputs.skip_run != 'true'
         uses: actions/setup-java@v5
         with:
           distribution: corretto
           java-version-file: .sdkmanrc
 
       - name: Setup Gradle
-        if: github.event_name != 'pull_request' || steps.impacted.outputs.skip_run != 'true'
         uses: gradle/actions/setup-gradle@v5
 
       - name: Build and coverage
-        if: github.event_name != 'pull_request'
         run: ./gradlew build jacocoRootReport
 
-      - name: Full verification
-        if: github.event_name == 'pull_request' && steps.impacted.outputs.full_run == 'true'
-        run: ./gradlew test integrationTest
-
       - name: Upload coverage
-        if: github.event_name != 'pull_request'
         uses: madrapps/jacoco-report@v1.2
         with:
           title: Jacoco Coverage Report
@@ -79,6 +88,44 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 85
 
-      - name: Selective test
-        if: github.event_name == 'pull_request' && steps.impacted.outputs.full_run != 'true' && steps.impacted.outputs.skip_run != 'true'
-        run: ./gradlew ${{ steps.impacted.outputs.verification_tasks }}
+  verify-core:
+    if: github.event_name == 'pull_request' && needs.impact-analysis.outputs.skip_run != 'true' && needs.impact-analysis.outputs.core_verification_tasks != ''
+    needs: impact-analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: corretto
+          java-version-file: .sdkmanrc
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Core verification
+        run: ./gradlew ${{ needs.impact-analysis.outputs.core_verification_tasks }}
+
+  verify-aggregate:
+    if: github.event_name == 'pull_request' && needs.impact-analysis.outputs.skip_run != 'true' && needs.impact-analysis.outputs.aggregate_integration_test_tasks != ''
+    needs: impact-analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: corretto
+          java-version-file: .sdkmanrc
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Aggregate integration verification
+        run: ./gradlew ${{ needs.impact-analysis.outputs.aggregate_integration_test_tasks }}
