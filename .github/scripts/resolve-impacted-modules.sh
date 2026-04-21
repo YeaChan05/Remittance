@@ -272,9 +272,9 @@ print_summary() {
   if [[ "$skip_run" == "true" ]]; then
     echo "- (skip)"
   elif [[ "$full_run" == "true" ]]; then
-    echo "- ./gradlew test integrationTest --parallel"
+    echo "- ./gradlew test integrationTest"
   else
-    echo "- ./gradlew $verification_tasks --parallel"
+    echo "- ./gradlew $verification_tasks"
   fi
 }
 

@@ -201,8 +201,8 @@ flowchart TD
 
 ```bash
 ./gradlew -p build-logic test
-JAVA_HOME=$(/usr/libexec/java_home -v 25) ./gradlew --parallel :member:application:integrationTest :account:application:integrationTest --rerun-tasks
-JAVA_HOME=$(/usr/libexec/java_home -v 25) ./gradlew --parallel :transfer:application:integrationTest :aggregate:integrationTest --rerun-tasks
+JAVA_HOME=$(/usr/libexec/java_home -v 25) ./gradlew :member:application:integrationTest :account:application:integrationTest --rerun-tasks
+JAVA_HOME=$(/usr/libexec/java_home -v 25) ./gradlew :transfer:application:integrationTest :aggregate:integrationTest --rerun-tasks
 JAVA_HOME=$(/usr/libexec/java_home -v 25) ./gradlew build --rerun-tasks --info
 ```
 
