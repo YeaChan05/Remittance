@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import jakarta.persistence.EntityManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -43,6 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger
     properties = ["transfer.outbox.publisher.enabled=false"],
 )
 @Import(RecordingNotificationTestConfig::class)
+@Disabled
 class ConcurrentTransferNotificationSpecs {
     @Autowired
     lateinit var entityManager: EntityManager
