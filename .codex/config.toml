@@ -38,6 +38,12 @@ args = ["/opt/homebrew/lib/node_modules/oh-my-codex/dist/mcp/state-server.js"]
 enabled = true
 startup_timeout_sec = 5
 
+[mcp_servers.omx_state.tools.state_read]
+approval_mode = "approve"
+
+[mcp_servers.omx_state.tools.state_write]
+approval_mode = "approve"
+
 # OMX Project Memory MCP Server
 [mcp_servers.omx_memory]
 command = "node"
