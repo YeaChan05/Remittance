@@ -28,7 +28,6 @@ while [[ $# -gt 0 ]]; do
 done
 
 declare -a projects=()
-declare -a integration_projects=()
 declare -A project_dirs=()
 declare -A touched_projects=()
 declare -A touch_reasons=()
@@ -36,7 +35,6 @@ declare -A full_run_reasons=()
 declare -A project_dependencies=()
 declare -A dependents_by_project=()
 declare -A impacted_projects=()
-declare -A integration_project_set=()
 
 write_output() {
   local name="$1"
@@ -95,17 +93,11 @@ project_dir() {
 }
 
 load_projects() {
-  local dir
   while IFS= read -r project; do
     [[ -n "$project" ]] || continue
     projects+=("$project")
-    dir="$(project_dir "$project")"
-    project_dirs["$dir"]="$project"
+    project_dirs["$(project_dir "$project")"]="$project"
     dependents_by_project["$project"]=""
-    if [[ -d "$dir/src/integrationTest/kotlin" || -d "$dir/src/integrationTest/resources" ]]; then
-      integration_projects+=("$project")
-      integration_project_set["$project"]=1
-    fi
   done < <(sed -n 's/^include("\(:[^"]*\)")/\1/p' settings.gradle.kts | tr -d '\r' | sort)
 }
 
@@ -235,18 +227,6 @@ join_tasks() {
   printf '%s' "${tasks[*]:-}"
 }
 
-filter_integration_projects() {
-  local project
-  local filtered=()
-  for project in "$@"; do
-    [[ -n "$project" ]] || continue
-    [[ "$project" == ":aggregate" ]] && continue
-    [[ -n "${integration_project_set[$project]:-}" ]] || continue
-    filtered+=("$project")
-  done
-  sort_unique_lines "${filtered[@]:-}"
-}
-
 print_summary() {
   echo "Changed files:"
   if [[ ${#changed_files[@]} -eq 0 ]]; then
@@ -292,11 +272,9 @@ print_summary() {
   if [[ "$skip_run" == "true" ]]; then
     echo "- (skip)"
   elif [[ "$full_run" == "true" ]]; then
-    echo "- ./gradlew $core_verification_tasks"
-    echo "- ./gradlew $aggregate_integration_test_tasks"
+    echo "- ./gradlew test integrationTest"
   else
-    echo "- ./gradlew $core_verification_tasks"
-    echo "- ./gradlew $aggregate_integration_test_tasks"
+    echo "- ./gradlew $verification_tasks"
   fi
 }
 
@@ -313,41 +291,22 @@ full_run="false"
 assemble_tasks=""
 test_tasks=""
 integration_test_tasks=""
-non_aggregate_integration_test_tasks=""
-aggregate_integration_test_tasks=""
-core_verification_tasks=""
 verification_tasks=""
 
 if [[ ${#changed_files[@]} -eq 0 ]]; then
   skip_run="true"
 elif [[ ${#full_run_reasons[@]} -gt 0 ]]; then
   full_run="true"
-  mapfile -t impacted_list < <(sort_unique_lines "${projects[@]}")
-  mapfile -t non_aggregate_integration_impacted_list < <(filter_integration_projects "${integration_projects[@]}")
-  assemble_tasks="$(join_tasks "assemble" "${impacted_list[@]}")"
-  test_tasks="$(join_tasks "test" "${impacted_list[@]}")"
-  non_aggregate_integration_test_tasks="$(join_tasks "integrationTest" "${non_aggregate_integration_impacted_list[@]}")"
-  if [[ -n "${integration_project_set[":aggregate"]:-}" ]]; then
-    aggregate_integration_test_tasks=":aggregate:integrationTest"
-  fi
-  integration_test_tasks="$(printf '%s %s' "$non_aggregate_integration_test_tasks" "$aggregate_integration_test_tasks" | xargs)"
-  core_verification_tasks="$(printf '%s %s' "$test_tasks" "$non_aggregate_integration_test_tasks" | xargs)"
-  verification_tasks="$(printf '%s %s' "$core_verification_tasks" "$aggregate_integration_test_tasks" | xargs)"
 elif [[ ${#touched_projects[@]} -eq 0 ]]; then
   skip_run="true"
 else
   expand_impacted_projects
   mapfile -t impacted_list < <(sort_unique_lines "${!impacted_projects[@]}")
-  mapfile -t non_aggregate_integration_impacted_list < <(filter_integration_projects "${!impacted_projects[@]}")
+  mapfile -t integration_impacted_list < <(sort_unique_lines "${!impacted_projects[@]}" ":aggregate")
   assemble_tasks="$(join_tasks "assemble" "${impacted_list[@]}")"
   test_tasks="$(join_tasks "test" "${impacted_list[@]}")"
-  non_aggregate_integration_test_tasks="$(join_tasks "integrationTest" "${non_aggregate_integration_impacted_list[@]}")"
-  if [[ -n "${integration_project_set[":aggregate"]:-}" ]]; then
-    aggregate_integration_test_tasks=":aggregate:integrationTest"
-  fi
-  integration_test_tasks="$(printf '%s %s' "$non_aggregate_integration_test_tasks" "$aggregate_integration_test_tasks" | xargs)"
-  core_verification_tasks="$(printf '%s %s' "$test_tasks" "$non_aggregate_integration_test_tasks" | xargs)"
-  verification_tasks="$(printf '%s %s' "$core_verification_tasks" "$aggregate_integration_test_tasks" | xargs)"
+  integration_test_tasks="$(join_tasks "integrationTest" "${integration_impacted_list[@]}")"
+  verification_tasks="$(printf '%s %s' "$test_tasks" "$integration_test_tasks" | xargs)"
 fi
 
 summary="$(print_summary)"
@@ -358,8 +317,5 @@ write_output "skip_run" "$skip_run"
 write_output "assemble_tasks" "$assemble_tasks"
 write_output "test_tasks" "$test_tasks"
 write_output "integration_test_tasks" "$integration_test_tasks"
-write_output "non_aggregate_integration_test_tasks" "$non_aggregate_integration_test_tasks"
-write_output "aggregate_integration_test_tasks" "$aggregate_integration_test_tasks"
-write_output "core_verification_tasks" "$core_verification_tasks"
 write_output "verification_tasks" "$verification_tasks"
 write_output "summary" "$summary"
