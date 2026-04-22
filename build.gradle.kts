@@ -172,8 +172,9 @@ configureByTypeHaving("boot", "application") {
     apply(plugin = "org.springframework.boot.aot")
 
     dependencies {
-        implementation("io.micrometer:micrometer-tracing-bridge-otel")
         implementation("org.springframework.boot:spring-boot-starter-actuator")
+        implementation("org.springframework.boot:spring-boot-starter-opentelemetry")
+        implementation("io.micrometer:micrometer-registry-prometheus")
         developmentOnly(enforcedPlatform(SpringBootPlugin.BOM_COORDINATES))
         developmentOnly(enforcedPlatform("org.testcontainers:testcontainers-bom:${rootProject.libs.versions.testcontainers.get()}"))
         developmentOnly("org.springframework.boot:spring-boot-docker-compose")
