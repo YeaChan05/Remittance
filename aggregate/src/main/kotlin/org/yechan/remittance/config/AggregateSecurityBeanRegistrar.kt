@@ -16,10 +16,13 @@ class AggregateSecurityBeanRegistrar :
     BeanRegistrarDsl({
         registerBean<ApplicationOpenEndpointPolicy> {
             StaticApplicationOpenEndpointPolicy(
+                includeHealth = true,
                 additionalMatchers =
                 listOf(
-                    OpenEndpointMatcher(HttpMethod.POST, "/login"),
-                    OpenEndpointMatcher(HttpMethod.POST, "/members"),
+                    OpenEndpointMatcher(pattern = "/login"),
+                    OpenEndpointMatcher(pattern = "/members"),
+                    OpenEndpointMatcher(pattern = "/actuator/info"),
+                    OpenEndpointMatcher(pattern = "/actuator/prometheus"),
                 ),
             )
         }
@@ -27,9 +30,15 @@ class AggregateSecurityBeanRegistrar :
         registerBean<AuthorizeHttpRequestsCustomizer>("aggregateAuthorizeHttpRequestsCustomizer") {
             PrioritizedAuthorizeHttpRequestsCustomizer(
                 Ordered.HIGHEST_PRECEDENCE,
-                ApplicationOpenEndpointsAuthorizeHttpRequestsCustomizer(
-                    bean(),
-                ),
+                AuthorizeHttpRequestsCustomizer { registry ->
+                    ApplicationOpenEndpointsAuthorizeHttpRequestsCustomizer(
+                        bean(),
+                    ).customize(registry)
+                    registry.requestMatchers(HttpMethod.POST, "/login").permitAll()
+                    registry.requestMatchers(HttpMethod.POST, "/members").permitAll()
+                    registry.requestMatchers("/actuator/info").permitAll()
+                    registry.requestMatchers("/actuator/prometheus").permitAll()
+                },
             )
         }
     })

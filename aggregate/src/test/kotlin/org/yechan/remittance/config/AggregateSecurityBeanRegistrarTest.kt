@@ -35,7 +35,13 @@ class AggregateSecurityBeanRegistrarTest {
 
         assertThat(aggregateCustomizer).isInstanceOf(PrioritizedAuthorizeHttpRequestsCustomizer::class.java)
         assertThat(defaultCustomizer).isInstanceOf(PrioritizedAuthorizeHttpRequestsCustomizer::class.java)
-        assertThat(policy.includeHealth).isFalse()
+        assertThat(policy.includeHealth).isTrue()
+        assertThat(policy.additionalMatchers.map { it.pattern }).contains(
+            "/login",
+            "/members",
+            "/actuator/info",
+            "/actuator/prometheus",
+        )
         assertThat((aggregateCustomizer as Ordered).order).isLessThan((defaultCustomizer as Ordered).order)
         assertThat(orderedCustomizers).containsExactly(aggregateCustomizer, defaultCustomizer)
 
