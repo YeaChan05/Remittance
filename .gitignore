@@ -45,4 +45,7 @@ bin/
 .obsidian
 graphify-out/
 .graphify**
+!.graphifyignore
 .omx/
+.logs/
+k6
