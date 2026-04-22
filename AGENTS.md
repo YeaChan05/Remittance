@@ -100,5 +100,9 @@
 This project has a graphify knowledge graph at graphify-out/.
 
 Rules:
+- Start with `graphify-out/GRAPH_REPORT.md` before broad repository search.
 - If graphify-out/wiki/index.md exists, navigate it instead of reading raw files
+- Prefer `graphify query`, `graphify explain`, and `graphify path` for focused questions before opening many source files.
+- Prefer exact project vocabulary in graph queries because current `graphify query` matching is label/BFS based, not semantic search.
+- Good query seeds in this repo: module names (`member`, `account`, `transfer`, `aggregate`), Spring bean names, controller/use-case class names, and contract types ending in `Api`, `UseCase`, `Controller`, `Registrar`, `Repository`, or `Properties`.
 - After modifying code files in this session, run `graphify update .` to keep the graph current (AST-only, no API cost)
