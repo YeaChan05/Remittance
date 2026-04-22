@@ -1,6 +1,8 @@
 server:
   port: ${SERVER_PORT:18083}
 spring:
+  application:
+    name: transfer-application
   autoconfigure:
     exclude: org.springframework.boot.security.autoconfigure.actuate.web.servlet.ManagementWebSecurityAutoConfiguration
   docker:
@@ -29,6 +31,13 @@ spring:
       member-internal:
         base-url: ${MEMBER_INTERNAL_BASE_URL:http://127.0.0.1:18082}
 management:
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  otlp:
+    metrics:
+      export:
+        enabled: false
   endpoints:
     web:
       exposure:

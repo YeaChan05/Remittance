@@ -1,6 +1,8 @@
 server:
   port: ${SERVER_PORT:18082}
 spring:
+  application:
+    name: member-application
   autoconfigure:
     exclude: org.springframework.boot.security.autoconfigure.actuate.web.servlet.ManagementWebSecurityAutoConfiguration
   docker:
@@ -23,6 +25,13 @@ spring:
     user: ${spring.datasource.username}
     password: ${spring.datasource.password}
 management:
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  otlp:
+    metrics:
+      export:
+        enabled: false
   endpoints:
     web:
       exposure:
