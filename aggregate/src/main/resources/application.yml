@@ -14,6 +14,8 @@ spring:
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
     username: root
     password: test
+    hikari:
+      maximum-pool-size: 50
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
@@ -63,6 +65,9 @@ transfer:
     expires-in: 24h
 
 logging:
+  file:
+    name: .logs/aggregate.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} trace_id=%X{traceId:-} span_id=%X{spanId:-} trace_flags=%X{traceFlags:-} %-5p --- [%thread] %logger{36} : %msg%n"
   level:
-    liquibase: debug
     org.springframework.web.filter.CommonsRequestLoggingFilter: debug
