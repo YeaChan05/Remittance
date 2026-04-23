@@ -4,7 +4,8 @@
 
 - Springdoc OpenAPI UI: `org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1` - API 문서/Swagger
   UI 제공
-- Micrometer Tracing(Otel Bridge): `io.micrometer:micrometer-tracing-bridge-otel` - 분산 추적
+- Spring Boot Starter OpenTelemetry: `org.springframework.boot:spring-boot-starter-opentelemetry` - OTLP 기반 분산 추적
+- Micrometer Prometheus Registry: `io.micrometer:micrometer-registry-prometheus` - Prometheus 메트릭 노출
 - JSpecify: `org.jspecify:jspecify` - null 표기 등 타입 주석 지원
 - MySQL Connector/J: `com.mysql:mysql-connector-j` - MySQL DB 연결 드라이버
 
