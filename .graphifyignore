@@ -1,0 +1,14 @@
+# Keep the graph focused on product code and governing docs.
+.git/
+.gradle/
+.idea/
+.kotlin/
+.obsidian/
+graphify-out/
+.graphify_python
+.graphify*
+.codex/
+**/build/
+TODO.md
+tmp/
+out/
