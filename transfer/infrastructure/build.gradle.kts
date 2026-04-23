@@ -5,5 +5,5 @@ dependencies {
     implementation(project(":account:api-internal"))
     implementation(project(":member:api-internal"))
     implementation("org.springframework:spring-web")
-    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
+    testImplementation("com.squareup.okhttp3:mockwebserver:5.2.1")
 }

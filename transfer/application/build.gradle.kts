@@ -20,7 +20,7 @@ dependencies {
     developmentOnly("org.testcontainers:testcontainers-mysql")
 
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
-    integrationTestImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
+    integrationTestImplementation("com.squareup.okhttp3:mockwebserver:5.2.1")
     integrationTestImplementation(testFixtures(project(":common:application-api")))
     integrationTestImplementation(project(":transfer:infrastructure"))
     integrationTestRuntimeOnly(enforcedPlatform("org.testcontainers:testcontainers-bom:${libs.versions.testcontainers.get()}"))
