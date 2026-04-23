@@ -1,0 +1,141 @@
+services:
+  mysql:
+    image: mysql:8.4.8
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: aggregate
+    command:
+      - --mysql-native-password=ON
+    ports:
+      - "13306:3306"
+    volumes:
+      - mysql-e2e-data:/var/lib/mysql
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  rabbitmq-exporter:
+    image: kbudde/rabbitmq-exporter:latest
+    environment:
+      RABBIT_URL: http://rabbitmq:15672
+      RABBIT_USER: guest
+      RABBIT_PASSWORD: guest
+      PUBLISH_PORT: 9419
+      OUTPUT_FORMAT: TTY
+    ports:
+      - "9419:9419"
+    depends_on:
+      - rabbitmq
+
+  mysql-exporter:
+    image: prom/mysqld-exporter:v0.17.2
+    command:
+      - --config.my-cnf=/etc/mysqld-exporter/.my.cnf
+      - --mysqld.address=mysql:3306
+    ports:
+      - "9104:9104"
+    volumes:
+      - ./observability/mysql-exporter/.my.cnf:/etc/mysqld-exporter/.my.cnf:ro
+    depends_on:
+      - mysql
+
+  node-exporter:
+    image: prom/node-exporter:v1.9.1
+    command:
+      - --path.rootfs=/host
+    pid: host
+    ports:
+      - "9100:9100"
+    volumes:
+      - /:/host:ro
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-remote-write-receiver
+      - --enable-feature=exemplar-storage
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - node-exporter
+      - cadvisor
+      - rabbitmq-exporter
+      - mysql-exporter
+      - tempo
+
+  loki:
+    image: grafana/loki:3.5.4
+    command:
+      - -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./observability/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+
+  promtail:
+    image: grafana/promtail:3.5.4
+    command:
+      - -config.file=/etc/promtail/config.yml
+    volumes:
+      - ./observability/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+      - ./:/workspace:ro
+    depends_on:
+      - loki
+
+  tempo:
+    image: grafana/tempo:2.8.2
+    command:
+      - -config.file=/etc/tempo/tempo.yml
+    ports:
+      - "3200:3200"
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./observability/tempo/tempo.yml:/etc/tempo/tempo.yml:ro
+
+  grafana:
+    image: grafana/grafana:12.1.1
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_DEFAULT_THEME: light
+      GF_FEATURE_TOGGLES_ENABLE: traceqlEditor
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+
+  grafana-bootstrap:
+    image: curlimages/curl:8.13.0
+    entrypoint:
+      - /bin/sh
+      - /bootstrap/bootstrap-grafana.sh
+    volumes:
+      - ./observability/grafana/bootstrap-grafana.sh:/bootstrap/bootstrap-grafana.sh:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - grafana
+
+volumes:
+  mysql-e2e-data:
