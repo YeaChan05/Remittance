@@ -25,4 +25,10 @@ interface AccountInternalApi {
         @RequestHeader(InternalRequestHeaders.USER_ID) memberId: Long,
         @RequestBody request: AccountBalanceChangeRequest,
     ): AccountBalanceChangeResponse
+
+    @PostExchange("/transfer-balance-change")
+    fun applyTransferBalanceChange(
+        @RequestHeader(InternalRequestHeaders.USER_ID) memberId: Long,
+        @RequestBody request: AccountTransferBalanceChangeRequest,
+    ): AccountTransferBalanceChangeResponse
 }

@@ -9,9 +9,12 @@ import org.yechan.remittance.Money
 import org.yechan.remittance.account.AccountInternalLockValue
 import org.yechan.remittance.account.AccountInternalQueryUseCase
 import org.yechan.remittance.account.AccountInternalSnapshotValue
+import org.yechan.remittance.account.AccountInternalTransferBalanceChangeCommand
+import org.yechan.remittance.account.AccountInternalTransferBalanceChangeResult
 import org.yechan.remittance.account.AccountInternalUpdateUseCase
 import org.yechan.remittance.account.internal.contract.AccountBalanceChangeRequest
 import org.yechan.remittance.account.internal.contract.AccountGetRequest
+import org.yechan.remittance.account.internal.contract.AccountTransferBalanceChangeRequest
 import java.math.BigDecimal
 
 class AccountInternalApiBeanRegistrarTest {
@@ -39,9 +42,25 @@ class AccountInternalApiBeanRegistrarTest {
                 )
             }
         }
-        val updateUseCase = AccountInternalUpdateUseCase { memberId, _ ->
-            capturedMemberIds += memberId
-            true
+        val updateUseCase = object : AccountInternalUpdateUseCase {
+            override fun applyBalanceChange(
+                memberId: Long,
+                command: org.yechan.remittance.account.AccountInternalBalanceChangeCommand,
+            ): Boolean {
+                capturedMemberIds += memberId
+                return true
+            }
+
+            override fun applyTransferBalanceChange(
+                memberId: Long,
+                command: AccountInternalTransferBalanceChangeCommand,
+            ): AccountInternalTransferBalanceChangeResult {
+                capturedMemberIds += memberId
+                return AccountInternalTransferBalanceChangeResult.applied(
+                    AccountInternalSnapshotValue(command.fromAccountId, memberId, money("900")),
+                    AccountInternalSnapshotValue(command.toAccountId, memberId, money("100")),
+                )
+            }
         }
         val context = AnnotationConfigApplicationContext().apply {
             beanFactory.registerSingleton("accountInternalQueryUseCase", queryUseCase)
@@ -63,6 +82,17 @@ class AccountInternalApiBeanRegistrarTest {
                 ),
             ).applied,
         ).isTrue()
+        assertThat(
+            controller.applyTransferBalanceChange(
+                7L,
+                AccountTransferBalanceChangeRequest(
+                    fromAccountId = 1L,
+                    toAccountId = 2L,
+                    debitAmount = BigDecimal("100"),
+                    creditAmount = BigDecimal("100"),
+                ),
+            ).status,
+        ).isEqualTo("APPLIED")
         assertThat(controller.get(7L, AccountGetRequest(10L))?.memberId).isEqualTo(3L)
         assertThat(capturedMemberIds).containsOnly(7L)
 

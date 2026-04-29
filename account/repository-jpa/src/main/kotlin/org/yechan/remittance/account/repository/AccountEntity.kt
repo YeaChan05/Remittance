@@ -4,6 +4,8 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
 import jakarta.persistence.Transient
+import org.hibernate.annotations.DynamicUpdate
+import org.hibernate.annotations.NaturalId
 import org.yechan.remittance.BaseEntity
 import org.yechan.remittance.Money
 import org.yechan.remittance.account.AccountModel
@@ -11,6 +13,7 @@ import org.yechan.remittance.account.AccountProps
 import java.math.BigDecimal
 
 @Entity
+@DynamicUpdate
 @Table(name = "account", catalog = "core")
 class AccountEntity() :
     BaseEntity(),
@@ -18,12 +21,15 @@ class AccountEntity() :
     override val accountId: Long?
         get() = id
 
+    @NaturalId
     @field:Column(nullable = false)
     override var memberId: Long? = null
 
+    @NaturalId
     @field:Column(nullable = false)
     override var bankCode: String = ""
 
+    @NaturalId
     @field:Column(nullable = false)
     override var accountNumber: String = ""
 

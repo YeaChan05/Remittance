@@ -7,10 +7,14 @@ import org.yechan.remittance.account.AccountInternalBalanceChangeCommand
 import org.yechan.remittance.account.AccountInternalLockValue
 import org.yechan.remittance.account.AccountInternalQueryUseCase
 import org.yechan.remittance.account.AccountInternalSnapshotValue
+import org.yechan.remittance.account.AccountInternalTransferBalanceChangeCommand
+import org.yechan.remittance.account.AccountInternalTransferBalanceChangeResult
+import org.yechan.remittance.account.AccountInternalTransferBalanceChangeStatusValue
 import org.yechan.remittance.account.AccountInternalUpdateUseCase
 import org.yechan.remittance.account.internal.contract.AccountBalanceChangeRequest
 import org.yechan.remittance.account.internal.contract.AccountGetRequest
 import org.yechan.remittance.account.internal.contract.AccountLockRequest
+import org.yechan.remittance.account.internal.contract.AccountTransferBalanceChangeRequest
 import java.math.BigDecimal
 import java.util.concurrent.atomic.AtomicReference
 
@@ -33,8 +37,7 @@ class AccountInternalAdapterTest {
                 toAccountId: Long,
             ): AccountInternalLockValue? = null
         }
-        val adapter =
-            AccountInternalAdapter(queryUseCase) { _, _ -> true }
+        val adapter = AccountInternalAdapter(queryUseCase, successfulUpdateUseCase())
 
         val response = adapter.get(7L, AccountGetRequest(10L))
 
@@ -65,8 +68,7 @@ class AccountInternalAdapterTest {
                 )
             }
         }
-        val adapter =
-            AccountInternalAdapter(queryUseCase) { _, _ -> true }
+        val adapter = AccountInternalAdapter(queryUseCase, successfulUpdateUseCase())
 
         val response = adapter.lock(7L, AccountLockRequest(10L, 20L))
 
@@ -79,10 +81,22 @@ class AccountInternalAdapterTest {
     fun `applyBalanceChange는 내부 업데이트 유스케이스에 명령을 위임한다`() {
         val capturedMemberId = AtomicReference<Long>()
         val captured = AtomicReference<AccountInternalBalanceChangeCommand>()
-        val updateUseCase = AccountInternalUpdateUseCase { memberId, command ->
-            capturedMemberId.set(memberId)
-            captured.set(command)
-            true
+        val updateUseCase = object : AccountInternalUpdateUseCase {
+            override fun applyBalanceChange(
+                memberId: Long,
+                command: AccountInternalBalanceChangeCommand,
+            ): Boolean {
+                capturedMemberId.set(memberId)
+                captured.set(command)
+                return true
+            }
+
+            override fun applyTransferBalanceChange(
+                memberId: Long,
+                command: AccountInternalTransferBalanceChangeCommand,
+            ): AccountInternalTransferBalanceChangeResult = AccountInternalTransferBalanceChangeResult.failed(
+                AccountInternalTransferBalanceChangeStatusValue.ACCOUNT_NOT_FOUND,
+            )
         }
         val queryUseCase = object : AccountInternalQueryUseCase {
             override fun get(
@@ -117,6 +131,79 @@ class AccountInternalAdapterTest {
                 fromBalance = money("890"),
                 toBalance = money("600"),
             ),
+        )
+    }
+
+    @Test
+    fun `applyTransferBalanceChange는 delta 명령을 위임한다`() {
+        val capturedMemberId = AtomicReference<Long>()
+        val captured = AtomicReference<AccountInternalTransferBalanceChangeCommand>()
+        val updateUseCase = object : AccountInternalUpdateUseCase {
+            override fun applyBalanceChange(
+                memberId: Long,
+                command: AccountInternalBalanceChangeCommand,
+            ): Boolean = false
+
+            override fun applyTransferBalanceChange(
+                memberId: Long,
+                command: AccountInternalTransferBalanceChangeCommand,
+            ): AccountInternalTransferBalanceChangeResult {
+                capturedMemberId.set(memberId)
+                captured.set(command)
+                return AccountInternalTransferBalanceChangeResult.applied(
+                    AccountInternalSnapshotValue(1L, 7L, money("890")),
+                    AccountInternalSnapshotValue(2L, 8L, money("600")),
+                )
+            }
+        }
+        val queryUseCase = object : AccountInternalQueryUseCase {
+            override fun get(
+                memberId: Long,
+                accountId: Long,
+            ): AccountInternalSnapshotValue? = null
+
+            override fun lock(
+                memberId: Long,
+                fromAccountId: Long,
+                toAccountId: Long,
+            ): AccountInternalLockValue? = null
+        }
+        val adapter = AccountInternalAdapter(queryUseCase, updateUseCase)
+
+        val response = adapter.applyTransferBalanceChange(
+            7L,
+            AccountTransferBalanceChangeRequest(
+                fromAccountId = 1L,
+                toAccountId = 2L,
+                debitAmount = BigDecimal("110"),
+                creditAmount = BigDecimal("100"),
+            ),
+        )
+
+        assertThat(response.status).isEqualTo("APPLIED")
+        assertThat(response.fromAccount?.balance).isEqualByComparingTo("890")
+        assertThat(capturedMemberId.get()).isEqualTo(7L)
+        assertThat(captured.get()).isEqualTo(
+            AccountInternalTransferBalanceChangeCommand(
+                fromAccountId = 1L,
+                toAccountId = 2L,
+                debitAmount = money("110"),
+                creditAmount = money("100"),
+            ),
+        )
+    }
+
+    private fun successfulUpdateUseCase(): AccountInternalUpdateUseCase = object : AccountInternalUpdateUseCase {
+        override fun applyBalanceChange(
+            memberId: Long,
+            command: AccountInternalBalanceChangeCommand,
+        ): Boolean = true
+
+        override fun applyTransferBalanceChange(
+            memberId: Long,
+            command: AccountInternalTransferBalanceChangeCommand,
+        ): AccountInternalTransferBalanceChangeResult = AccountInternalTransferBalanceChangeResult.failed(
+            AccountInternalTransferBalanceChangeStatusValue.ACCOUNT_NOT_FOUND,
         )
     }
 

@@ -9,6 +9,8 @@ import org.yechan.remittance.account.AccountInternalBalanceChangeCommand
 import org.yechan.remittance.account.AccountInternalLockValue
 import org.yechan.remittance.account.AccountInternalQueryUseCase
 import org.yechan.remittance.account.AccountInternalSnapshotValue
+import org.yechan.remittance.account.AccountInternalTransferBalanceChangeCommand
+import org.yechan.remittance.account.AccountInternalTransferBalanceChangeResult
 import org.yechan.remittance.account.AccountInternalUpdateUseCase
 import org.yechan.remittance.account.internal.contract.AccountBalanceChangeRequest
 import org.yechan.remittance.account.internal.contract.AccountBalanceChangeResponse
@@ -16,6 +18,8 @@ import org.yechan.remittance.account.internal.contract.AccountGetRequest
 import org.yechan.remittance.account.internal.contract.AccountLockRequest
 import org.yechan.remittance.account.internal.contract.AccountLockResponse
 import org.yechan.remittance.account.internal.contract.AccountSnapshotResponse
+import org.yechan.remittance.account.internal.contract.AccountTransferBalanceChangeRequest
+import org.yechan.remittance.account.internal.contract.AccountTransferBalanceChangeResponse
 
 @RestController
 @RequestMapping("/internal/accounts")
@@ -55,6 +59,20 @@ class AccountInternalController(
         ),
     )
 
+    @PostMapping("/transfer-balance-change")
+    fun applyTransferBalanceChange(
+        @LoginUserId memberId: Long,
+        @RequestBody request: AccountTransferBalanceChangeRequest,
+    ): AccountTransferBalanceChangeResponse = accountInternalUpdateUseCase.applyTransferBalanceChange(
+        memberId,
+        AccountInternalTransferBalanceChangeCommand(
+            request.fromAccountId,
+            request.toAccountId,
+            org.yechan.remittance.Money.of(request.debitAmount),
+            org.yechan.remittance.Money.of(request.creditAmount),
+        ),
+    ).toResponse()
+
     private fun AccountInternalSnapshotValue.toResponse(): AccountSnapshotResponse = AccountSnapshotResponse(
         accountId = accountId,
         memberId = memberId,
@@ -64,5 +82,11 @@ class AccountInternalController(
     private fun AccountInternalLockValue.toResponse(): AccountLockResponse = AccountLockResponse(
         fromAccount = fromAccount.toResponse(),
         toAccount = toAccount.toResponse(),
+    )
+
+    private fun AccountInternalTransferBalanceChangeResult.toResponse(): AccountTransferBalanceChangeResponse = AccountTransferBalanceChangeResponse(
+        status = status.name,
+        fromAccount = fromAccount?.toResponse(),
+        toAccount = toAccount?.toResponse(),
     )
 }
