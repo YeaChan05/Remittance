@@ -1,2 +1,3 @@
 org.yechan.remittance.CommonSecurityAutoConfiguration
 org.yechan.remittance.CommonSecurityBeanRegistrar
+org.yechan.remittance.PasswordEncoderBeanRegistrar

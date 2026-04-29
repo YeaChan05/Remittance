@@ -36,17 +36,17 @@ dependencies {
     testImplementation("com.tngtech.archunit:archunit-junit5:1.4.1")
     testImplementation(project(":common:exception"))
 
+    integrationTestImplementation(project(":account:api"))
+    integrationTestImplementation(project(":account:api-internal"))
+    integrationTestImplementation(project(":transfer:api"))
+    integrationTestImplementation(project(":member:api"))
+    integrationTestImplementation(project(":member:api-internal"))
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
     integrationTestImplementation(testFixtures(project(":common:application-api")))
     integrationTestImplementation(project(":account:service"))
     integrationTestImplementation(project(":member:service"))
     integrationTestImplementation(project(":transfer:service"))
     integrationTestRuntimeOnly(enforcedPlatform("org.testcontainers:testcontainers-bom:${libs.versions.testcontainers.get()}"))
-    integrationTestRuntimeOnly("org.testcontainers:testcontainers-jdbc")
-    integrationTestRuntimeOnly("org.testcontainers:testcontainers-mysql")
-    integrationTestRuntimeOnly("com.mysql:mysql-connector-j") {
-        exclude(group = "com.google.protobuf", module = "protobuf-java")
-    }
 
     runtimeOnly("com.mysql:mysql-connector-j") {
         exclude(group = "com.google.protobuf", module = "protobuf-java")

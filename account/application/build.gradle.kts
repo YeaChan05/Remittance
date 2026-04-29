@@ -10,7 +10,6 @@ testcontainers {
 dependencies {
     implementation(project(":common:security"))
     implementation(project(":account:api"))
-    implementation(project(":account:api-internal"))
     implementation(project(":account:repository-jpa"))
     implementation(project(":account:schema"))
     implementation(project(":account:mq-rabbitmq"))
@@ -18,14 +17,10 @@ dependencies {
     developmentOnly("org.testcontainers:testcontainers-jdbc")
     developmentOnly("org.testcontainers:testcontainers-mysql")
 
+    integrationTestImplementation(project(":account:api-internal"))
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
     integrationTestImplementation(testFixtures(project(":common:application-api")))
     integrationTestRuntimeOnly(enforcedPlatform("org.testcontainers:testcontainers-bom:${libs.versions.testcontainers.get()}"))
-    integrationTestRuntimeOnly("org.testcontainers:testcontainers-jdbc")
-    integrationTestRuntimeOnly("org.testcontainers:testcontainers-mysql")
-    integrationTestRuntimeOnly("com.mysql:mysql-connector-j") {
-        exclude(group = "com.google.protobuf", module = "protobuf-java")
-    }
 
     runtimeOnly("com.mysql:mysql-connector-j") {
         exclude(group = "com.google.protobuf", module = "protobuf-java")
