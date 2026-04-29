@@ -5,6 +5,9 @@ kotlin = "2.3.0"
 ktlint = "14.0.1"
 kotlin-logging = "7.0.3"
 mysql-connector = "9.5.0"
+p6spy = "3.9.1"
+spring-framework = "7.0.2"
+aspectj = "1.9.25.1"
 testcontainers = "2.0.3"
 
 [plugins]
@@ -23,6 +26,9 @@ jjwt-jackson = { module = "io.jsonwebtoken:jjwt-jackson", version.ref = "jjwt" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
 mysql-connector-j = { module = "com.mysql:mysql-connector-j", version.ref = "mysql-connector" }
+p6spy = { module = "p6spy:p6spy", version.ref = "p6spy" }
+aspectj-weaver = { module = "org.aspectj:aspectjweaver", version.ref = "aspectj" }
+spring-aop = { module = "org.springframework:spring-aop", version.ref = "spring-framework" }
 testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
 testcontainers-core = { module = "org.testcontainers:testcontainers" }
 testcontainers-mysql = { module = "org.testcontainers:testcontainers-mysql" }

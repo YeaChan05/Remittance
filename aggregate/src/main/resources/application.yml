@@ -63,6 +63,10 @@ auth:
 transfer:
   idempotency-key:
     expires-in: 24h
+remittance:
+  jpa:
+    p6spy:
+      enabled: ${REMITTANCE_JPA_P6SPY_ENABLED:true}
 
 logging:
   file:
