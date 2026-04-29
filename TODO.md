@@ -32,3 +32,7 @@ flowchart
 - application간 호출 구조
   - 계약을 하나의 모듈에서 관리 어떻게 생각?
 - 구현 skills 세분화 reference
+- idem to redis
+- `NotificationPushPort` 위치가 이상한디?
+  -  만약 옮겨진다면 `NotificationSessionRegistry`는 @AutoConfigiration 굳이?
+  - 아니 애초에 aggreagte가 이것저것 의존하는건 맞나?
