@@ -22,46 +22,52 @@ class IdempotencyKeyRepositoryImpl(
         idempotencyKey: String,
         requestHash: String,
         startedAt: LocalDateTime,
-    ): Boolean {
-        val found =
-            repository.findByMemberIdAndScopeAndIdempotencyKey(memberId, scope, idempotencyKey)
-        if (found == null) {
-            return false
-        }
-
-        val updated = found.tryMarkInProgress(requestHash, startedAt)
-        if (updated) {
-            repository.save(found)
-        }
-        return updated
-    }
+    ): Boolean = repository.markInProgressIfBeforeStart(
+        memberId,
+        scope,
+        idempotencyKey,
+        requestHash,
+        startedAt,
+    ) == 1
 
     override fun markSucceeded(
         memberId: Long,
         scope: IdempotencyKeyProps.IdempotencyScopeValue,
         idempotencyKey: String,
+        requestHash: String,
         responseSnapshot: String,
         completedAt: LocalDateTime,
     ): IdempotencyKeyModel {
-        val entity =
-            repository.findByMemberIdAndScopeAndIdempotencyKey(memberId, scope, idempotencyKey)
-                ?: throw IllegalStateException("Idempotency key not found")
-        entity.markSucceeded(responseSnapshot, completedAt)
-        return repository.save(entity)
+        repository.markSucceededIfInProgress(
+            memberId,
+            scope,
+            idempotencyKey,
+            requestHash,
+            responseSnapshot,
+            completedAt,
+        )
+        return repository.findByMemberIdAndScopeAndIdempotencyKey(memberId, scope, idempotencyKey)
+            ?: throw IllegalStateException("Idempotency key not found")
     }
 
     override fun markFailed(
         memberId: Long,
         scope: IdempotencyKeyProps.IdempotencyScopeValue,
         idempotencyKey: String,
+        requestHash: String,
         responseSnapshot: String,
         completedAt: LocalDateTime,
     ): IdempotencyKeyModel {
-        val entity =
-            repository.findByMemberIdAndScopeAndIdempotencyKey(memberId, scope, idempotencyKey)
-                ?: throw IllegalStateException("Idempotency key not found")
-        entity.markFailed(responseSnapshot, completedAt)
-        return repository.save(entity)
+        repository.markFailedIfInProgress(
+            memberId,
+            scope,
+            idempotencyKey,
+            requestHash,
+            responseSnapshot,
+            completedAt,
+        )
+        return repository.findByMemberIdAndScopeAndIdempotencyKey(memberId, scope, idempotencyKey)
+            ?: throw IllegalStateException("Idempotency key not found")
     }
 
     override fun markTimeoutBefore(cutoff: LocalDateTime, responseSnapshot: String): Int {

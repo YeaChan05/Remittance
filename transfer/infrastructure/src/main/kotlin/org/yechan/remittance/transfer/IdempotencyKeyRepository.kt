@@ -23,6 +23,7 @@ interface IdempotencyKeyRepository {
         memberId: Long,
         scope: IdempotencyKeyProps.IdempotencyScopeValue,
         idempotencyKey: String,
+        requestHash: String,
         responseSnapshot: String,
         completedAt: LocalDateTime,
     ): IdempotencyKeyModel
@@ -31,6 +32,7 @@ interface IdempotencyKeyRepository {
         memberId: Long,
         scope: IdempotencyKeyProps.IdempotencyScopeValue,
         idempotencyKey: String,
+        requestHash: String,
         responseSnapshot: String,
         completedAt: LocalDateTime,
     ): IdempotencyKeyModel

@@ -77,6 +77,7 @@ class IdempotencyKeyJpaRepositoryTest @Autowired constructor(
             saved.memberId,
             IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
             saved.idempotencyKey,
+            "hash",
             "{\"status\":\"SUCCEEDED\"}",
             now.plusSeconds(30),
         )
@@ -110,6 +111,7 @@ class IdempotencyKeyJpaRepositoryTest @Autowired constructor(
             saved.memberId,
             IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
             saved.idempotencyKey,
+            "hash",
             "{\"status\":\"FAILED\"}",
             now.plusSeconds(10),
         )
@@ -124,6 +126,39 @@ class IdempotencyKeyJpaRepositoryTest @Autowired constructor(
         assertThat(found?.status).isEqualTo(IdempotencyKeyProps.IdempotencyKeyStatusValue.FAILED)
         assertThat(found?.responseSnapshot).contains("FAILED")
         assertThat(found?.completedAt).isEqualTo(now.plusSeconds(10))
+    }
+
+    @Test
+    fun `완료 처리는 IN_PROGRESS와 requestHash가 모두 맞을 때만 스냅샷을 갱신한다`() {
+        val now = LocalDateTime.parse("2026-01-03T10:00:00")
+        val saved = saveIdempotencyKey(now, 35L, "idem-hash-guard")
+        flushClear()
+
+        repository.tryMarkInProgress(
+            saved.memberId,
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
+            saved.idempotencyKey,
+            "hash",
+            now,
+        )
+        repository.markSucceeded(
+            saved.memberId,
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
+            saved.idempotencyKey,
+            "different-hash",
+            "{\"status\":\"SUCCEEDED\"}",
+            now.plusSeconds(30),
+        )
+        flushClear()
+
+        val found = repository.findByKey(
+            saved.memberId,
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
+            saved.idempotencyKey,
+        )
+        assertThat(found?.status).isEqualTo(IdempotencyKeyProps.IdempotencyKeyStatusValue.IN_PROGRESS)
+        assertThat(found?.responseSnapshot).isNull()
+        assertThat(found?.completedAt).isNull()
     }
 
     @Test

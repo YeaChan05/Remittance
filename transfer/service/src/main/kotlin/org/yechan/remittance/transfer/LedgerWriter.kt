@@ -67,17 +67,19 @@ open class LedgerWriter(
         now: LocalDateTime,
     ) {
         val resolvedTransferId = requireNotNull(transferId)
-        if (ledgerRepository.existsByTransferIdAndAccountIdAndSide(
+        log.info { "ledger.record.save transferId=$transferId accountId=$accountId side=$side" }
+        val saved = ledgerRepository.saveIfAbsent(
+            LedgerCreateCommand(
                 resolvedTransferId,
                 accountId,
+                amount,
                 side,
-            )
-        ) {
+                now,
+            ),
+        )
+        if (!saved) {
             log.debug { "ledger.record.exists transferId=$transferId accountId=$accountId side=$side" }
-            return
         }
-        log.info { "ledger.record.save transferId=$transferId accountId=$accountId side=$side" }
-        ledgerRepository.save(LedgerCreateCommand(resolvedTransferId, accountId, amount, side, now))
     }
 
     private data class LedgerCreateCommand(

@@ -76,6 +76,7 @@ class IdempotencyKeyServiceTest {
             memberId: Long,
             scope: IdempotencyKeyProps.IdempotencyScopeValue,
             idempotencyKey: String,
+            requestHash: String,
             responseSnapshot: String,
             completedAt: LocalDateTime,
         ): IdempotencyKeyModel = throw UnsupportedOperationException()
@@ -84,6 +85,7 @@ class IdempotencyKeyServiceTest {
             memberId: Long,
             scope: IdempotencyKeyProps.IdempotencyScopeValue,
             idempotencyKey: String,
+            requestHash: String,
             responseSnapshot: String,
             completedAt: LocalDateTime,
         ): IdempotencyKeyModel = throw UnsupportedOperationException()

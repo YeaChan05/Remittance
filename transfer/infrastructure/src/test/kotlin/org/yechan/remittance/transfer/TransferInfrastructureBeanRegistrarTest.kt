@@ -39,6 +39,18 @@ class TransferInfrastructureBeanRegistrarTest {
                         .setHeader("Content-Type", "application/json")
                         .setBody("""{"applied":true}""")
 
+                    "/internal/accounts/transfer-balance-change" -> MockResponse()
+                        .setHeader("Content-Type", "application/json")
+                        .setBody(
+                            """
+                            {
+                              "status":"APPLIED",
+                              "fromAccount":{"accountId":10,"memberId":7,"balance":890},
+                              "toAccount":{"accountId":20,"memberId":8,"balance":200}
+                            }
+                            """.trimIndent(),
+                        )
+
                     else -> MockResponse().setResponseCode(404)
                 }
             }
@@ -97,6 +109,17 @@ class TransferInfrastructureBeanRegistrarTest {
                     toBalance = money("110"),
                 ),
             )
+            assertThat(
+                accountClient.applyTransferBalanceChange(
+                    TransferBalanceDeltaCommand(
+                        memberId = 99L,
+                        fromAccountId = 10L,
+                        toAccountId = 20L,
+                        debitAmount = money("110"),
+                        creditAmount = money("100"),
+                    ),
+                ).status,
+            ).isEqualTo(TransferBalanceChangeStatusValue.APPLIED)
             assertThat(memberClient.exists(7L)).isTrue()
         } finally {
             context.close()

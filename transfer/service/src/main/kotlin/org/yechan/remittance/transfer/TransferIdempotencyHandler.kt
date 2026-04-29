@@ -71,6 +71,7 @@ open class TransferIdempotencyHandler(
         memberId: Long,
         idempotencyKey: String,
         scope: IdempotencyKeyProps.IdempotencyScopeValue,
+        requestHash: String,
         failed: TransferResult,
         now: LocalDateTime,
     ) {
@@ -79,6 +80,7 @@ open class TransferIdempotencyHandler(
             memberId,
             scope,
             idempotencyKey,
+            requestHash,
             transferSnapshotUtil.toSnapshot(failed),
             now,
         )

@@ -188,6 +188,7 @@ class TransferIdempotencyHandlerTest {
             1L,
             "k",
             IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
+            "hash",
             failed,
             now(),
         )
@@ -196,6 +197,7 @@ class TransferIdempotencyHandlerTest {
         assertThat(args.memberId).isEqualTo(1L)
         assertThat(args.scope).isEqualTo(IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER)
         assertThat(args.idempotencyKey).isEqualTo("k")
+        assertThat(args.requestHash).isEqualTo("hash")
         assertThat(snapshotUtil.fromSnapshot(args.responseSnapshot)).isEqualTo(failed)
     }
 
@@ -213,6 +215,7 @@ class TransferIdempotencyHandlerTest {
         val memberId: Long,
         val scope: IdempotencyKeyProps.IdempotencyScopeValue,
         val idempotencyKey: String,
+        val requestHash: String,
         val responseSnapshot: String,
         val completedAt: LocalDateTime,
     )
@@ -248,6 +251,7 @@ class TransferIdempotencyHandlerTest {
             memberId: Long,
             scope: IdempotencyKeyProps.IdempotencyScopeValue,
             idempotencyKey: String,
+            requestHash: String,
             responseSnapshot: String,
             completedAt: LocalDateTime,
         ): IdempotencyKeyModel = requireNotNull(key)
@@ -256,11 +260,19 @@ class TransferIdempotencyHandlerTest {
             memberId: Long,
             scope: IdempotencyKeyProps.IdempotencyScopeValue,
             idempotencyKey: String,
+            requestHash: String,
             responseSnapshot: String,
             completedAt: LocalDateTime,
         ): IdempotencyKeyModel {
             markFailedArgs =
-                MarkFailedArgs(memberId, scope, idempotencyKey, responseSnapshot, completedAt)
+                MarkFailedArgs(
+                    memberId,
+                    scope,
+                    idempotencyKey,
+                    requestHash,
+                    responseSnapshot,
+                    completedAt,
+                )
             return requireNotNull(key)
         }
 
@@ -275,7 +287,7 @@ class TransferIdempotencyHandlerTest {
         override val expiresAt: LocalDateTime?,
         override val responseSnapshot: String?,
     ) : IdempotencyKeyModel {
-        override val idempotencyKeyId: Long? = 1L
+        override val idempotencyKeyId: Long = 1L
         override val memberId: Long = 1L
         override val idempotencyKey: String = "k"
         override val scope: IdempotencyKeyProps.IdempotencyScopeValue =

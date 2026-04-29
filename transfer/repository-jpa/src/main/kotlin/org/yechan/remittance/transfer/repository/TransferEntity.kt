@@ -6,6 +6,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
 import jakarta.persistence.Transient
+import org.hibernate.annotations.DynamicUpdate
 import org.yechan.remittance.BaseEntity
 import org.yechan.remittance.Money
 import org.yechan.remittance.transfer.TransferModel
@@ -14,6 +15,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 @Entity
+@DynamicUpdate
 @Table(name = "transfer", catalog = "core")
 class TransferEntity() :
     BaseEntity(),

@@ -14,7 +14,6 @@ class LedgerWriterTest {
 
         writer.record(TestTransferRequestProps(), TransferResult.inProgress(), now())
 
-        assertThat(repository.existsCalls).isEmpty()
         assertThat(repository.savedProps).isEmpty()
     }
 
@@ -105,9 +104,6 @@ class LedgerWriterTest {
             now(),
         )
 
-        assertThat(repository.existsCalls).containsExactly(
-            LedgerKey(1L, 1L, LedgerProps.LedgerSideValue.DEBIT),
-        )
         assertThat(repository.savedProps).isEmpty()
     }
 
@@ -139,6 +135,15 @@ class LedgerWriterTest {
             return object : LedgerModel, LedgerProps by props {
                 override val ledgerId: Long = savedProps.size.toLong()
             }
+        }
+
+        override fun saveIfAbsent(props: LedgerProps): Boolean {
+            val key = LedgerKey(props.transferId, props.accountId, props.side)
+            if (existingKeys.contains(key)) {
+                return false
+            }
+            save(props)
+            return true
         }
 
         override fun existsByTransferIdAndAccountIdAndSide(

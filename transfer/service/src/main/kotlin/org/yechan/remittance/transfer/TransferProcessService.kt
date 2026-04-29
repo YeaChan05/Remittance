@@ -20,6 +20,7 @@ open class TransferProcessService(
     open fun process(
         memberId: Long,
         idempotencyKey: String,
+        requestHash: String,
         props: TransferRequestProps,
         now: LocalDateTime,
     ): TransferResult {
@@ -28,9 +29,8 @@ open class TransferProcessService(
         val accounts = lockAccounts(memberId, props)
         validateOwner(memberId, accounts)
         validateDailyLimit(props, now)
-        val balanceChange = calculateBalanceChange(memberId, props, accounts)
-        transferAccountClient.applyBalanceChange(balanceChange)
-        return persistTransfer(memberId, idempotencyKey, props, now)
+        applyBalanceChange(memberId, props)
+        return persistTransfer(memberId, idempotencyKey, requestHash, props, now)
     }
 
     private fun validateTransferRequest(props: TransferRequestProps) {
@@ -81,46 +81,50 @@ open class TransferProcessService(
         }
     }
 
-    private fun calculateBalanceChange(
+    private fun applyBalanceChange(
         memberId: Long,
         props: TransferRequestProps,
-        accounts: AccountPair,
-    ): TransferBalanceChangeCommand {
-        if (props.scope == TransferProps.TransferScopeValue.DEPOSIT) {
-            val balance = accounts.toAccount.balance.add(props.amount)
-            return TransferBalanceChangeCommand(
-                memberId = memberId,
-                fromAccountId = accounts.fromAccount.accountId,
-                toAccountId = accounts.toAccount.accountId,
-                fromBalance = balance,
-                toBalance = balance,
-            )
-        }
-        if (accounts.isInsufficient(props.debit())) {
-            log.warn { "transfer.process.insufficient_balance fromAccountId=${accounts.fromAccount.accountId}" }
-            throw TransferFailedException(
-                TransferFailureCode.INSUFFICIENT_BALANCE,
-                "Insufficient balance",
-            )
-        }
-        val debit = props.debit()
-        if (props.scope == TransferProps.TransferScopeValue.WITHDRAW) {
-            val balance = accounts.fromAccount.balance.subtract(debit)
-            return TransferBalanceChangeCommand(
-                memberId = memberId,
-                fromAccountId = accounts.fromAccount.accountId,
-                toAccountId = accounts.toAccount.accountId,
-                fromBalance = balance,
-                toBalance = balance,
-            )
-        }
-        return TransferBalanceChangeCommand(
+    ) {
+        val command = TransferBalanceDeltaCommand(
             memberId = memberId,
-            fromAccountId = accounts.fromAccount.accountId,
-            toAccountId = accounts.toAccount.accountId,
-            fromBalance = accounts.fromAccount.balance.subtract(debit),
-            toBalance = accounts.toAccount.balance.add(props.amount),
+            fromAccountId = props.fromAccountId,
+            toAccountId = props.toAccountId,
+            debitAmount = when (props.scope) {
+                TransferProps.TransferScopeValue.DEPOSIT -> Money.zero()
+                else -> props.debit()
+            },
+            creditAmount = when (props.scope) {
+                TransferProps.TransferScopeValue.WITHDRAW -> Money.zero()
+                else -> props.amount
+            },
         )
+        when (transferAccountClient.applyTransferBalanceChange(command).status) {
+            TransferBalanceChangeStatusValue.APPLIED -> return
+
+            TransferBalanceChangeStatusValue.ACCOUNT_NOT_FOUND -> {
+                log.warn { "transfer.process.account_not_found during_apply fromAccountId=${props.fromAccountId} toAccountId=${props.toAccountId}" }
+                throw TransferFailedException(
+                    TransferFailureCode.ACCOUNT_NOT_FOUND,
+                    "Account not found",
+                )
+            }
+
+            TransferBalanceChangeStatusValue.OWNER_MISMATCH -> {
+                log.warn { "transfer.process.owner_mismatch during_apply memberId=$memberId fromAccountId=${props.fromAccountId}" }
+                throw TransferFailedException(
+                    TransferFailureCode.INVALID_REQUEST,
+                    "Account owner mismatch",
+                )
+            }
+
+            TransferBalanceChangeStatusValue.INSUFFICIENT_BALANCE -> {
+                log.warn { "transfer.process.insufficient_balance fromAccountId=${props.fromAccountId}" }
+                throw TransferFailedException(
+                    TransferFailureCode.INSUFFICIENT_BALANCE,
+                    "Insufficient balance",
+                )
+            }
+        }
     }
 
     private fun validateDailyLimit(props: TransferRequestProps, now: LocalDateTime) {
@@ -148,6 +152,7 @@ open class TransferProcessService(
     private fun persistTransfer(
         memberId: Long,
         idempotencyKey: String,
+        requestHash: String,
         props: TransferRequestProps,
         now: LocalDateTime,
     ): TransferResult {
@@ -162,6 +167,7 @@ open class TransferProcessService(
             memberId,
             props.scope.toIdempotencyScope(),
             idempotencyKey,
+            requestHash,
             transferSnapshotUtil.toSnapshot(result),
             now,
         )
@@ -183,9 +189,7 @@ open class TransferProcessService(
     private data class AccountPair(
         val fromAccount: TransferAccountSnapshot,
         val toAccount: TransferAccountSnapshot,
-    ) {
-        fun isInsufficient(debit: Money): Boolean = fromAccount.balance < debit
-    }
+    )
 
     private data class AccountId(override val accountId: Long?) : TransferAccountIdentifier
 

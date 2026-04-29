@@ -7,6 +7,8 @@ import org.yechan.remittance.account.internal.contract.AccountInternalApi
 import org.yechan.remittance.account.internal.contract.AccountLockRequest
 import org.yechan.remittance.account.internal.contract.AccountLockResponse
 import org.yechan.remittance.account.internal.contract.AccountSnapshotResponse
+import org.yechan.remittance.account.internal.contract.AccountTransferBalanceChangeRequest
+import org.yechan.remittance.account.internal.contract.AccountTransferBalanceChangeResponse
 
 class TransferAccountClientAdapter(
     private val accountInternalApi: AccountInternalApi,
@@ -36,6 +38,16 @@ class TransferAccountClientAdapter(
         )
     }
 
+    override fun applyTransferBalanceChange(command: TransferBalanceDeltaCommand): TransferBalanceChangeResult = accountInternalApi.applyTransferBalanceChange(
+        command.memberId,
+        AccountTransferBalanceChangeRequest(
+            fromAccountId = command.fromAccountId,
+            toAccountId = command.toAccountId,
+            debitAmount = command.debitAmount.amount,
+            creditAmount = command.creditAmount.amount,
+        ),
+    ).toBalanceChangeResult()
+
     private fun AccountSnapshotResponse.toSnapshot(): TransferAccountSnapshot = TransferAccountSnapshot(
         accountId = accountId,
         memberId = memberId,
@@ -45,5 +57,11 @@ class TransferAccountClientAdapter(
     private fun AccountLockResponse.toLockedAccounts(): TransferLockedAccounts = TransferLockedAccounts(
         fromAccount = fromAccount.toSnapshot(),
         toAccount = toAccount.toSnapshot(),
+    )
+
+    private fun AccountTransferBalanceChangeResponse.toBalanceChangeResult(): TransferBalanceChangeResult = TransferBalanceChangeResult(
+        status = TransferBalanceChangeStatusValue.valueOf(status),
+        fromAccount = fromAccount?.toSnapshot(),
+        toAccount = toAccount?.toSnapshot(),
     )
 }

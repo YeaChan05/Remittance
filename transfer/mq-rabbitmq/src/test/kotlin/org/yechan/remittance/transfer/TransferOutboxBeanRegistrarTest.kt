@@ -8,6 +8,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.core.env.MapPropertySource
+import org.yechan.remittance.SuppressP6SpySqlLog
 
 class TransferOutboxBeanRegistrarTest {
     @Test
@@ -40,6 +41,13 @@ class TransferOutboxBeanRegistrarTest {
         assertThat(context.getBeansOfType(TransferOutboxPublisher::class.java)).isEmpty()
 
         context.close()
+    }
+
+    @Test
+    fun `outbox publisher publish 메서드는 p6spy 로그 suppress 대상이다`() {
+        val method = TransferOutboxPublisher::class.java.getMethod("publish")
+
+        assertThat(method.getAnnotation(SuppressP6SpySqlLog::class.java)).isNotNull
     }
 
     private fun createContext(vararg properties: Pair<String, String>): AnnotationConfigApplicationContext = AnnotationConfigApplicationContext().apply {

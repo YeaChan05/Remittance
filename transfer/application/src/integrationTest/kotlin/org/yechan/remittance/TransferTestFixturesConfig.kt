@@ -13,6 +13,9 @@ import org.yechan.remittance.transfer.TransferAccountIdentifier
 import org.yechan.remittance.transfer.TransferAccountLockCommand
 import org.yechan.remittance.transfer.TransferAccountSnapshot
 import org.yechan.remittance.transfer.TransferBalanceChangeCommand
+import org.yechan.remittance.transfer.TransferBalanceChangeResult
+import org.yechan.remittance.transfer.TransferBalanceChangeStatusValue
+import org.yechan.remittance.transfer.TransferBalanceDeltaCommand
 import org.yechan.remittance.transfer.TransferIdentifier
 import org.yechan.remittance.transfer.TransferLockedAccounts
 import org.yechan.remittance.transfer.TransferModel
@@ -97,6 +100,38 @@ private class CommitAwareTransferAccountClient(
             return
         }
         delegate.applyBalanceChange(command)
+    }
+
+    override fun applyTransferBalanceChange(command: TransferBalanceDeltaCommand): TransferBalanceChangeResult {
+        val locked = delegate.lock(
+            TransferAccountLockCommand(
+                command.memberId,
+                command.fromAccountId,
+                command.toAccountId,
+            ),
+        ) ?: return TransferBalanceChangeResult(TransferBalanceChangeStatusValue.ACCOUNT_NOT_FOUND)
+        if (locked.fromAccount.memberId != command.memberId) {
+            return TransferBalanceChangeResult(TransferBalanceChangeStatusValue.OWNER_MISMATCH)
+        }
+        if (locked.fromAccount.balance < command.debitAmount) {
+            return TransferBalanceChangeResult(TransferBalanceChangeStatusValue.INSUFFICIENT_BALANCE)
+        }
+        val result = TransferBalanceChangeResult(
+            TransferBalanceChangeStatusValue.APPLIED,
+            locked.fromAccount.copy(balance = locked.fromAccount.balance.subtract(command.debitAmount)),
+            locked.toAccount.copy(balance = locked.toAccount.balance.add(command.creditAmount)),
+        )
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(
+                object : TransactionSynchronization {
+                    override fun afterCommit() {
+                        delegate.applyTransferBalanceChange(command)
+                    }
+                },
+            )
+            return result
+        }
+        return delegate.applyTransferBalanceChange(command)
     }
 }
 

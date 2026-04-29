@@ -51,11 +51,18 @@ class TransferService(
         // 3. 선점에 성공한 요청만 본 이체 처리와 멱등 상태 갱신
         val result =
             try {
-                transferProcessService.process(memberId, idempotencyKey, props, now)
+                transferProcessService.process(memberId, idempotencyKey, requestHash, props, now)
             } catch (ex: TransferFailedException) {
                 log.warn { "transfer.process.failed memberId=$memberId scope=$scope code=${ex.failureCode}" }
                 val failed = TransferResult.failed(ex.failureCode)
-                idempotencyHandler.markFailed(memberId, idempotencyKey, scope, failed, now)
+                idempotencyHandler.markFailed(
+                    memberId,
+                    idempotencyKey,
+                    scope,
+                    requestHash,
+                    failed,
+                    now,
+                )
                 return failed
             }
 

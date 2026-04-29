@@ -125,15 +125,19 @@ flowchart TD
 
 ### 4-1. TX1 (Transfer + Outbox)
 
-1. 계좌 잠금
+1. 계좌 스냅샷 확인
 
-    - `min(accountId) → max(accountId)` 순서로 row lock
+    - account 내부 API로 from/to 계좌 스냅샷을 조회한다.
+    - 분리 실행(`transfer:application`)에서는 이 호출의 provider-side row lock이 transfer 전체 TX 동안 유지된다고 전제하지 않는다.
 2. 잔액 검증
 
+    - 최종 부족 여부는 account 내부의 원자적 delta 반영 단계에서 현재 잔액 기준으로 확인한다.
     - 부족 시 `FAILED`, `error_code = INSUFFICIENT_BALANCE`
 3. 잔액 변경
 
-    - from 감소 / to 증가
+    - account 내부 API가 같은 provider transaction 안에서 `min(accountId) → max(accountId)` 순서로 잠근 뒤
+      현재 잔액에 debit/credit delta를 반영한다.
+    - transfer는 stale snapshot으로 계산한 최종 잔액을 쓰지 않는다.
 4. Transfer 기록
 
     - transferId 생성

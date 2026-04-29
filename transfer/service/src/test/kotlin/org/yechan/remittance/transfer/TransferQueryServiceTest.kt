@@ -21,6 +21,8 @@ class TransferQueryServiceTest {
                 override fun lock(command: TransferAccountLockCommand): TransferLockedAccounts? = null
 
                 override fun applyBalanceChange(command: TransferBalanceChangeCommand) = Unit
+
+                override fun applyTransferBalanceChange(command: TransferBalanceDeltaCommand): TransferBalanceChangeResult = TransferBalanceChangeResult(TransferBalanceChangeStatusValue.APPLIED)
             },
             transferRepository = transferRepository,
         )
@@ -43,6 +45,8 @@ class TransferQueryServiceTest {
                 override fun lock(command: TransferAccountLockCommand): TransferLockedAccounts? = null
 
                 override fun applyBalanceChange(command: TransferBalanceChangeCommand) = Unit
+
+                override fun applyTransferBalanceChange(command: TransferBalanceDeltaCommand): TransferBalanceChangeResult = TransferBalanceChangeResult(TransferBalanceChangeStatusValue.APPLIED)
             },
             transferRepository = FakeTransferRepository(),
         )
@@ -65,6 +69,8 @@ class TransferQueryServiceTest {
                 override fun lock(command: TransferAccountLockCommand): TransferLockedAccounts? = null
 
                 override fun applyBalanceChange(command: TransferBalanceChangeCommand) = Unit
+
+                override fun applyTransferBalanceChange(command: TransferBalanceDeltaCommand): TransferBalanceChangeResult = TransferBalanceChangeResult(TransferBalanceChangeStatusValue.APPLIED)
             },
             transferRepository = FakeTransferRepository(),
         )

@@ -10,6 +10,8 @@ import org.yechan.remittance.account.internal.contract.AccountInternalApi
 import org.yechan.remittance.account.internal.contract.AccountLockRequest
 import org.yechan.remittance.account.internal.contract.AccountLockResponse
 import org.yechan.remittance.account.internal.contract.AccountSnapshotResponse
+import org.yechan.remittance.account.internal.contract.AccountTransferBalanceChangeRequest
+import org.yechan.remittance.account.internal.contract.AccountTransferBalanceChangeResponse
 import java.math.BigDecimal
 import java.util.concurrent.atomic.AtomicReference
 
@@ -19,9 +21,11 @@ class TransferAccountClientAdapterTest {
         val capturedMemberIdForGet = AtomicReference<Long>()
         val capturedMemberIdForLock = AtomicReference<Long>()
         val capturedMemberIdForBalanceChange = AtomicReference<Long>()
+        val capturedMemberIdForTransferBalanceChange = AtomicReference<Long>()
         val capturedGet = AtomicReference<AccountGetRequest>()
         val capturedLock = AtomicReference<AccountLockRequest>()
         val capturedBalanceChange = AtomicReference<AccountBalanceChangeRequest>()
+        val capturedTransferBalanceChange = AtomicReference<AccountTransferBalanceChangeRequest>()
         val accountInternalApi = object : AccountInternalApi {
             override fun get(
                 memberId: Long,
@@ -52,6 +56,23 @@ class TransferAccountClientAdapterTest {
                 capturedBalanceChange.set(request)
                 return AccountBalanceChangeResponse(true)
             }
+
+            override fun applyTransferBalanceChange(
+                memberId: Long,
+                request: AccountTransferBalanceChangeRequest,
+            ): AccountTransferBalanceChangeResponse {
+                capturedMemberIdForTransferBalanceChange.set(memberId)
+                capturedTransferBalanceChange.set(request)
+                return AccountTransferBalanceChangeResponse(
+                    status = "APPLIED",
+                    fromAccount = AccountSnapshotResponse(
+                        request.fromAccountId,
+                        7L,
+                        BigDecimal("890"),
+                    ),
+                    toAccount = AccountSnapshotResponse(request.toAccountId, 8L, BigDecimal("300")),
+                )
+            }
         }
         val adapter = TransferAccountClientAdapter(accountInternalApi)
 
@@ -64,6 +85,15 @@ class TransferAccountClientAdapterTest {
                 toAccountId = 20L,
                 fromBalance = money("890"),
                 toBalance = money("300"),
+            ),
+        )
+        val balanceChangeResult = adapter.applyTransferBalanceChange(
+            TransferBalanceDeltaCommand(
+                memberId = 7L,
+                fromAccountId = 10L,
+                toAccountId = 20L,
+                debitAmount = money("110"),
+                creditAmount = money("100"),
             ),
         )
 
@@ -83,6 +113,17 @@ class TransferAccountClientAdapterTest {
                 toBalance = BigDecimal("300.00"),
             ),
         )
+        assertThat(capturedMemberIdForTransferBalanceChange.get()).isEqualTo(7L)
+        assertThat(capturedTransferBalanceChange.get()).isEqualTo(
+            AccountTransferBalanceChangeRequest(
+                fromAccountId = 10L,
+                toAccountId = 20L,
+                debitAmount = BigDecimal("110.00"),
+                creditAmount = BigDecimal("100.00"),
+            ),
+        )
+        assertThat(balanceChangeResult.status).isEqualTo(TransferBalanceChangeStatusValue.APPLIED)
+        assertThat(balanceChangeResult.fromAccount?.balance).isEqualTo(money("890"))
     }
 
     private fun money(value: String): Money = Money.of(BigDecimal(value))

@@ -1,6 +1,7 @@
 package org.yechan.remittance.transfer.repository
 
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.yechan.remittance.transfer.LedgerProps
@@ -13,6 +14,23 @@ interface LedgerJpaRepository : JpaRepository<LedgerEntity, Long> {
         accountId: Long,
         side: LedgerProps.LedgerSideValue,
     ): Boolean
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(
+        nativeQuery = true,
+        value = """
+            insert ignore into core.ledger (id, transfer_id, account_id, amount, side, created_at, updated_at)
+            values (:id, :transferId, :accountId, :amount, :side, :createdAt, :createdAt)
+        """,
+    )
+    fun insertIfAbsent(
+        @Param("id") id: Long,
+        @Param("transferId") transferId: Long,
+        @Param("accountId") accountId: Long,
+        @Param("amount") amount: BigDecimal,
+        @Param("side") side: String,
+        @Param("createdAt") createdAt: LocalDateTime?,
+    ): Int
 
     @Query(
         """

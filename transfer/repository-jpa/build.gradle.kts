@@ -13,7 +13,6 @@ dependencies {
     implementation(project(":transfer:infrastructure"))
     implementation("org.springframework.boot:spring-boot-starter-liquibase")
 
-    integrationTestImplementation("org.springframework.boot:spring-boot-starter-liquibase")
     integrationTestImplementation(project(":transfer:schema"))
     integrationTestImplementation(testFixtures(project(":common:application-api")))
     integrationTestImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")

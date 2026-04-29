@@ -19,18 +19,19 @@ class TransferProcessServiceTest {
             ),
         )
 
-        val result = fixture.service.process(10L, "idem-key", TestTransferRequestProps(), now())
+        val result =
+            fixture.service.process(10L, "idem-key", "hash", TestTransferRequestProps(), now())
 
         assertThat(result.transferId).isEqualTo(1L)
         assertThat(fixture.accountClient.lockCallCount).isEqualTo(1)
-        assertThat(fixture.accountClient.applyBalanceChangeCallCount).isEqualTo(1)
-        assertThat(fixture.accountClient.appliedBalanceChange).isEqualTo(
-            TransferBalanceChangeCommand(
+        assertThat(fixture.accountClient.applyTransferBalanceChangeCallCount).isEqualTo(1)
+        assertThat(fixture.accountClient.appliedBalanceDelta).isEqualTo(
+            TransferBalanceDeltaCommand(
                 memberId = 10L,
                 fromAccountId = 1L,
                 toAccountId = 2L,
-                fromBalance = money("899"),
-                toBalance = money("300"),
+                debitAmount = money("101"),
+                creditAmount = money("100"),
             ),
         )
         assertThat(fixture.dailyLimitUsageRepository.findOrCreateCallCount).isEqualTo(1)
@@ -57,6 +58,7 @@ class TransferProcessServiceTest {
         val result = fixture.service.process(
             10L,
             "idem-key",
+            "hash",
             TestTransferRequestProps(
                 fromAccountId = 1L,
                 toAccountId = 1L,
@@ -68,13 +70,13 @@ class TransferProcessServiceTest {
 
         assertThat(result.transferId).isEqualTo(1L)
         assertThat(fixture.dailyLimitUsageRepository.findOrCreateCallCount).isZero()
-        assertThat(fixture.accountClient.appliedBalanceChange).isEqualTo(
-            TransferBalanceChangeCommand(
+        assertThat(fixture.accountClient.appliedBalanceDelta).isEqualTo(
+            TransferBalanceDeltaCommand(
                 memberId = 10L,
                 fromAccountId = 1L,
                 toAccountId = 1L,
-                fromBalance = money("1100"),
-                toBalance = money("1100"),
+                debitAmount = Money.zero(),
+                creditAmount = money("100"),
             ),
         )
         assertThat(fixture.outboxEventRepository.saveCallCount).isZero()
@@ -93,6 +95,7 @@ class TransferProcessServiceTest {
         val result = fixture.service.process(
             10L,
             "idem-key",
+            "hash",
             TestTransferRequestProps(
                 fromAccountId = 1L,
                 toAccountId = 1L,
@@ -104,13 +107,13 @@ class TransferProcessServiceTest {
 
         assertThat(result.transferId).isEqualTo(1L)
         assertThat(fixture.dailyLimitUsageRepository.findOrCreateCallCount).isEqualTo(1)
-        assertThat(fixture.accountClient.appliedBalanceChange).isEqualTo(
-            TransferBalanceChangeCommand(
+        assertThat(fixture.accountClient.appliedBalanceDelta).isEqualTo(
+            TransferBalanceDeltaCommand(
                 memberId = 10L,
                 fromAccountId = 1L,
                 toAccountId = 1L,
-                fromBalance = money("900"),
-                toBalance = money("900"),
+                debitAmount = money("100"),
+                creditAmount = Money.zero(),
             ),
         )
         assertThat(fixture.outboxEventRepository.saveCallCount).isZero()
@@ -130,6 +133,7 @@ class TransferProcessServiceTest {
             fixture.service.process(
                 10L,
                 "idem-key",
+                "hash",
                 TestTransferRequestProps(fromAccountId = 1L, toAccountId = 1L),
                 now(),
             )
@@ -147,14 +151,14 @@ class TransferProcessServiceTest {
         val fixture = transferFixture(lockedAccounts = null)
 
         assertThatThrownBy {
-            fixture.service.process(10L, "idem-key", TestTransferRequestProps(), now())
+            fixture.service.process(10L, "idem-key", "hash", TestTransferRequestProps(), now())
         }.isInstanceOf(TransferFailedException::class.java)
             .extracting("failureCode")
             .isEqualTo(TransferFailureCode.ACCOUNT_NOT_FOUND)
 
         assertThat(fixture.accountClient.lockCallCount).isEqualTo(1)
         assertThat(fixture.memberClient.existsCallIds).isEmpty()
-        assertThat(fixture.accountClient.applyBalanceChangeCallCount).isZero()
+        assertThat(fixture.accountClient.applyTransferBalanceChangeCallCount).isZero()
         assertThat(fixture.transferRepository.saveCallCount).isZero()
         assertThat(fixture.outboxEventRepository.saveCallCount).isZero()
         assertThat(fixture.idempotencyKeyRepository.markSucceededCallCount).isZero()
@@ -171,14 +175,14 @@ class TransferProcessServiceTest {
         )
 
         assertThatThrownBy {
-            fixture.service.process(10L, "idem-key", TestTransferRequestProps(), now())
+            fixture.service.process(10L, "idem-key", "hash", TestTransferRequestProps(), now())
         }.isInstanceOf(TransferFailedException::class.java)
             .extracting("failureCode")
             .isEqualTo(TransferFailureCode.OWNER_NOT_FOUND)
 
         assertThat(fixture.memberClient.existsCallIds).containsExactly(10L)
         assertThat(fixture.dailyLimitUsageRepository.findOrCreateCallCount).isZero()
-        assertThat(fixture.accountClient.applyBalanceChangeCallCount).isZero()
+        assertThat(fixture.accountClient.applyTransferBalanceChangeCallCount).isZero()
         assertThat(fixture.transferRepository.saveCallCount).isZero()
     }
 
@@ -193,14 +197,14 @@ class TransferProcessServiceTest {
         )
 
         assertThatThrownBy {
-            fixture.service.process(10L, "idem-key", TestTransferRequestProps(), now())
+            fixture.service.process(10L, "idem-key", "hash", TestTransferRequestProps(), now())
         }.isInstanceOf(TransferFailedException::class.java)
             .extracting("failureCode")
             .isEqualTo(TransferFailureCode.MEMBER_NOT_FOUND)
 
         assertThat(fixture.memberClient.existsCallIds).containsExactly(10L, 20L)
         assertThat(fixture.dailyLimitUsageRepository.findOrCreateCallCount).isZero()
-        assertThat(fixture.accountClient.applyBalanceChangeCallCount).isZero()
+        assertThat(fixture.accountClient.applyTransferBalanceChangeCallCount).isZero()
         assertThat(fixture.transferRepository.saveCallCount).isZero()
     }
 
@@ -215,14 +219,14 @@ class TransferProcessServiceTest {
         )
 
         assertThatThrownBy {
-            fixture.service.process(99L, "idem-key", TestTransferRequestProps(), now())
+            fixture.service.process(99L, "idem-key", "hash", TestTransferRequestProps(), now())
         }.isInstanceOf(TransferFailedException::class.java)
             .extracting("failureCode")
             .isEqualTo(TransferFailureCode.INVALID_REQUEST)
 
         assertThat(fixture.memberClient.existsCallIds).containsExactly(10L, 20L)
         assertThat(fixture.dailyLimitUsageRepository.findOrCreateCallCount).isZero()
-        assertThat(fixture.accountClient.applyBalanceChangeCallCount).isZero()
+        assertThat(fixture.accountClient.applyTransferBalanceChangeCallCount).isZero()
         assertThat(fixture.transferRepository.saveCallCount).isZero()
     }
 
@@ -237,14 +241,14 @@ class TransferProcessServiceTest {
         )
 
         assertThatThrownBy {
-            fixture.service.process(10L, "idem-key", TestTransferRequestProps(), now())
+            fixture.service.process(10L, "idem-key", "hash", TestTransferRequestProps(), now())
         }.isInstanceOf(TransferFailedException::class.java)
             .extracting("failureCode")
             .isEqualTo(TransferFailureCode.DAILY_LIMIT_EXCEEDED)
 
         assertThat(fixture.dailyLimitUsageRepository.findOrCreateCallCount).isEqualTo(1)
         assertThat(fixture.dailyLimitUsageRepository.usage.updateCallCount).isZero()
-        assertThat(fixture.accountClient.applyBalanceChangeCallCount).isZero()
+        assertThat(fixture.accountClient.applyTransferBalanceChangeCallCount).isZero()
         assertThat(fixture.transferRepository.saveCallCount).isZero()
         assertThat(fixture.outboxEventRepository.saveCallCount).isZero()
     }
@@ -262,6 +266,7 @@ class TransferProcessServiceTest {
             fixture.service.process(
                 10L,
                 "idem-key",
+                "hash",
                 TestTransferRequestProps(amount = money("100")),
                 now(),
             )
@@ -271,7 +276,7 @@ class TransferProcessServiceTest {
 
         assertThat(fixture.dailyLimitUsageRepository.findOrCreateCallCount).isEqualTo(1)
         assertThat(fixture.dailyLimitUsageRepository.usage.updateCallCount).isEqualTo(1)
-        assertThat(fixture.accountClient.applyBalanceChangeCallCount).isZero()
+        assertThat(fixture.accountClient.applyTransferBalanceChangeCallCount).isEqualTo(1)
         assertThat(fixture.transferRepository.saveCallCount).isZero()
         assertThat(fixture.outboxEventRepository.saveCallCount).isZero()
     }
@@ -332,8 +337,10 @@ class TransferProcessServiceTest {
         private val accounts: Map<Long, TransferAccountSnapshot> = emptyMap(),
     ) : TransferAccountClient {
         var appliedBalanceChange: TransferBalanceChangeCommand? = null
+        var appliedBalanceDelta: TransferBalanceDeltaCommand? = null
         var lockCallCount: Int = 0
         var applyBalanceChangeCallCount: Int = 0
+        var applyTransferBalanceChangeCallCount: Int = 0
 
         override fun get(
             memberId: Long,
@@ -348,6 +355,25 @@ class TransferProcessServiceTest {
         override fun applyBalanceChange(command: TransferBalanceChangeCommand) {
             applyBalanceChangeCallCount += 1
             appliedBalanceChange = command
+        }
+
+        override fun applyTransferBalanceChange(command: TransferBalanceDeltaCommand): TransferBalanceChangeResult {
+            applyTransferBalanceChangeCallCount += 1
+            appliedBalanceDelta = command
+            val fromAccount = lockedAccounts?.fromAccount
+                ?: return TransferBalanceChangeResult(TransferBalanceChangeStatusValue.ACCOUNT_NOT_FOUND)
+            val toAccount = lockedAccounts.toAccount
+            if (fromAccount.memberId != command.memberId) {
+                return TransferBalanceChangeResult(TransferBalanceChangeStatusValue.OWNER_MISMATCH)
+            }
+            if (fromAccount.balance < command.debitAmount) {
+                return TransferBalanceChangeResult(TransferBalanceChangeStatusValue.INSUFFICIENT_BALANCE)
+            }
+            return TransferBalanceChangeResult(
+                TransferBalanceChangeStatusValue.APPLIED,
+                fromAccount.copy(balance = fromAccount.balance.subtract(command.debitAmount)),
+                toAccount.copy(balance = toAccount.balance.add(command.creditAmount)),
+            )
         }
     }
 
@@ -444,6 +470,7 @@ class TransferProcessServiceTest {
             memberId: Long,
             scope: IdempotencyKeyProps.IdempotencyScopeValue,
             idempotencyKey: String,
+            requestHash: String,
             responseSnapshot: String,
             completedAt: LocalDateTime,
         ): IdempotencyKeyModel {
@@ -456,7 +483,7 @@ class TransferProcessServiceTest {
                 LocalDateTime.of(2026, 1, 2, 0, 0),
                 scope,
                 IdempotencyKeyProps.IdempotencyKeyStatusValue.SUCCEEDED,
-                null,
+                requestHash,
                 responseSnapshot,
                 null,
                 completedAt,
@@ -467,6 +494,7 @@ class TransferProcessServiceTest {
             memberId: Long,
             scope: IdempotencyKeyProps.IdempotencyScopeValue,
             idempotencyKey: String,
+            requestHash: String,
             responseSnapshot: String,
             completedAt: LocalDateTime,
         ): IdempotencyKeyModel = throw UnsupportedOperationException()

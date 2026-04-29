@@ -6,12 +6,15 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import org.hibernate.annotations.DynamicUpdate
+import org.hibernate.annotations.NaturalId
 import org.yechan.remittance.BaseEntity
 import org.yechan.remittance.transfer.IdempotencyKeyModel
 import org.yechan.remittance.transfer.IdempotencyKeyProps
 import java.time.LocalDateTime
 
 @Entity
+@DynamicUpdate
 @Table(
     name = "idempotency_key",
     catalog = "integration",
@@ -28,15 +31,18 @@ class IdempotencyKeyEntity() :
     override val idempotencyKeyId: Long?
         get() = id
 
+    @NaturalId
     @field:Column(name = "client_id", nullable = false)
     override var memberId: Long = 0
 
+    @NaturalId
     @field:Column(name = "idempotency_key", nullable = false)
     override var idempotencyKey: String = ""
 
     @field:Column(nullable = false)
     override var expiresAt: LocalDateTime = LocalDateTime.MIN
 
+    @NaturalId
     @field:Enumerated(EnumType.STRING)
     @field:Column(name = "scope", nullable = false)
     override var scope: IdempotencyKeyProps.IdempotencyScopeValue =

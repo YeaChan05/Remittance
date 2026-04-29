@@ -6,6 +6,8 @@ import java.time.LocalDateTime
 interface LedgerRepository {
     fun save(props: LedgerProps): LedgerModel
 
+    fun saveIfAbsent(props: LedgerProps): Boolean
+
     fun existsByTransferIdAndAccountIdAndSide(
         transferId: Long,
         accountId: Long,

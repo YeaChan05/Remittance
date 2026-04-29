@@ -11,6 +11,8 @@ interface TransferAccountClient {
     fun lock(command: TransferAccountLockCommand): TransferLockedAccounts?
 
     fun applyBalanceChange(command: TransferBalanceChangeCommand)
+
+    fun applyTransferBalanceChange(command: TransferBalanceDeltaCommand): TransferBalanceChangeResult
 }
 
 data class TransferAccountSnapshot(
@@ -37,3 +39,24 @@ data class TransferBalanceChangeCommand(
     val fromBalance: Money,
     val toBalance: Money,
 )
+
+data class TransferBalanceDeltaCommand(
+    val memberId: Long,
+    val fromAccountId: Long,
+    val toAccountId: Long,
+    val debitAmount: Money,
+    val creditAmount: Money,
+)
+
+data class TransferBalanceChangeResult(
+    val status: TransferBalanceChangeStatusValue,
+    val fromAccount: TransferAccountSnapshot? = null,
+    val toAccount: TransferAccountSnapshot? = null,
+)
+
+enum class TransferBalanceChangeStatusValue {
+    APPLIED,
+    ACCOUNT_NOT_FOUND,
+    OWNER_MISMATCH,
+    INSUFFICIENT_BALANCE,
+}

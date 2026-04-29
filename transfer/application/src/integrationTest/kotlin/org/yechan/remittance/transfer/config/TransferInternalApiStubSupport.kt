@@ -11,6 +11,9 @@ import org.yechan.remittance.InternalServiceAuthenticationFilter
 import org.yechan.remittance.Money
 import org.yechan.remittance.transfer.TransferAccountSnapshot
 import org.yechan.remittance.transfer.TransferBalanceChangeCommand
+import org.yechan.remittance.transfer.TransferBalanceChangeResult
+import org.yechan.remittance.transfer.TransferBalanceChangeStatusValue
+import org.yechan.remittance.transfer.TransferBalanceDeltaCommand
 import java.math.BigDecimal
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
@@ -89,6 +92,38 @@ class TransferApplicationAccountStore {
         accounts[command.toAccountId] = toAccount.copy(balance = command.toBalance)
     }
 
+    fun apply(command: TransferBalanceDeltaCommand): TransferBalanceChangeResult {
+        val fromAccount = accounts[command.fromAccountId]
+            ?: return TransferBalanceChangeResult(TransferBalanceChangeStatusValue.ACCOUNT_NOT_FOUND)
+        val toAccount = accounts[command.toAccountId]
+            ?: return TransferBalanceChangeResult(TransferBalanceChangeStatusValue.ACCOUNT_NOT_FOUND)
+        if (fromAccount.memberId != command.memberId) {
+            return TransferBalanceChangeResult(TransferBalanceChangeStatusValue.OWNER_MISMATCH)
+        }
+        if (fromAccount.balance < command.debitAmount) {
+            return TransferBalanceChangeResult(TransferBalanceChangeStatusValue.INSUFFICIENT_BALANCE)
+        }
+
+        val updatedFrom =
+            fromAccount.copy(balance = fromAccount.balance.subtract(command.debitAmount))
+        val updatedTo =
+            if (command.toAccountId == command.fromAccountId) {
+                updatedFrom.copy(balance = updatedFrom.balance.add(command.creditAmount))
+            } else {
+                toAccount.copy(balance = toAccount.balance.add(command.creditAmount))
+            }
+        accounts[command.fromAccountId] =
+            if (command.toAccountId == command.fromAccountId) updatedTo else updatedFrom
+        if (command.toAccountId != command.fromAccountId) {
+            accounts[command.toAccountId] = updatedTo
+        }
+        return TransferBalanceChangeResult(
+            TransferBalanceChangeStatusValue.APPLIED,
+            updatedFrom,
+            updatedTo,
+        )
+    }
+
     fun clear() {
         accounts.clear()
         nextId.set(1)
@@ -117,6 +152,7 @@ private class AccountInternalDispatcher(
         "/internal/accounts/query" -> handleQuery(request)
         "/internal/accounts/lock" -> handleLock(request)
         "/internal/accounts/balance-change" -> handleBalanceChange(request)
+        "/internal/accounts/transfer-balance-change" -> handleTransferBalanceChange(request)
         else -> MockResponse().setResponseCode(404)
     }
 
@@ -159,6 +195,27 @@ private class AccountInternalDispatcher(
             ),
         )
         return json(mapOf("applied" to true))
+    }
+
+    private fun handleTransferBalanceChange(request: RecordedRequest): MockResponse {
+        val payload = body(request)
+        val result = store.apply(
+            TransferBalanceDeltaCommand(
+                memberId = request.getHeader(InternalServiceAuthenticationFilter.INTERNAL_USER_ID_HEADER)
+                    ?.toLongOrNull() ?: 0L,
+                fromAccountId = payload.get("fromAccountId").longValue(),
+                toAccountId = payload.get("toAccountId").longValue(),
+                debitAmount = Money.of(payload.get("debitAmount").decimalValue()),
+                creditAmount = Money.of(payload.get("creditAmount").decimalValue()),
+            ),
+        )
+        return json(
+            mapOf(
+                "status" to result.status.name,
+                "fromAccount" to result.fromAccount?.let(::snapshotResponse),
+                "toAccount" to result.toAccount?.let(::snapshotResponse),
+            ),
+        )
     }
 
     private fun snapshotResponse(snapshot: TransferAccountSnapshot): Map<String, Any> = mapOf(
