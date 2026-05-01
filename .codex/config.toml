@@ -1,7 +1,8 @@
 # oh-my-codex top-level settings (must be before any [table])
 notify = ["node", "/opt/homebrew/lib/node_modules/oh-my-codex/dist/scripts/notify-hook.js"]
-model_reasoning_effort = "high"
-developer_instructions = "You have oh-my-codex installed. AGENTS.md is your orchestration brain and the main orchestration surface. Use skill/keyword routing like $name plus spawned role-specialized subagents for specialized work. Codex native subagents are available via .codex/agents and may be used for independent parallel subtasks within a single session or team pane. Skills are loaded from installed SKILL.md files under .codex/skills, not from native agent TOMLs. Use workflow skills via $name when explicitly invoked or clearly routed by AGENTS.md. Treat installed prompts as narrower internal execution surfaces under AGENTS.md authority, even when user-facing docs prefer $name keywords."
+model_reasoning_effort = "medium"
+developer_instructions = "You have oh-my-codex installed. AGENTS.md is the orchestration brain and main control surface. Follow AGENTS.md for skill/keyword routing, $name workflow invocation, and role-specialized subagents. Use outcome-first, concise progress updates: state the target result, constraints, validation evidence, and stop condition before adding process detail. Native subagents live in .codex/agents and may handle independent parallel subtasks within one Codex session or team pane. Skills load from .codex/skills, not native-agent TOMLs. Treat installed prompts as narrower execution surfaces under AGENTS.md authority."
+
 
 model = "gpt-5.5"
 model_context_window = 1000000
@@ -31,6 +32,10 @@ enabled = false
 [env]
 USE_OMX_EXPLORE_CMD = "1"
 
+[profiles.lean]
+web_search = "cached"
+tool_output_token_limit = 2000
+
 # ============================================================
 # oh-my-codex (OMX) Configuration
 # Managed by omx setup - manual edits preserved on next setup
@@ -42,18 +47,6 @@ command = "node"
 args = ["/opt/homebrew/lib/node_modules/oh-my-codex/dist/mcp/state-server.js"]
 enabled = true
 startup_timeout_sec = 5
-
-[mcp_servers.omx_state.tools.state_read]
-approval_mode = "approve"
-
-[mcp_servers.omx_state.tools.state_write]
-approval_mode = "approve"
-
-[mcp_servers.omx_state.tools.state_get_status]
-approval_mode = "approve"
-
-[mcp_servers.omx_state.tools.state_list_active]
-approval_mode = "approve"
 
 # OMX Project Memory MCP Server
 [mcp_servers.omx_memory]
@@ -83,11 +76,13 @@ args = ["/opt/homebrew/lib/node_modules/oh-my-codex/dist/mcp/wiki-server.js"]
 enabled = true
 startup_timeout_sec = 5
 
+# OMX TUI StatusLine (Codex CLI v0.101.0+)
+[tui]
+# omx:managed-status-line
+status_line = ["model-with-reasoning", "git-branch", "context-remaining", "total-input-tokens", "total-output-tokens", "five-hour-limit", "weekly-limit"]
+
 [projects."/Users/shinyechan/IdeaProjects/remittance"]
 trust_level = "trusted"
+
 # ============================================================
 # End oh-my-codex
-
-[profiles.lean]
-web_search = "cached"
-tool_output_token_limit = 2000
