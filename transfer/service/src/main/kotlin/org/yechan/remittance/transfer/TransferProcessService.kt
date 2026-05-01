@@ -26,7 +26,7 @@ open class TransferProcessService(
     ): TransferResult {
         log.info { "transfer.process.start memberId=$memberId scope=${props.scope}" }
         validateTransferRequest(props)
-        val accounts = lockAccounts(memberId, props)
+        val accounts = loadAccounts(memberId, props)
         validateOwner(memberId, accounts)
         validateDailyLimit(props, now)
         applyBalanceChange(memberId, props)
@@ -40,18 +40,22 @@ open class TransferProcessService(
         }
     }
 
-    private fun lockAccounts(
+    private fun loadAccounts(
         memberId: Long,
         props: TransferRequestProps,
-    ): AccountPair = transferAccountClient.lock(
-        TransferAccountLockCommand(
-            memberId = memberId,
-            fromAccountId = props.fromAccountId,
-            toAccountId = props.toAccountId,
-        ),
-    )?.let {
-        AccountPair(it.fromAccount, it.toAccount)
-    } ?: run {
+    ): AccountPair {
+        val fromAccount = transferAccountClient.get(memberId, props.fromAccountId)
+        val toAccount = when (props.fromAccountId) {
+            props.toAccountId -> fromAccount
+            else -> transferAccountClient.get(memberId, props.toAccountId)
+        }
+        if (fromAccount == null || toAccount == null) {
+            throwAccountNotFound(props)
+        }
+        return AccountPair(fromAccount, toAccount)
+    }
+
+    private fun throwAccountNotFound(props: TransferRequestProps): Nothing {
         log.warn { "transfer.process.account_not_found fromAccountId=${props.fromAccountId} toAccountId=${props.toAccountId}" }
         throw TransferFailedException(TransferFailureCode.ACCOUNT_NOT_FOUND, "Account not found")
     }

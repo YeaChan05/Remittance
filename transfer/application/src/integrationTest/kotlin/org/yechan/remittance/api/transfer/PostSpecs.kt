@@ -272,6 +272,137 @@ class PostSpecs : TransferInternalApiStubSupport() {
     }
 
     @Test
+    fun `계좌가 없으면 이체에 실패한다`() {
+        val result = fixtures.setupAuthentication()
+        val memberId = result.authentication.name.toLong()
+        val fromAccountBalance = BigDecimal.valueOf(100_000L)
+        val transferAmount = BigDecimal.valueOf(30_000L)
+
+        val fromAccount =
+            fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
+        val missingAccountId = 999_999L
+        val idempotencyKey = issueIdempotencyKey(
+            result.auth.accessToken,
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
+        )
+
+        val transferCountBefore = fixtures.countTransfers()
+        val outboxCountBefore = fixtures.countOutboxEvents()
+        val ledgerCountBefore = fixtures.countLedgers()
+
+        val response = transfer(
+            result.auth.accessToken,
+            idempotencyKey,
+            fromAccount.accountId,
+            missingAccountId,
+            transferAmount,
+        )
+
+        assertThat(response.status).isEqualTo("FAILED")
+        assertThat(response.transferId).isNull()
+        assertThat(response.errorCode).isEqualTo("ACCOUNT_NOT_FOUND")
+        assertBalance(fromAccount.accountId, fromAccountBalance)
+
+        assertThat(fixtures.countTransfers()).isEqualTo(transferCountBefore)
+        assertThat(fixtures.countOutboxEvents()).isEqualTo(outboxCountBefore)
+        assertThat(fixtures.countLedgers()).isEqualTo(ledgerCountBefore)
+
+        val idempotency = fixtures.loadIdempotencyKey(memberId, idempotencyKey)
+        assertThat(idempotency.status).isEqualTo("FAILED")
+        assertThat(idempotency.responseSnapshot).contains("FAILED", "ACCOUNT_NOT_FOUND")
+    }
+
+    @Test
+    fun `송금 계좌 회원이 없으면 이체에 실패한다`() {
+        val result = fixtures.setupAuthentication()
+        val memberId = result.authentication.name.toLong()
+        val fromAccountBalance = BigDecimal.valueOf(100_000L)
+        val toAccountBalance = BigDecimal.valueOf(50_000L)
+        val transferAmount = BigDecimal.valueOf(30_000L)
+
+        val fromAccount =
+            fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
+        val toAccount = fixtures.createAccountWithBalance(20L, "to-account", toAccountBalance)
+        fixtures.unregisterMember(memberId)
+        val idempotencyKey = issueIdempotencyKey(
+            result.auth.accessToken,
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
+        )
+
+        val transferCountBefore = fixtures.countTransfers()
+        val outboxCountBefore = fixtures.countOutboxEvents()
+        val ledgerCountBefore = fixtures.countLedgers()
+
+        val response = transfer(
+            result.auth.accessToken,
+            idempotencyKey,
+            fromAccount.accountId,
+            toAccount.accountId,
+            transferAmount,
+        )
+
+        assertThat(response.status).isEqualTo("FAILED")
+        assertThat(response.transferId).isNull()
+        assertThat(response.errorCode).isEqualTo("OWNER_NOT_FOUND")
+        assertBalance(fromAccount.accountId, fromAccountBalance)
+        assertBalance(toAccount.accountId, toAccountBalance)
+
+        assertThat(fixtures.countTransfers()).isEqualTo(transferCountBefore)
+        assertThat(fixtures.countOutboxEvents()).isEqualTo(outboxCountBefore)
+        assertThat(fixtures.countLedgers()).isEqualTo(ledgerCountBefore)
+
+        val idempotency = fixtures.loadIdempotencyKey(memberId, idempotencyKey)
+        assertThat(idempotency.status).isEqualTo("FAILED")
+        assertThat(idempotency.responseSnapshot).contains("FAILED", "OWNER_NOT_FOUND")
+    }
+
+    @Test
+    fun `수취인 회원이 없으면 이체에 실패한다`() {
+        val result = fixtures.setupAuthentication()
+        val memberId = result.authentication.name.toLong()
+        val receiverMemberId = 20L
+        val fromAccountBalance = BigDecimal.valueOf(100_000L)
+        val toAccountBalance = BigDecimal.valueOf(50_000L)
+        val transferAmount = BigDecimal.valueOf(30_000L)
+
+        val fromAccount =
+            fixtures.createAccountWithBalance(memberId, "from-account", fromAccountBalance)
+        val toAccount =
+            fixtures.createAccountWithBalance(receiverMemberId, "to-account", toAccountBalance)
+        fixtures.unregisterMember(receiverMemberId)
+        val idempotencyKey = issueIdempotencyKey(
+            result.auth.accessToken,
+            IdempotencyKeyProps.IdempotencyScopeValue.TRANSFER,
+        )
+
+        val transferCountBefore = fixtures.countTransfers()
+        val outboxCountBefore = fixtures.countOutboxEvents()
+        val ledgerCountBefore = fixtures.countLedgers()
+
+        val response = transfer(
+            result.auth.accessToken,
+            idempotencyKey,
+            fromAccount.accountId,
+            toAccount.accountId,
+            transferAmount,
+        )
+
+        assertThat(response.status).isEqualTo("FAILED")
+        assertThat(response.transferId).isNull()
+        assertThat(response.errorCode).isEqualTo("MEMBER_NOT_FOUND")
+        assertBalance(fromAccount.accountId, fromAccountBalance)
+        assertBalance(toAccount.accountId, toAccountBalance)
+
+        assertThat(fixtures.countTransfers()).isEqualTo(transferCountBefore)
+        assertThat(fixtures.countOutboxEvents()).isEqualTo(outboxCountBefore)
+        assertThat(fixtures.countLedgers()).isEqualTo(ledgerCountBefore)
+
+        val idempotency = fixtures.loadIdempotencyKey(memberId, idempotencyKey)
+        assertThat(idempotency.status).isEqualTo("FAILED")
+        assertThat(idempotency.responseSnapshot).contains("FAILED", "MEMBER_NOT_FOUND")
+    }
+
+    @Test
     fun `진행 중인 멱등키는 IN_PROGRESS를 반환한다`() {
         val result = fixtures.setupAuthentication()
         val memberId = result.authentication.name.toLong()

@@ -23,7 +23,8 @@ class TransferProcessServiceTest {
             fixture.service.process(10L, "idem-key", "hash", TestTransferRequestProps(), now())
 
         assertThat(result.transferId).isEqualTo(1L)
-        assertThat(fixture.accountClient.lockCallCount).isEqualTo(1)
+        assertThat(fixture.accountClient.getCallIds).containsExactly(1L, 2L)
+        assertThat(fixture.accountClient.lockCallCount).isZero()
         assertThat(fixture.accountClient.applyTransferBalanceChangeCallCount).isEqualTo(1)
         assertThat(fixture.accountClient.appliedBalanceDelta).isEqualTo(
             TransferBalanceDeltaCommand(
@@ -69,6 +70,8 @@ class TransferProcessServiceTest {
         )
 
         assertThat(result.transferId).isEqualTo(1L)
+        assertThat(fixture.accountClient.getCallIds).containsExactly(1L)
+        assertThat(fixture.accountClient.lockCallCount).isZero()
         assertThat(fixture.dailyLimitUsageRepository.findOrCreateCallCount).isZero()
         assertThat(fixture.accountClient.appliedBalanceDelta).isEqualTo(
             TransferBalanceDeltaCommand(
@@ -106,6 +109,8 @@ class TransferProcessServiceTest {
         )
 
         assertThat(result.transferId).isEqualTo(1L)
+        assertThat(fixture.accountClient.getCallIds).containsExactly(1L)
+        assertThat(fixture.accountClient.lockCallCount).isZero()
         assertThat(fixture.dailyLimitUsageRepository.findOrCreateCallCount).isEqualTo(1)
         assertThat(fixture.accountClient.appliedBalanceDelta).isEqualTo(
             TransferBalanceDeltaCommand(
@@ -147,7 +152,7 @@ class TransferProcessServiceTest {
     }
 
     @Test
-    fun `계좌 잠금에 실패하면 ACCOUNT_NOT_FOUND를 반환한다`() {
+    fun `계좌 조회에 실패하면 ACCOUNT_NOT_FOUND를 반환한다`() {
         val fixture = transferFixture(lockedAccounts = null)
 
         assertThatThrownBy {
@@ -156,12 +161,35 @@ class TransferProcessServiceTest {
             .extracting("failureCode")
             .isEqualTo(TransferFailureCode.ACCOUNT_NOT_FOUND)
 
-        assertThat(fixture.accountClient.lockCallCount).isEqualTo(1)
+        assertThat(fixture.accountClient.getCallIds).containsExactly(1L, 2L)
+        assertThat(fixture.accountClient.lockCallCount).isZero()
         assertThat(fixture.memberClient.existsCallIds).isEmpty()
         assertThat(fixture.accountClient.applyTransferBalanceChangeCallCount).isZero()
         assertThat(fixture.transferRepository.saveCallCount).isZero()
         assertThat(fixture.outboxEventRepository.saveCallCount).isZero()
         assertThat(fixture.idempotencyKeyRepository.markSucceededCallCount).isZero()
+    }
+
+    @Test
+    fun `계좌가 없으면 회원 검증보다 ACCOUNT_NOT_FOUND를 먼저 반환한다`() {
+        val fixture = transferFixture(
+            lockedAccounts = TransferLockedAccounts(
+                TransferAccountSnapshot(2L, 20L, money("200")),
+                TransferAccountSnapshot(2L, 20L, money("200")),
+            ),
+            existingMemberIds = emptySet(),
+        )
+
+        assertThatThrownBy {
+            fixture.service.process(10L, "idem-key", "hash", TestTransferRequestProps(), now())
+        }.isInstanceOf(TransferFailedException::class.java)
+            .extracting("failureCode")
+            .isEqualTo(TransferFailureCode.ACCOUNT_NOT_FOUND)
+
+        assertThat(fixture.accountClient.getCallIds).containsExactly(1L, 2L)
+        assertThat(fixture.memberClient.existsCallIds).isEmpty()
+        assertThat(fixture.accountClient.applyTransferBalanceChangeCallCount).isZero()
+        assertThat(fixture.transferRepository.saveCallCount).isZero()
     }
 
     @Test
@@ -181,6 +209,7 @@ class TransferProcessServiceTest {
             .isEqualTo(TransferFailureCode.OWNER_NOT_FOUND)
 
         assertThat(fixture.memberClient.existsCallIds).containsExactly(10L)
+        assertThat(fixture.accountClient.lockCallCount).isZero()
         assertThat(fixture.dailyLimitUsageRepository.findOrCreateCallCount).isZero()
         assertThat(fixture.accountClient.applyTransferBalanceChangeCallCount).isZero()
         assertThat(fixture.transferRepository.saveCallCount).isZero()
@@ -203,6 +232,7 @@ class TransferProcessServiceTest {
             .isEqualTo(TransferFailureCode.MEMBER_NOT_FOUND)
 
         assertThat(fixture.memberClient.existsCallIds).containsExactly(10L, 20L)
+        assertThat(fixture.accountClient.lockCallCount).isZero()
         assertThat(fixture.dailyLimitUsageRepository.findOrCreateCallCount).isZero()
         assertThat(fixture.accountClient.applyTransferBalanceChangeCallCount).isZero()
         assertThat(fixture.transferRepository.saveCallCount).isZero()
@@ -334,18 +364,25 @@ class TransferProcessServiceTest {
 
     private class FakeTransferAccountClient(
         private val lockedAccounts: TransferLockedAccounts?,
-        private val accounts: Map<Long, TransferAccountSnapshot> = emptyMap(),
     ) : TransferAccountClient {
         var appliedBalanceChange: TransferBalanceChangeCommand? = null
         var appliedBalanceDelta: TransferBalanceDeltaCommand? = null
+        val getCallIds = mutableListOf<Long>()
         var lockCallCount: Int = 0
         var applyBalanceChangeCallCount: Int = 0
         var applyTransferBalanceChangeCallCount: Int = 0
+        private val accounts: Map<Long, TransferAccountSnapshot> = listOfNotNull(
+            lockedAccounts?.fromAccount,
+            lockedAccounts?.toAccount,
+        ).associateBy { it.accountId }
 
         override fun get(
             memberId: Long,
             accountId: Long,
-        ): TransferAccountSnapshot? = accounts[accountId]
+        ): TransferAccountSnapshot? {
+            getCallIds += accountId
+            return accounts[accountId]
+        }
 
         override fun lock(command: TransferAccountLockCommand): TransferLockedAccounts? {
             lockCallCount += 1
@@ -360,9 +397,10 @@ class TransferProcessServiceTest {
         override fun applyTransferBalanceChange(command: TransferBalanceDeltaCommand): TransferBalanceChangeResult {
             applyTransferBalanceChangeCallCount += 1
             appliedBalanceDelta = command
-            val fromAccount = lockedAccounts?.fromAccount
+            val fromAccount = accounts[command.fromAccountId]
                 ?: return TransferBalanceChangeResult(TransferBalanceChangeStatusValue.ACCOUNT_NOT_FOUND)
-            val toAccount = lockedAccounts.toAccount
+            val toAccount = accounts[command.toAccountId]
+                ?: return TransferBalanceChangeResult(TransferBalanceChangeStatusValue.ACCOUNT_NOT_FOUND)
             if (fromAccount.memberId != command.memberId) {
                 return TransferBalanceChangeResult(TransferBalanceChangeStatusValue.OWNER_MISMATCH)
             }
