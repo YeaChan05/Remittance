@@ -34,9 +34,7 @@ open class TransferProcessService(
     }
 
     private fun validateTransferRequest(props: TransferRequestProps) {
-        if (props.scope == TransferProps.TransferScopeValue.TRANSFER &&
-            props.fromAccountId == props.toAccountId
-        ) {
+        if (!props.isValid()) {
             log.warn { "transfer.process.same_account fromAccountId=${props.fromAccountId}" }
             throw TransferFailedException(TransferFailureCode.INVALID_REQUEST, "Same account")
         }
