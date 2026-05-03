@@ -24,10 +24,10 @@ interface TransferRequestProps {
     fun debit(): Money = amount.add(fee)
 
     fun isValid(): Boolean = when (scope) {
-        TransferScopeValue.TRANSFER ->
+        TransferScopeValue.WITHDRAW, TransferScopeValue.TRANSFER ->
             fromAccountId != toAccountId && amount.isPositive()
 
-        TransferScopeValue.WITHDRAW, TransferScopeValue.DEPOSIT ->
-            fromAccountId == toAccountId && amount.isPositive() && fee.isZero()
+        TransferScopeValue.DEPOSIT ->
+            fromAccountId != toAccountId && amount.isPositive() && fee.isZero()
     }
 }

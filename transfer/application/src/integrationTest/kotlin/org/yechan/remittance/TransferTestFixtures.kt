@@ -53,10 +53,6 @@ class TransferTestFixtures(
         )
     }
 
-    fun unregisterMember(memberId: Long) {
-        memberStore.unregister(memberId)
-    }
-
     fun registerAndIssueToken(name: String): AuthSeed {
         val memberId = nextMemberId.getAndIncrement()
         memberStore.register(memberId)

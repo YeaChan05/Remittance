@@ -137,10 +137,6 @@ class TransferApplicationMemberStore {
         members += memberId
     }
 
-    fun unregister(memberId: Long) {
-        members -= memberId
-    }
-
     fun exists(memberId: Long): Boolean = members.contains(memberId)
 
     fun clear() {
